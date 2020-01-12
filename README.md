@@ -9,23 +9,41 @@ addnodes
 
 
 addnode=flapx00.flapxcoin.com
+
 addnode=flapx01.flapxcoin.com
+
 addnode=flapx02.flapxcoin.com
+
 addnode=flapx03.flapxcoin.com
+
 addnode=flapx04.flapxcoin.com
+
 addnode=flapx05.flapxcoin.com
+
 addnode=flapx06.flapxcoin.com
+
 addnode=flapx07.flapxcoin.com
+
 addnode=flapx10.flapxcoin.com
+
 addnode=flapx00.nerdlabs001.com
+
 addnode=flapx00.nerdlabs001.com
+
 addnode=flapx01.nerdlabs001.com
+
 addnode=flapx02.nerdlabs001.com
+
 addnode=flapx03.nerdlabs001.com
+
 addnode=flapx04.nerdlabs001.com
+
 addnode=flapx05.nerdlabs001.com
+
 addnode=flapx06.nerdlabs001.com
+
 addnode=flapx07.nerdlabs001.com
+
 addnode=flapx10.nerdlabs001.com
 
 PUNCH LIST 
