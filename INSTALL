@@ -1,0 +1,9 @@
+Building FlapX
+
+See doc/readme-qt.rst for instructions on building FlapX-QT,
+the intended-for-end-users, nice-graphical-interface, reference
+implementation of FlapX.
+
+See doc/build-*.txt for instructions on building FlapX,
+the intended-for-services, no-graphical-interface, reference
+implementation of FlapX.
