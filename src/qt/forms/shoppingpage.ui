@@ -80,7 +80,7 @@
       <enum>QTabWidget::Rounded</enum>
      </property>
      <property name="currentIndex">
-      <number>1</number>
+      <number>2</number>
      </property>
      <property name="iconSize">
       <size>
@@ -1621,7 +1621,7 @@
             </property>
             <property name="icon">
              <iconset resource="../bitcoin.qrc">
-              <normaloff>:/images/res/images/FlapXcoin/Crypto Links/altexchanger.png</normaloff>:/images/res/images/FlapXcoin/Crypto Links/altexchanger.png</iconset>
+              <normaloff>:/qt/art/art/exchanges/altexchanger.png</normaloff>:/qt/art/art/exchanges/altexchanger.png</iconset>
             </property>
             <property name="iconSize">
              <size>
@@ -5416,7 +5416,7 @@
             </property>
             <property name="icon">
              <iconset resource="../bitcoin.qrc">
-              <normaloff>:/images/res/images/FlapXcoin/Community/Maza.png</normaloff>:/images/res/images/FlapXcoin/Community/Maza.png</iconset>
+              <normaloff>:/qt/art/art/community/Cu.png</normaloff>:/qt/art/art/community/Cu.png</iconset>
             </property>
             <property name="iconSize">
              <size>
@@ -5480,8 +5480,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>100</width>
-            <height>30</height>
+            <width>999</width>
+            <height>715</height>
            </rect>
           </property>
           <property name="styleSheet">
@@ -6474,8 +6474,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>356</width>
-            <height>436</height>
+            <width>999</width>
+            <height>715</height>
            </rect>
           </property>
           <property name="styleSheet">

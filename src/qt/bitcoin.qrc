@@ -124,8 +124,12 @@
     <qresource prefix="/qt/art">
         <file>art/flapwork.png</file>
         <file>art/logo1.png</file>
-        <file>art/nibyx.png</file>
         <file>art/flying-blurb.png</file>
-        <file>art/lcw.png</file>
+        <file>art/wallet-base/flapxsky.png</file>
+        <file>art/exchanges/altexchanger.png</file>
+        <file>art/wallet-base/flapxblue.png</file>
+        <file>art/wallet-base/pipe.png</file>
+        <file>art/wallet-base/flapxyellow.png</file>
+        <file>art/community/Cu.png</file>
     </qresource>
 </RCC>

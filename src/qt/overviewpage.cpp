@@ -29,7 +29,7 @@
 #include <string>
 #include <QMenu>
 
-#define DECORATION_SIZE 80
+#define DECORATION_SIZE 85
 #define NUM_ITEMS 5
 
 using namespace json_spirit;
