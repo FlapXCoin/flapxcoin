@@ -80,7 +80,7 @@
       <enum>QTabWidget::Rounded</enum>
      </property>
      <property name="currentIndex">
-      <number>2</number>
+      <number>1</number>
      </property>
      <property name="iconSize">
       <size>
@@ -108,7 +108,7 @@
        <string notr="true">background:transparent;</string>
       </property>
       <attribute name="icon">
-       <iconset>
+       <iconset resource="../bitcoin.qrc">
         <normaloff>:/images/res/images/FlapXcoin/FlapX Art/FBS.png</normaloff>:/images/res/images/FlapXcoin/FlapX Art/FBS.png</iconset>
       </attribute>
       <attribute name="title">
@@ -186,7 +186,7 @@
              <string/>
             </property>
             <property name="pixmap">
-             <pixmap>:/icons/res/images/FlapXcoin/FlapXCoin/Links.png</pixmap>
+             <pixmap resource="../bitcoin.qrc">:/icons/res/images/FlapXcoin/FlapXCoin/Links.png</pixmap>
             </property>
             <property name="scaledContents">
              <bool>true</bool>
@@ -342,7 +342,7 @@
              <string notr="true">background:transparent;</string>
             </property>
             <property name="icon">
-             <iconset>
+             <iconset resource="../bitcoin.qrc">
               <normaloff>:/images/res/images/FlapXcoin/FlapXCoin/Home.png</normaloff>:/images/res/images/FlapXcoin/FlapXCoin/Home.png</iconset>
             </property>
             <property name="iconSize">
@@ -462,7 +462,7 @@
              <string notr="true">background:transparent;</string>
             </property>
             <property name="icon">
-             <iconset>
+             <iconset resource="../bitcoin.qrc">
               <normaloff>:/images/res/images/FlapXcoin/FlapXCoin/Explorer.png</normaloff>:/images/res/images/FlapXcoin/FlapXCoin/Explorer.png</iconset>
             </property>
             <property name="iconSize">
@@ -582,7 +582,7 @@
              <string notr="true">background:transparent;</string>
             </property>
             <property name="icon">
-             <iconset>
+             <iconset resource="../bitcoin.qrc">
               <normaloff>:/images/res/images/FlapXcoin/FlapXCoin/Pool.png</normaloff>:/images/res/images/FlapXcoin/FlapXCoin/Pool.png</iconset>
             </property>
             <property name="iconSize">
@@ -890,7 +890,7 @@
              <string/>
             </property>
             <property name="icon">
-             <iconset>
+             <iconset resource="../bitcoin.qrc">
               <normaloff>:/images/res/images/FlapXcoin/Social/Panic.png</normaloff>:/images/res/images/FlapXcoin/Social/Panic.png</iconset>
             </property>
             <property name="iconSize">
@@ -1013,7 +1013,7 @@
              <string/>
             </property>
             <property name="icon">
-             <iconset>
+             <iconset resource="../bitcoin.qrc">
               <normaloff>:/images/res/images/FlapXcoin/Social/Ccity.png</normaloff>:/images/res/images/FlapXcoin/Social/Ccity.png</iconset>
             </property>
             <property name="iconSize">
@@ -1136,7 +1136,7 @@
              <string/>
             </property>
             <property name="icon">
-             <iconset>
+             <iconset resource="../bitcoin.qrc">
               <normaloff>:/images/res/images/FlapXcoin/Social/Discord2.png</normaloff>:/images/res/images/FlapXcoin/Social/Discord2.png</iconset>
             </property>
             <property name="iconSize">
@@ -1259,7 +1259,7 @@
              <string/>
             </property>
             <property name="icon">
-             <iconset>
+             <iconset resource="../bitcoin.qrc">
               <normaloff>:/images/res/images/FlapXcoin/Social/btct.png</normaloff>:/images/res/images/FlapXcoin/Social/btct.png</iconset>
             </property>
             <property name="iconSize">
@@ -1335,7 +1335,7 @@
        <string notr="true">background:transparent;</string>
       </property>
       <attribute name="icon">
-       <iconset>
+       <iconset resource="../bitcoin.qrc">
         <normaloff>:/qt/art/art/logo1.png</normaloff>:/qt/art/art/logo1.png</iconset>
       </attribute>
       <attribute name="title">
@@ -1384,7 +1384,7 @@
              <string/>
             </property>
             <property name="pixmap">
-             <pixmap>:/qt/art/art/flapwork.png</pixmap>
+             <pixmap resource="../bitcoin.qrc">:/qt/art/art/flapwork.png</pixmap>
             </property>
             <property name="scaledContents">
              <bool>true</bool>
@@ -1500,7 +1500,7 @@
              <string notr="true">background:transparent;</string>
             </property>
             <property name="icon">
-             <iconset>
+             <iconset resource="../bitcoin.qrc">
               <normaloff>:/images/res/images/FlapXcoin/Crypto Links/frei.png</normaloff>:/images/res/images/FlapXcoin/Crypto Links/frei.png</iconset>
             </property>
             <property name="iconSize">
@@ -1620,7 +1620,7 @@
              <string notr="true">background:transparent;</string>
             </property>
             <property name="icon">
-             <iconset>
+             <iconset resource="../bitcoin.qrc">
               <normaloff>:/images/res/images/FlapXcoin/Crypto Links/altexchanger.png</normaloff>:/images/res/images/FlapXcoin/Crypto Links/altexchanger.png</iconset>
             </property>
             <property name="iconSize">
@@ -1805,7 +1805,7 @@
                 <string/>
                </property>
                <property name="icon">
-                <iconset>
+                <iconset resource="../bitcoin.qrc">
                  <normaloff>:/images/res/images/FlapXcoin/FlapXCoin/Tipbot.png</normaloff>:/images/res/images/FlapXcoin/FlapXCoin/Tipbot.png</iconset>
                </property>
                <property name="iconSize">
@@ -1850,7 +1850,7 @@
      </widget>
      <widget class="QWidget" name="cryptocommunities">
       <attribute name="icon">
-       <iconset>
+       <iconset resource="../bitcoin.qrc">
         <normaloff>:/images/res/images/FlapXcoin/Community/NET.png</normaloff>:/images/res/images/FlapXcoin/Community/NET.png</iconset>
       </attribute>
       <attribute name="title">
@@ -1993,7 +1993,7 @@
              <string/>
             </property>
             <property name="icon">
-             <iconset>
+             <iconset resource="../bitcoin.qrc">
               <normaloff>:/images/res/images/FlapXcoin/Social/Cc.png</normaloff>:/images/res/images/FlapXcoin/Social/Cc.png</iconset>
             </property>
             <property name="iconSize">
@@ -2110,7 +2110,7 @@
              <string/>
             </property>
             <property name="icon">
-             <iconset>
+             <iconset resource="../bitcoin.qrc">
               <normaloff>:/images/res/images/FlapXcoin/Social/Discord.png</normaloff>:/images/res/images/FlapXcoin/Social/Discord.png</iconset>
             </property>
             <property name="iconSize">
@@ -2233,7 +2233,7 @@
              <string/>
             </property>
             <property name="icon">
-             <iconset>
+             <iconset resource="../bitcoin.qrc">
               <normaloff>:/images/res/images/FlapXcoin/Community/NET.png</normaloff>:/images/res/images/FlapXcoin/Community/NET.png</iconset>
             </property>
             <property name="iconSize">
@@ -2383,7 +2383,7 @@
              <string/>
             </property>
             <property name="icon">
-             <iconset>
+             <iconset resource="../bitcoin.qrc">
               <normaloff>:/images/res/images/FlapXcoin/Social/Cc.png</normaloff>:/images/res/images/FlapXcoin/Social/Cc.png</iconset>
             </property>
             <property name="iconSize">
@@ -2500,7 +2500,7 @@
              <string/>
             </property>
             <property name="icon">
-             <iconset>
+             <iconset resource="../bitcoin.qrc">
               <normaloff>:/images/res/images/FlapXcoin/Social/Discord.png</normaloff>:/images/res/images/FlapXcoin/Social/Discord.png</iconset>
             </property>
             <property name="iconSize">
@@ -2623,7 +2623,7 @@
              <string/>
             </property>
             <property name="icon">
-             <iconset>
+             <iconset resource="../bitcoin.qrc">
               <normaloff>:/images/res/images/FlapXcoin/Community/FlapX.png</normaloff>:/images/res/images/FlapXcoin/Community/FlapX.png</iconset>
             </property>
             <property name="iconSize">
@@ -2776,7 +2776,7 @@
              <string/>
             </property>
             <property name="icon">
-             <iconset>
+             <iconset resource="../bitcoin.qrc">
               <normaloff>:/images/res/images/FlapXcoin/Social/Discord.png</normaloff>:/images/res/images/FlapXcoin/Social/Discord.png</iconset>
             </property>
             <property name="iconSize">
@@ -2899,7 +2899,7 @@
              <string/>
             </property>
             <property name="icon">
-             <iconset>
+             <iconset resource="../bitcoin.qrc">
               <normaloff>:/images/res/images/FlapXcoin/Community/SAT2.png</normaloff>:/images/res/images/FlapXcoin/Community/SAT2.png</iconset>
             </property>
             <property name="iconSize">
@@ -3016,7 +3016,7 @@
              <string/>
             </property>
             <property name="icon">
-             <iconset>
+             <iconset resource="../bitcoin.qrc">
               <normaloff>:/images/res/images/FlapXcoin/Social/Cc.png</normaloff>:/images/res/images/FlapXcoin/Social/Cc.png</iconset>
             </property>
             <property name="iconSize">
@@ -3185,7 +3185,7 @@
              <string/>
             </property>
             <property name="icon">
-             <iconset>
+             <iconset resource="../bitcoin.qrc">
               <normaloff>:/images/res/images/FlapXcoin/Crypto Links/safeseafood.png</normaloff>:/images/res/images/FlapXcoin/Crypto Links/safeseafood.png</iconset>
             </property>
             <property name="iconSize">
@@ -3302,7 +3302,7 @@
              <string/>
             </property>
             <property name="icon">
-             <iconset>
+             <iconset resource="../bitcoin.qrc">
               <normaloff>:/images/res/images/FlapXcoin/Social/Discord.png</normaloff>:/images/res/images/FlapXcoin/Social/Discord.png</iconset>
             </property>
             <property name="iconSize">
@@ -3419,7 +3419,7 @@
              <string/>
             </property>
             <property name="icon">
-             <iconset>
+             <iconset resource="../bitcoin.qrc">
               <normaloff>:/images/res/images/FlapXcoin/Social/Cc.png</normaloff>:/images/res/images/FlapXcoin/Social/Cc.png</iconset>
             </property>
             <property name="iconSize">
@@ -3569,7 +3569,7 @@
              <string/>
             </property>
             <property name="icon">
-             <iconset>
+             <iconset resource="../bitcoin.qrc">
               <normaloff>:/images/res/images/FlapXcoin/Social/Cc.png</normaloff>:/images/res/images/FlapXcoin/Social/Cc.png</iconset>
             </property>
             <property name="iconSize">
@@ -3686,7 +3686,7 @@
              <string/>
             </property>
             <property name="icon">
-             <iconset>
+             <iconset resource="../bitcoin.qrc">
               <normaloff>:/images/res/images/FlapXcoin/Social/Discord.png</normaloff>:/images/res/images/FlapXcoin/Social/Discord.png</iconset>
             </property>
             <property name="iconSize">
@@ -3809,7 +3809,7 @@
              <string/>
             </property>
             <property name="icon">
-             <iconset>
+             <iconset resource="../bitcoin.qrc">
               <normaloff>:/images/res/images/FlapXcoin/Community/Elite.png</normaloff>:/images/res/images/FlapXcoin/Community/Elite.png</iconset>
             </property>
             <property name="iconSize">
@@ -3959,7 +3959,7 @@
              <string/>
             </property>
             <property name="icon">
-             <iconset>
+             <iconset resource="../bitcoin.qrc">
               <normaloff>:/images/res/images/FlapXcoin/Social/Cc.png</normaloff>:/images/res/images/FlapXcoin/Social/Cc.png</iconset>
             </property>
             <property name="iconSize">
@@ -4076,7 +4076,7 @@
              <string/>
             </property>
             <property name="icon">
-             <iconset>
+             <iconset resource="../bitcoin.qrc">
               <normaloff>:/images/res/images/FlapXcoin/Social/Discord.png</normaloff>:/images/res/images/FlapXcoin/Social/Discord.png</iconset>
             </property>
             <property name="iconSize">
@@ -4199,7 +4199,7 @@
              <string/>
             </property>
             <property name="icon">
-             <iconset>
+             <iconset resource="../bitcoin.qrc">
               <normaloff>:/images/res/images/FlapXcoin/Community/HYP.png</normaloff>:/images/res/images/FlapXcoin/Community/HYP.png</iconset>
             </property>
             <property name="iconSize">
@@ -4349,7 +4349,7 @@
              <string/>
             </property>
             <property name="icon">
-             <iconset>
+             <iconset resource="../bitcoin.qrc">
               <normaloff>:/images/res/images/FlapXcoin/Social/Cc.png</normaloff>:/images/res/images/FlapXcoin/Social/Cc.png</iconset>
             </property>
             <property name="iconSize">
@@ -4466,7 +4466,7 @@
              <string/>
             </property>
             <property name="icon">
-             <iconset>
+             <iconset resource="../bitcoin.qrc">
               <normaloff>:/images/res/images/FlapXcoin/Social/Discord.png</normaloff>:/images/res/images/FlapXcoin/Social/Discord.png</iconset>
             </property>
             <property name="iconSize">
@@ -4589,7 +4589,7 @@
              <string/>
             </property>
             <property name="icon">
-             <iconset>
+             <iconset resource="../bitcoin.qrc">
               <normaloff>:/images/res/images/FlapXcoin/Community/WW.png</normaloff>:/images/res/images/FlapXcoin/Community/WW.png</iconset>
             </property>
             <property name="iconSize">
@@ -4739,7 +4739,7 @@
              <string/>
             </property>
             <property name="icon">
-             <iconset>
+             <iconset resource="../bitcoin.qrc">
               <normaloff>:/images/res/images/FlapXcoin/Social/Cc.png</normaloff>:/images/res/images/FlapXcoin/Social/Cc.png</iconset>
             </property>
             <property name="iconSize">
@@ -4856,7 +4856,7 @@
              <string/>
             </property>
             <property name="icon">
-             <iconset>
+             <iconset resource="../bitcoin.qrc">
               <normaloff>:/images/res/images/FlapXcoin/Social/Discord.png</normaloff>:/images/res/images/FlapXcoin/Social/Discord.png</iconset>
             </property>
             <property name="iconSize">
@@ -4979,7 +4979,7 @@
              <string/>
             </property>
             <property name="icon">
-             <iconset>
+             <iconset resource="../bitcoin.qrc">
               <normaloff>:/images/res/images/FlapXcoin/Community/GDC.png</normaloff>:/images/res/images/FlapXcoin/Community/GDC.png</iconset>
             </property>
             <property name="iconSize">
@@ -5029,7 +5029,7 @@
              <string/>
             </property>
             <property name="pixmap">
-             <pixmap>:/qt/art/art/flying-blurb.png</pixmap>
+             <pixmap resource="../bitcoin.qrc">:/qt/art/art/flying-blurb.png</pixmap>
             </property>
             <property name="scaledContents">
              <bool>true</bool>
@@ -5175,7 +5175,7 @@
              <string/>
             </property>
             <property name="icon">
-             <iconset>
+             <iconset resource="../bitcoin.qrc">
               <normaloff>:/images/res/images/FlapXcoin/Social/Cc.png</normaloff>:/images/res/images/FlapXcoin/Social/Cc.png</iconset>
             </property>
             <property name="iconSize">
@@ -5292,7 +5292,7 @@
              <string/>
             </property>
             <property name="icon">
-             <iconset>
+             <iconset resource="../bitcoin.qrc">
               <normaloff>:/images/res/images/FlapXcoin/Social/Discord.png</normaloff>:/images/res/images/FlapXcoin/Social/Discord.png</iconset>
             </property>
             <property name="iconSize">
@@ -5415,7 +5415,7 @@
              <string/>
             </property>
             <property name="icon">
-             <iconset>
+             <iconset resource="../bitcoin.qrc">
               <normaloff>:/images/res/images/FlapXcoin/Community/Maza.png</normaloff>:/images/res/images/FlapXcoin/Community/Maza.png</iconset>
             </property>
             <property name="iconSize">
@@ -5436,7 +5436,7 @@
        <string notr="true">background:transparent;</string>
       </property>
       <attribute name="icon">
-       <iconset>
+       <iconset resource="../bitcoin.qrc">
         <normaloff>:/images/res/images/FlapXcoin/Social/Ccity.png</normaloff>:/images/res/images/FlapXcoin/Social/Ccity.png</iconset>
       </attribute>
       <attribute name="title">
@@ -5480,8 +5480,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>999</width>
-            <height>715</height>
+            <width>100</width>
+            <height>30</height>
            </rect>
           </property>
           <property name="styleSheet">
@@ -5603,7 +5603,7 @@
             <string notr="true">background:transparent;</string>
            </property>
            <property name="icon">
-            <iconset>
+            <iconset resource="../bitcoin.qrc">
              <normaloff>:/images/res/images/FlapXcoin/Crypto Links/MRR.png</normaloff>:/images/res/images/FlapXcoin/Crypto Links/MRR.png</iconset>
            </property>
            <property name="iconSize">
@@ -5729,7 +5729,7 @@
             <string notr="true">background:transparent;</string>
            </property>
            <property name="icon">
-            <iconset>
+            <iconset resource="../bitcoin.qrc">
              <normaloff>:/images/res/images/FlapXcoin/Crypto Links/chantha_avatar_maximum_squeeze.png</normaloff>:/images/res/images/FlapXcoin/Crypto Links/chantha_avatar_maximum_squeeze.png</iconset>
            </property>
            <property name="iconSize">
@@ -5855,7 +5855,7 @@
             <string notr="true">background:transparent;</string>
            </property>
            <property name="icon">
-            <iconset>
+            <iconset resource="../bitcoin.qrc">
              <normaloff>:/images/res/images/FlapXcoin/Crypto Links/CCA.png</normaloff>:/images/res/images/FlapXcoin/Crypto Links/CCA.png</iconset>
            </property>
            <property name="iconSize">
@@ -5884,7 +5884,7 @@
             <string/>
            </property>
            <property name="pixmap">
-            <pixmap>:/images/res/images/cryptocity/cctext.png</pixmap>
+            <pixmap resource="../bitcoin.qrc">:/images/res/images/cryptocity/cctext.png</pixmap>
            </property>
            <property name="scaledContents">
             <bool>true</bool>
@@ -6006,7 +6006,7 @@
             <string notr="true">background:transparent;</string>
            </property>
            <property name="icon">
-            <iconset>
+            <iconset resource="../bitcoin.qrc">
              <normaloff>:/images/res/images/cryptocity/cryptocity.png</normaloff>:/images/res/images/cryptocity/cryptocity.png</iconset>
            </property>
            <property name="iconSize">
@@ -6029,7 +6029,7 @@
        <string notr="true">background:transparent;</string>
       </property>
       <attribute name="icon">
-       <iconset>
+       <iconset resource="../bitcoin.qrc">
         <normaloff>:/images/res/images/FlapXcoin/Crypto Links/NerdLabMiniLogo_128.png</normaloff>:/images/res/images/FlapXcoin/Crypto Links/NerdLabMiniLogo_128.png</iconset>
       </attribute>
       <attribute name="title">
@@ -6216,7 +6216,7 @@
            <string notr="true">background:transparent;</string>
           </property>
           <property name="icon">
-           <iconset>
+           <iconset resource="../bitcoin.qrc">
             <normaloff>:/images/res/images/nerdlabs001/nerdlabs001icon.png</normaloff>:/images/res/images/nerdlabs001/nerdlabs001icon.png</iconset>
           </property>
           <property name="iconSize">
@@ -6233,7 +6233,7 @@
            <string/>
           </property>
           <property name="pixmap">
-           <pixmap>:/images/res/images/FlapXcoin/Crypto Links/NerdLabMiniLogo_128.png</pixmap>
+           <pixmap resource="../bitcoin.qrc">:/images/res/images/FlapXcoin/Crypto Links/NerdLabMiniLogo_128.png</pixmap>
           </property>
           <property name="scaledContents">
            <bool>true</bool>
@@ -6298,7 +6298,7 @@
            <string/>
           </property>
           <property name="pixmap">
-           <pixmap>:/images/res/images/nerdlabs001/elitecraft.png</pixmap>
+           <pixmap resource="../bitcoin.qrc">:/images/res/images/nerdlabs001/elitecraft.png</pixmap>
           </property>
           <property name="scaledContents">
            <bool>true</bool>
@@ -6411,7 +6411,7 @@
            <string/>
           </property>
           <property name="icon">
-           <iconset>
+           <iconset resource="../bitcoin.qrc">
             <normaloff>:/images/res/images/nerdlabs001/elitecraftvideo.png</normaloff>:/images/res/images/nerdlabs001/elitecraftvideo.png</iconset>
           </property>
           <property name="iconSize">
@@ -6430,7 +6430,7 @@
        <string notr="true">background:transparent;</string>
       </property>
       <attribute name="icon">
-       <iconset>
+       <iconset resource="../bitcoin.qrc">
         <normaloff>:/icons/res/icons/stakingTab.png</normaloff>:/icons/res/icons/stakingTab.png</iconset>
       </attribute>
       <attribute name="title">
@@ -6474,8 +6474,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>999</width>
-            <height>715</height>
+            <width>356</width>
+            <height>436</height>
            </rect>
           </property>
           <property name="styleSheet">
@@ -15105,6 +15105,8 @@
    </item>
   </layout>
  </widget>
- <resources/>
+ <resources>
+  <include location="../bitcoin.qrc"/>
+ </resources>
  <connections/>
 </ui>
