@@ -11,6 +11,7 @@
 #define STORAGE_LEVELDB_UTIL_CODING_H_
 
 #include <stdint.h>
+#include <inttypes.h>
 #include <string.h>
 #include <string>
 #include "leveldb/slice.h"

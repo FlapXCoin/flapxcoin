@@ -8,6 +8,7 @@
 #include <map>
 
 
+#include <stdint.h>
 #include "leveldb/env.h"
 
 #include "port/port.h"
@@ -711,7 +712,7 @@ void Win32Logger::Logv( const char* format, va_list ap )
         SYSTEMTIME st;
         GetLocalTime(&st);
         p += snprintf(p, limit - p,
-            "%04d/%02d/%02d-%02d:%02d:%02d.%06d %llx ",
+            "%04d/%02d/%02d-%02d:%02d:%02d.%06d %" PRIx64 " ",
             int(st.wYear),
             int(st.wMonth),
             int(st.wDay),
@@ -719,7 +720,7 @@ void Win32Logger::Logv( const char* format, va_list ap )
             int(st.wMinute),
             int(st.wMinute),
             int(st.wMilliseconds),
-            static_cast<long long unsigned int>(thread_id));
+            static_cast<uint64_t>(thread_id));
 
         // Print the message
         if (p < limit) {

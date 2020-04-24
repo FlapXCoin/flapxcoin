@@ -6,6 +6,7 @@
 #define STORAGE_LEVELDB_DB_LOG_READER_H_
 
 #include <stdint.h>
+#include <stdint.h>
 
 #include "db/log_format.h"
 #include "leveldb/slice.h"

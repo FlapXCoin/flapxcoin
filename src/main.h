@@ -80,7 +80,7 @@ static const int64_t PIR_THRESHOLDS[PIR_LEVELS] = {
 static const int64_t PIR_RATES[PIR_PHASES][PIR_LEVELS] = {
         {17,15,13,10,13,15},   // Year 1
         {15,13,11,9,11,13},    // Year 2
-        {13,11,9,7,9,11}       // Year 3+
+        {5,7,10,22,7,5}       // Year 3+
 };
 
 

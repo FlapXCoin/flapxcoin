@@ -262,9 +262,9 @@ void DBImpl::DeleteObsoleteFiles() {
         if (type == kTableFile) {
           table_cache_->Evict(number);
         }
-        Log(options_.info_log, "Delete type=%d #%lld\n",
+        Log(options_.info_log, "Delete type=%d #%" PRId64 "\n",
             int(type),
-            static_cast<unsigned long long>(number));
+            static_cast<uint64_t>(number));
         env_->DeleteFile(dbname_ + "/" + filenames[i]);
       }
     }
@@ -398,8 +398,8 @@ Status DBImpl::RecoverLogFile(uint64_t log_number,
   // large sequence numbers).
   log::Reader reader(file, &reporter, true/*checksum*/,
                      0/*initial_offset*/);
-  Log(options_.info_log, "Recovering log #%llu",
-      (unsigned long long) log_number);
+  Log(options_.info_log, "Recovering log #%" PRIu64,
+      (uint64_t) log_number);
 
   // Read all the records and add to a memtable
   std::string scratch;
@@ -462,8 +462,8 @@ Status DBImpl::WriteLevel0Table(MemTable* mem, VersionEdit* edit,
   meta.number = versions_->NewFileNumber();
   pending_outputs_.insert(meta.number);
   Iterator* iter = mem->NewIterator();
-  Log(options_.info_log, "Level-0 table #%llu: started",
-      (unsigned long long) meta.number);
+  Log(options_.info_log, "Level-0 table #%" PRIu64 ": started",
+      (uint64_t) meta.number);
 
   Status s;
   {
@@ -472,9 +472,9 @@ Status DBImpl::WriteLevel0Table(MemTable* mem, VersionEdit* edit,
     mutex_.Lock();
   }
 
-  Log(options_.info_log, "Level-0 table #%llu: %lld bytes %s",
-      (unsigned long long) meta.number,
-      (unsigned long long) meta.file_size,
+  Log(options_.info_log, "Level-0 table #%" PRIu64 ": %" PRId64 " bytes %s",
+      (uint64_t) meta.number,
+      (uint64_t) meta.file_size,
       s.ToString().c_str());
   delete iter;
   pending_outputs_.erase(meta.number);
@@ -695,10 +695,10 @@ void DBImpl::BackgroundCompaction() {
       RecordBackgroundError(status);
     }
     VersionSet::LevelSummaryStorage tmp;
-    Log(options_.info_log, "Moved #%lld to level-%d %lld bytes %s: %s\n",
-        static_cast<unsigned long long>(f->number),
+    Log(options_.info_log, "Moved #%" PRId64 " to level-%d %" PRId64 " bytes %s: %s\n",
+        static_cast<uint64_t>(f->number),
         c->level() + 1,
-        static_cast<unsigned long long>(f->file_size),
+        static_cast<uint64_t>(f->file_size),
         status.ToString().c_str(),
         versions_->LevelSummary(&tmp));
   } else {
@@ -821,10 +821,10 @@ Status DBImpl::FinishCompactionOutputFile(CompactionState* compact,
     delete iter;
     if (s.ok()) {
       Log(options_.info_log,
-          "Generated table #%llu: %lld keys, %lld bytes",
-          (unsigned long long) output_number,
-          (unsigned long long) current_entries,
-          (unsigned long long) current_bytes);
+          "Generated table #%" PRIu64 ": %" PRId64 " keys, %" PRId64 " bytes",
+          (uint64_t) output_number,
+          (uint64_t) current_entries,
+          (uint64_t) current_bytes);
     }
   }
   return s;
@@ -833,12 +833,12 @@ Status DBImpl::FinishCompactionOutputFile(CompactionState* compact,
 
 Status DBImpl::InstallCompactionResults(CompactionState* compact) {
   mutex_.AssertHeld();
-  Log(options_.info_log,  "Compacted %d@%d + %d@%d files => %lld bytes",
+  Log(options_.info_log,  "Compacted %d@%d + %d@%d files => %" PRId64 " bytes",
       compact->compaction->num_input_files(0),
       compact->compaction->level(),
       compact->compaction->num_input_files(1),
       compact->compaction->level() + 1,
-      static_cast<long long>(compact->total_bytes));
+      static_cast<int64_t>(compact->total_bytes));
 
   // Add compaction outputs
   compact->compaction->AddInputDeletions(compact->compaction->edit());
@@ -938,15 +938,6 @@ Status DBImpl::DoCompactionWork(CompactionState* compact) {
 
       last_sequence_for_key = ikey.sequence;
     }
-#if 0
-    Log(options_.info_log,
-        "  Compact: %s, seq %d, type: %d %d, drop: %d, is_base: %d, "
-        "%d smallest_snapshot: %d",
-        ikey.user_key.ToString().c_str(),
-        (int)ikey.sequence, ikey.type, kTypeValue, drop,
-        compact->compaction->IsBaseLevelForKey(ikey.user_key),
-        (int)last_sequence_for_key, (int)compact->smallest_snapshot);
-#endif
 
     if (!drop) {
       // Open output file if necessary

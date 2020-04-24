@@ -1101,7 +1101,7 @@ int64_t GetProofOfWorkReward(int nHeight, int64_t nFees, uint256 prevHash)
     } else if ( nHeight < 2 * PIR_PHASEBLOCKS ) {
        nSubsidy = 13 * COIN;
     } else {
-       nSubsidy = 11 * COIN;
+       nSubsidy = 22 * COIN;
     }
 
     return nSubsidy + nFees;

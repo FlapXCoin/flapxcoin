@@ -85,28 +85,28 @@ public:
         N/A
 */
 ///new seednodes should improve initial connectivity and sync	    
-        vSeeds.push_back(CDNSSeedData("flapx00", "flapx00.flapxcoin.com"));
-        vSeeds.push_back(CDNSSeedData("flapx01", "flapx01.flapxcoin.com"));
-        vSeeds.push_back(CDNSSeedData("flapx02", "flapx02.flapxcoin.com"));
-        vSeeds.push_back(CDNSSeedData("flapx03", "flapx03.flapxcoin.com"));
-        vSeeds.push_back(CDNSSeedData("flapx04", "flapx04.flapxcoin.com"));
-        vSeeds.push_back(CDNSSeedData("flapx05", "flapx05.flapxcoin.com"));
-        vSeeds.push_back(CDNSSeedData("flapx06", "flapx06.flapxcoin.com"));
-        vSeeds.push_back(CDNSSeedData("flapx07", "flapx07.flapxcoin.com"));
-        vSeeds.push_back(CDNSSeedData("flapx08", "flapx08.flapxcoin.com"));
-        vSeeds.push_back(CDNSSeedData("flapx09", "flapx09.flapxcoin.com"));
-        vSeeds.push_back(CDNSSeedData("flapx10", "flapx10.flapxcoin.com"));
-        vSeeds.push_back(CDNSSeedData("labnode", "flapx00.nerdLabs001.com"));
-        vSeeds.push_back(CDNSSeedData("labnode", "flapx01.nerdLabs001.com"));
-        vSeeds.push_back(CDNSSeedData("labnode", "flapx02.nerdLabs001.com"));
-        vSeeds.push_back(CDNSSeedData("labnode", "flapx03.nerdLabs001.com"));
-        vSeeds.push_back(CDNSSeedData("labnode", "flapx04.nerdLabs001.com"));
-        vSeeds.push_back(CDNSSeedData("labnode", "flapx05.nerdLabs001.com"));
-        vSeeds.push_back(CDNSSeedData("labnode", "flapx06.nerdLabs001.com"));
-        vSeeds.push_back(CDNSSeedData("labnode", "flapx07.nerdLabs001.com"));
-        vSeeds.push_back(CDNSSeedData("labnode", "flapx08.nerdLabs001.com"));
-        vSeeds.push_back(CDNSSeedData("labnode", "flapx09.nerdLabs001.com"));
-        vSeeds.push_back(CDNSSeedData("labnode", "flapx10.nerdLabs001.com"));
+        vSeeds.push_back(CDNSSeedData("flapx", "flapx00.flapxcoin.com"));
+        vSeeds.push_back(CDNSSeedData("flapx", "flapx01.flapxcoin.com"));
+        vSeeds.push_back(CDNSSeedData("flapx", "flapx02.flapxcoin.com"));
+        vSeeds.push_back(CDNSSeedData("flapx", "flapx03.flapxcoin.com"));
+        vSeeds.push_back(CDNSSeedData("flapx", "flapx04.flapxcoin.com"));
+        vSeeds.push_back(CDNSSeedData("flapx", "flapx05.flapxcoin.com"));
+        vSeeds.push_back(CDNSSeedData("flapx", "flapx06.flapxcoin.com"));
+        vSeeds.push_back(CDNSSeedData("flapx", "flapx07.flapxcoin.com"));
+        vSeeds.push_back(CDNSSeedData("flapx", "flapx08.flapxcoin.com"));
+        vSeeds.push_back(CDNSSeedData("flapx", "flapx09.flapxcoin.com"));
+        vSeeds.push_back(CDNSSeedData("flapx", "flapx10.flapxcoin.com"));
+        vSeeds.push_back(CDNSSeedData("nlabs", "flapx00.nerdLabs001.com"));
+        vSeeds.push_back(CDNSSeedData("nlabs", "flapx01.nerdLabs001.com"));
+        vSeeds.push_back(CDNSSeedData("nlabs", "flapx02.nerdLabs001.com"));
+        vSeeds.push_back(CDNSSeedData("nlabs", "flapx03.nerdLabs001.com"));
+        vSeeds.push_back(CDNSSeedData("nlabs", "flapx04.nerdLabs001.com"));
+        vSeeds.push_back(CDNSSeedData("nlabs", "flapx05.nerdLabs001.com"));
+        vSeeds.push_back(CDNSSeedData("nlabs", "flapx06.nerdLabs001.com"));
+        vSeeds.push_back(CDNSSeedData("nlabs", "flapx07.nerdLabs001.com"));
+        vSeeds.push_back(CDNSSeedData("nlabs", "flapx08.nerdLabs001.com"));
+        vSeeds.push_back(CDNSSeedData("nlabs", "flapx09.nerdLabs001.com"));
+        vSeeds.push_back(CDNSSeedData("nlabs", "flapx10.nerdLabs001.com"));
 
 
 
