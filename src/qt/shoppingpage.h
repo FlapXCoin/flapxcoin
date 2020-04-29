@@ -91,17 +91,17 @@ private slots:
 
     void on_pushButton_127_clicked();
 
-    void on_pushButton_555_clicked();
+//    void on_pushButton_555_clicked();
 
     void on_pushButton_131_clicked();
 
     void on_pushButton_132_clicked();
 
-    void on_pushButton_133_clicked();
+//   void on_pushButton_133_clicked();
 
     void on_pushButton_134_clicked();
 
-    void on_pushButton_135_clicked();
+//    void on_pushButton_135_clicked();
 
     void on_pushButton_254_clicked();
 
@@ -109,11 +109,11 @@ private slots:
 
     void on_pushButton_141_clicked();
 
-    void on_pushButton_142_clicked();
+ //   void on_pushButton_142_clicked();
 
-    void on_pushButton_143_clicked();
+//    void on_pushButton_143_clicked();
 
-    void on_pushButton_144_clicked();
+//    void on_pushButton_144_clicked();
 
     void on_pushButton_145_clicked();
 
@@ -139,7 +139,7 @@ private slots:
 
     //void on_pushButton_232_clicked();
 
-    void on_pushButton_153_clicked();
+//    void on_pushButton_153_clicked();
 
     void on_pushButton_241_clicked();
 
@@ -189,37 +189,37 @@ private slots:
 
     void on_pushButton_313_clicked();
 
-    void on_pushButton_501_clicked();
+//    void on_pushButton_501_clicked();
 
 //    void on_pushButton_502_clicked();
 
-    void on_pushButton_503_clicked();
+//    void on_pushButton_503_clicked();
 
-    void on_pushButton_504_clicked();
+//    void on_pushButton_504_clicked();
 
     void on_pushButton_505_clicked();
 
-    void on_pushButton_506_clicked();
+//    void on_pushButton_506_clicked();
 
-    void on_pushButton_507_clicked();
+//    void on_pushButton_507_clicked();
 
-    void on_pushButton_508_clicked();
+//    void on_pushButton_508_clicked();
 
     void on_pushButton_509_clicked();
 
     void on_pushButton_510_clicked();
 
-    void on_pushButton_511_clicked();
+//    void on_pushButton_511_clicked();
 
-    void on_pushButton_512_clicked();
+//    void on_pushButton_512_clicked();
 
     void on_pushButton_513_clicked();
 
-    void on_pushButton_514_clicked();
+//    void on_pushButton_514_clicked();
 
 //    void on_pushButton_515_clicked();
 
-    void on_pushButton_600_clicked();
+//    void on_pushButton_600_clicked();
 
 
 
