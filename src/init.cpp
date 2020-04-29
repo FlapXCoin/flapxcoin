@@ -794,7 +794,7 @@ bool AppInit2(boost::thread_group& threadGroup)
         return false;
     }
 
-    uiInterface.InitMessage(_("Loading block index..."));
+    uiInterface.InitMessage(_("Fueling Flapx Heavy Lift Rocket"));
     printf("Loading block index...\n");
     nStart = GetTimeMillis();
     if (!LoadBlockIndex())
