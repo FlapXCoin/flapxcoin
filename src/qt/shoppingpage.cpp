@@ -459,11 +459,11 @@ void ShoppingPage::on_pushButton_113_clicked()
     QString link="https://pool.nerdlabs001.com";
     QDesktopServices::openUrl(QUrl(link));
 }
-void ShoppingPage::on_pushButton_153_clicked()
-{
-    QString link="https://www.crypto-city.com/index.php/crypto-city-academy/starthere/";
-    QDesktopServices::openUrl(QUrl(link));
-}
+//void ShoppingPage::on_pushButton_153_clicked()
+//{
+//    QString link="https://www.crypto-city.com/index.php/crypto-city-academy/starthere/";
+//    QDesktopServices::openUrl(QUrl(link));
+//}
 //void ShoppingPage::on_pushButton_126_clicked()
 //{
 //    QString link="https://sites.google.com/view/flapxcoin/bots/crawlie";
@@ -489,21 +489,21 @@ void ShoppingPage::on_pushButton_132_clicked()
     QString link="https://discord.gg/qbZ6hxx";
     QDesktopServices::openUrl(QUrl(link));
 }
-void ShoppingPage::on_pushButton_133_clicked()
-{
-    QString link="https://twitter.com/FlappyNewsWing";
-    QDesktopServices::openUrl(QUrl(link));
-}
+//void ShoppingPage::on_pushButton_133_clicked()
+//{
+//    QString link="https://twitter.com/FlappyNewsWing";
+//    QDesktopServices::openUrl(QUrl(link));
+//}
 void ShoppingPage::on_pushButton_134_clicked()
 {
     QString link="https://bitcointalk.org/index.php?topic=3031911.0";
     QDesktopServices::openUrl(QUrl(link));
 }
-void ShoppingPage::on_pushButton_135_clicked()
-{
-    QString link="https://youtu.be/EY-u_mjNGKY";
-    QDesktopServices::openUrl(QUrl(link));
-}
+//void ShoppingPage::on_pushButton_135_clicked()
+//{
+//    QString link="https://youtu.be/EY-u_mjNGKY";
+//    QDesktopServices::openUrl(QUrl(link));
+//}
 void ShoppingPage::on_pushButton_136_clicked()
 {
     QString link="https://sites.google.com/view/flapxcoin/dont-panic";
@@ -517,21 +517,21 @@ void ShoppingPage::on_pushButton_141_clicked()
     QString link="https://sites.google.com/view/nerdlabs001";
     QDesktopServices::openUrl(QUrl(link));
 }
-void ShoppingPage::on_pushButton_142_clicked()
-{
-    QString link="https://sites.google.com/view/flapxcoin/flap-x-fm/krewshul-krosshairs";
-    QDesktopServices::openUrl(QUrl(link));
-}
-void ShoppingPage::on_pushButton_143_clicked()
-{
-    QString link="https://sites.google.com/view/flapxcoin/flap-x-fm/crypto-takeover";
-    QDesktopServices::openUrl(QUrl(link));
-}
-void ShoppingPage::on_pushButton_144_clicked()
-{
-    QString link="https://sites.google.com/view/flapxcoin/flap-x-fm/reggae-blockchain";
-    QDesktopServices::openUrl(QUrl(link));
-}
+//void ShoppingPage::on_pushButton_142_clicked()
+//{
+//    QString link="https://sites.google.com/view/flapxcoin/flap-x-fm/krewshul-krosshairs";
+//    QDesktopServices::openUrl(QUrl(link));
+//}
+//void ShoppingPage::on_pushButton_143_clicked()
+//{
+//    QString link="https://sites.google.com/view/flapxcoin/flap-x-fm/crypto-takeover";
+//    QDesktopServices::openUrl(QUrl(link));
+//}
+//void ShoppingPage::on_pushButton_144_clicked()
+//{
+//    QString link="https://sites.google.com/view/flapxcoin/flap-x-fm/reggae-blockchain";
+//    QDesktopServices::openUrl(QUrl(link));
+//}
 void ShoppingPage::on_pushButton_145_clicked()
 {
     QString link="https://youtu.be/EY-u_mjNGKY";
@@ -727,28 +727,28 @@ void ShoppingPage::on_pushButton_313_clicked()
     QDesktopServices::openUrl(QUrl(link));
 }
 //cryptolinks
-void ShoppingPage::on_pushButton_501_clicked()
-{
-    QString link="https://cryptohub.online/";
-    QDesktopServices::openUrl(QUrl(link));
-}
+//void ShoppingPage::on_pushButton_501_clicked()
+//{
+//    QString link="https://cryptohub.online/";
+//   QDesktopServices::openUrl(QUrl(link));
+//}
 
-void ShoppingPage::on_pushButton_555_clicked()
-{
-    QString link="https://tradesatoshi.com/Exchange/?market=FLAPX_BTC";
-    QDesktopServices::openUrl(QUrl(link));
-}
+//void ShoppingPage::on_pushButton_555_clicked()
+//{
+//    QString link="https://tradesatoshi.com/Exchange/?market=FLAPX_BTC";
+//    QDesktopServices::openUrl(QUrl(link));
+//}
 
-void ShoppingPage::on_pushButton_503_clicked()
-{
-    QString link="https://www.cryptopia.co.nz";
-    QDesktopServices::openUrl(QUrl(link));
-}
-void ShoppingPage::on_pushButton_504_clicked()
-{
-    QString link="http://fiatleak.com/";
-    QDesktopServices::openUrl(QUrl(link));
-}
+//void ShoppingPage::on_pushButton_503_clicked()
+//{
+//    QString link="https://www.cryptopia.co.nz";
+//    QDesktopServices::openUrl(QUrl(link));
+//}
+//void ShoppingPage::on_pushButton_504_clicked()
+//{
+//    QString link="http://fiatleak.com/";
+//    QDesktopServices::openUrl(QUrl(link));
+//}
 
 void ShoppingPage::on_pushButton_505_clicked()
 {
@@ -756,22 +756,22 @@ void ShoppingPage::on_pushButton_505_clicked()
     QDesktopServices::openUrl(QUrl(link));
 }
 
-void ShoppingPage::on_pushButton_506_clicked()
-{
-    QString link="https://playforcrypto.com/index.php?action=register&referrer=ukmayhem";
-    QDesktopServices::openUrl(QUrl(link));
-}
-void ShoppingPage::on_pushButton_507_clicked()
-{
-    QString link="https://www.cryptocompare.com/";
-    QDesktopServices::openUrl(QUrl(link));
-}
+//void ShoppingPage::on_pushButton_506_clicked()
+//{
+//    QString link="https://playforcrypto.com/index.php?action=register&referrer=ukmayhem";
+//    QDesktopServices::openUrl(QUrl(link));
+//}
+//void ShoppingPage::on_pushButton_507_clicked()
+//{
+//    QString link="https://www.cryptocompare.com/";
+//   QDesktopServices::openUrl(QUrl(link));
+//}
 
-void ShoppingPage::on_pushButton_508_clicked()
-{
-    QString link="http://mapofcoins.com/";
-    QDesktopServices::openUrl(QUrl(link));
-}
+//void ShoppingPage::on_pushButton_508_clicked()
+//{
+//    QString link="http://mapofcoins.com/";
+//    QDesktopServices::openUrl(QUrl(link));
+//}
 
 void ShoppingPage::on_pushButton_509_clicked()
 {
@@ -783,34 +783,34 @@ void ShoppingPage::on_pushButton_510_clicked()
     QString link="https://www.miningrigrentals.com/register?ref=107473";
     QDesktopServices::openUrl(QUrl(link));
 }
-void ShoppingPage::on_pushButton_511_clicked()
-{
-    QString link="https://altcoinsfoundation.com/";
-    QDesktopServices::openUrl(QUrl(link));
-}
+//void ShoppingPage::on_pushButton_511_clicked()
+//{
+//   QString link="https://altcoinsfoundation.com/";
+//    QDesktopServices::openUrl(QUrl(link));
+//}
 
-void ShoppingPage::on_pushButton_512_clicked()
-{
-    QString link="https://give-me-coins.com";
-    QDesktopServices::openUrl(QUrl(link));
-}
+//void ShoppingPage::on_pushButton_512_clicked()
+//{
+//    QString link="https://give-me-coins.com";
+//   QDesktopServices::openUrl(QUrl(link));
+//}
 
 void ShoppingPage::on_pushButton_513_clicked()
 {
     QString link="https://www.crypto-city.com/index.php/";
     QDesktopServices::openUrl(QUrl(link));
 }
-void ShoppingPage::on_pushButton_514_clicked()
-{
-    QString link="https://coinmarketcap.com/";
-    QDesktopServices::openUrl(QUrl(link));
-}
+//void ShoppingPage::on_pushButton_514_clicked()
+//{
+//    QString link="https://coinmarketcap.com/";
+//    QDesktopServices::openUrl(QUrl(link));
+//}
 
-void ShoppingPage::on_pushButton_600_clicked()
-{
-    QString link="http://thecoinbuilders.com/";
-    QDesktopServices::openUrl(QUrl(link));
-}
+//void ShoppingPage::on_pushButton_600_clicked()
+//{
+//    QString link="http://thecoinbuilders.com/";
+//  QDesktopServices::openUrl(QUrl(link));
+//}
 
 
 
