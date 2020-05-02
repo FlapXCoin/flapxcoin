@@ -407,7 +407,7 @@ void TransactionView::viewOnPandachain()
     QModelIndexList selection = transactionView->selectionModel()->selectedRows();
     if(!selection.isEmpty())
     {
-        QString format("http://blocks.flapxcoin.com/tx/");
+        QString format("https://flapx.crypto-city.com/tx/");
         format += selection.at(0).data(TransactionTableModel::TxIDRole).toString();
 
         QDesktopServices::openUrl(QUrl(format));
