@@ -2,7 +2,7 @@
 // Copyright (c) 2009-2021 The Bitcoin developers
 // Copyright (c) 2011-2021 Litecoin Developers
 // Copyright (c) 2013 Luckycoin Developers
-// Copyright (c) 2013 NetCoin Developers
+// Copyright (c) 2013-2021 NetCoin Developers
 // Copyright (c) 2018-2021 FlapX Developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
