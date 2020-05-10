@@ -61,7 +61,7 @@ PUNCH LIST
 FlapX (FLAPX) - Litecoin / PeerCoin Hybrid POW/POSV hybrid with Personal Investment Rate
 
 
-The default ports: Connection 11310, and RPC 11311 
+The default ports: Connection 60042, and RPC 11311
 
 POW Details.
 
