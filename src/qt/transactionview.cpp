@@ -143,7 +143,7 @@ TransactionView::TransactionView(QWidget *parent) :
     QAction *copyTxIDAction = new QAction(tr("Copy transaction ID"), this);
     QAction *editLabelAction = new QAction(tr("Edit label"), this);
     QAction *showDetailsAction = new QAction(tr("Show transaction details"), this);
-    QAction *viewOnPandachain = new QAction(tr("Search Blocks.FlapxCoin.com"), this);
+    QAction *viewOnPandachain = new QAction(tr("Search Explorer @ Crypto-city.com"), this);
 
     contextMenu = new QMenu();
     contextMenu->addAction(copyAddressAction);

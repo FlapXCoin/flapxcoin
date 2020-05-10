@@ -1,9 +1,9 @@
-// Copyright (c) 2009-2010 Satoshi Nakamoto
-// Copyright (c) 2009-2012 The Bitcoin developers
-// Copyright (c) 2011-2012 Litecoin Developers
-// Copyright (c) 2013 Florincoin Developers
-// Copyright (c) 2013-2014 NetCoin Developers
-// Copyright (c) 2018 FlapX Developers
+// Copyright (c) 2009-2021 Satoshi Nakamoto
+// Copyright (c) 2009-2021 The Bitcoin developers
+// Copyright (c) 2011-2021 Litecoin Developers
+// Copyright (c) 2013-2021 Florincoin Developers
+// Copyright (c) 2013-2021 NetCoin Developers
+// Copyright (c) 2018-2021 FlapXCoin Developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 #ifndef BITCOIN_MAIN_H
@@ -80,7 +80,7 @@ static const int64_t PIR_THRESHOLDS[PIR_LEVELS] = {
 static const int64_t PIR_RATES[PIR_PHASES][PIR_LEVELS] = {
         {17,15,13,10,13,15},   // Year 1
         {15,13,11,9,11,13},    // Year 2
-        {5,7,10,22,7,5}       // Year 3+
+        {5,7,16,22,12,5}       // Year 3+
 };
 
 

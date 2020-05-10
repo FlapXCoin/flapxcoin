@@ -98,7 +98,7 @@ void StakeForCharityDialog::on_enableButton_clicked()
     if(model->getEncryptionStatus() == WalletModel::Locked)
     {
         ui->message->setStyleSheet("QLabel { color: black; }");
-        ui->message->setText(tr("Please unlock wallet before starting stake for charity."));
+        ui->message->setText(tr("Please unlock wallet before starting Mutisend."));
         return;
     }
 

@@ -1,9 +1,9 @@
 // Copyright (c) 2010 Satoshi Nakamoto
-// Copyright (c) 2009-2012 The Bitcoin developers
-// Copyright (c) 2011-2012 The Litecoin Developers
-// Copyright (c) 2013 Florincoin developers
+// Copyright (c) 2009-2021 The Bitcoin developers
+// Copyright (c) 2011-2021 The Litecoin Developers
+// Copyright (c) 2013-2021 Florincoin developers
 // Copyright (c) 2013 NetCoin developers
-// Copyright (c) 2018 FlapX Developers
+// Copyright (c) 2018-2021 FlapX Developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 

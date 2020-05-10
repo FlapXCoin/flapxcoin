@@ -1,8 +1,8 @@
 /*
  * Qt4 bitcoin GUI.
  *
- * W.J. van der Laan 2011-2012
- * The Bitcoin Developers 2011-2012
+ * W.J. van der Laan 2011-2021
+ * The Bitcoin Developers 2011-2021
  */
 #include "bitcoingui.h"
 #include "calcdialog.h"
@@ -435,6 +435,7 @@ void BitcoinGUI::createMenuBar()
 void BitcoinGUI::createToolBars()
 {
     QToolBar *toolbar = addToolBar(tr("Tabs toolbar"));
+    toolbar->setIconSize(QSize(32,32));
 
     toolbar->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
     toolbar->addAction(overviewAction);
