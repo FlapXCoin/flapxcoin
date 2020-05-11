@@ -17,6 +17,7 @@ public:
     ~NetworkPage();
 
 public slots:
+        void updateMyWeight();
 
 private:
     Ui::NetworkPage *ui;

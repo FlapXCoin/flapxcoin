@@ -9,7 +9,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>849</width>
+    <width>949</width>
     <height>624</height>
    </rect>
   </property>
@@ -2956,7 +2956,7 @@
                <string notr="true">background:transparent;</string>
               </property>
               <property name="text">
-               <string/>
+               <string>NETWORK WEIGHT</string>
               </property>
               <property name="alignment">
                <set>Qt::AlignCenter</set>
@@ -4016,7 +4016,7 @@
              </property>
              <property name="minimumSize">
               <size>
-               <width>400</width>
+               <width>500</width>
                <height>400</height>
               </size>
              </property>
@@ -4444,7 +4444,7 @@
          </sizepolicy>
         </property>
         <property name="visible">
-         <bool>true</bool>
+         <bool>false</bool>
         </property>
         <property name="styleSheet">
          <string notr="true">background-color: qlineargradient(x1: 0, y1: 0, x2: 1, y2: 0, stop:0 #F0D0A0, stop:1 #F8D488);  color:#000000

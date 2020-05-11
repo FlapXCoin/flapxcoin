@@ -341,7 +341,6 @@ ShoppingPage::ShoppingPage(QWidget *parent) :
     ui->setupUi(this);
 
     connect(ui->blockButton_2, SIGNAL(pressed()), this, SLOT(blockClicked()));
-    connect(ui->txButton_2, SIGNAL(pressed()), this, SLOT(txClicked()));
 
 }
 
@@ -399,31 +398,12 @@ void ShoppingPage::updateExplorer(bool block)
     }
 
     if(block == false) {
-        ui->txID_2->show();
-        ui->txLabel_2->show();
-        ui->valueLabel_2->show();
-        ui->valueBox_2->show();
-        ui->inputLabel_2->show();
-        ui->inputBox_2->show();
-        ui->outputLabel_2->show();
-        ui->outputBox_2->show();
-        ui->feesLabel_2->show();
-        ui->feesBox_2->show();
-        std::string txid = ui->txBox_2->text().toUtf8().constData();
-        double value = getTxTotalValue(txid);
-        double fees = getTxFees(txid);
-        std::string outputs = getOutputs(txid);
-        std::string inputs = getInputs(txid);
-        QString QValue = QString::number(value, 'f', 6);
-        QString QID = QString::fromUtf8(txid.c_str());
-        QString QOutputs = QString::fromUtf8(outputs.c_str());
-        QString QInputs = QString::fromUtf8(inputs.c_str());
-        QString QFees = QString::number(fees, 'f', 6);
-        ui->valueBox_2->setText(QValue + " FLAPX");
-        ui->txID_2->setText(QID);
-        ui->outputBox_2->setText(QOutputs);
-        ui->inputBox_2->setText(QInputs);
-        ui->feesBox_2->setText(QFees + " FLAPX");
+
+
+
+
+
+
     }
 }
 
