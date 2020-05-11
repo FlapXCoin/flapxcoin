@@ -77,7 +77,6 @@
         <file>res/images/FlapXcoin/FlapX Art/space2.png</file>
         <file>res/images/FlapXcoin/FlapX Art/DrNET.png</file>
         <file>res/images/FlapXcoin/Social/ML.png</file>
-        <file>res/images/FlapXcoin/FlapXCoin/Explorer.png</file>
         <file>res/images/FlapXcoin/FlapXCoin/Pool.png</file>
         <file>res/images/FlapXcoin/Community/GDC.png</file>
         <file>res/images/FlapXcoin/FlapX Art/Logo.png</file>
@@ -101,11 +100,16 @@
         <file>res/images/FlapXcoin/Crypto Links/safeseafood.png</file>
         <file>res/images/FlapXcoin/Crypto Links/NerdLabMiniLogo_128.png</file>
         <file>res/images/FlapXcoin/Crypto Links/chantha_avatar_maximum_squeeze.png</file>
-        <file>res/images/cryptocity/cctext.png</file>
         <file>res/images/nerdlabs001/nerdlabs001icon.png</file>
         <file>res/images/nerdlabs001/elitecraft.png</file>
         <file>res/images/nerdlabs001/elitecraftvideo.png</file>
         <file>res/images/cryptocity/cryptocity.png</file>
+        <file>res/images/art/nerdlabs128.png</file>
+        <file>res/images/art/flapxexplorer.png</file>
+        <file>res/images/art/cctext.png</file>
+        <file>res/images/art/flapxexplorer100.png</file>
+        <file>res/images/art/nerdlabs100.png</file>
+        <file>res/images/art/cctext100.png</file>
     </qresource>
     <qresource prefix="/movies">
         <file alias="update_spinner">res/movies/update_spinner.mng</file>
