@@ -80,7 +80,7 @@
       <enum>QTabWidget::Rounded</enum>
      </property>
      <property name="currentIndex">
-      <number>3</number>
+      <number>5</number>
      </property>
      <property name="iconSize">
       <size>
@@ -11043,7 +11043,7 @@
                     </size>
                    </property>
                    <property name="text">
-                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;a href=&quot;https://discord.gg/T6xUSse&quot;&gt;&lt;img src=&quot;:/images/res/images/art/cctext100.png&quot;/&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;a href=&quot;https://flapx.crypto-city.com&quot;&gt;&lt;img src=&quot;:/images/res/images/art/cctext100.png&quot;/&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                    </property>
                    <property name="scaledContents">
                     <bool>true</bool>
