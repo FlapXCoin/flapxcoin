@@ -110,6 +110,16 @@
         <file>res/images/art/flapxexplorer100.png</file>
         <file>res/images/art/nerdlabs100.png</file>
         <file>res/images/art/cctext100.png</file>
+        <file>res/images/art/ccnet.png</file>
+        <file>res/images/art/cccu.png</file>
+        <file>res/images/art/ccelite.png</file>
+        <file>res/images/art/ccflapx.png</file>
+        <file>res/images/art/ccgdc.png</file>
+        <file>res/images/art/cchyp.png</file>
+        <file>res/images/art/ccsat3.png</file>
+        <file>res/images/art/ccmaza.png</file>
+        <file>res/images/art/ccww.png</file>
+        <file>res/images/art/ccnlabs.png</file>
     </qresource>
     <qresource prefix="/movies">
         <file alias="update_spinner">res/movies/update_spinner.mng</file>
