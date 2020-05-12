@@ -59,9 +59,6 @@
      </item>
      <item row="0" column="3">
       <widget class="QToolButton" name="deleteButton">
-       <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;img src=&quot;:/toolTip/res/tooltips/removeRecipientTooltip.png&quot;/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-       </property>
        <property name="styleSheet">
         <string notr="true"/>
        </property>
@@ -76,9 +73,6 @@
      </item>
      <item row="0" column="4">
       <widget class="QToolButton" name="pasteButton">
-       <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;img src=&quot;:/toolTip/res/tooltips/pasteAddressTooltip.png&quot;/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-       </property>
        <property name="styleSheet">
         <string notr="true"/>
        </property>
@@ -96,9 +90,6 @@
      </item>
      <item row="0" column="5">
       <widget class="QToolButton" name="addressBookButton">
-       <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;img src=&quot;:/toolTip/res/tooltips/chooseAddressTooltip.png&quot;/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-       </property>
        <property name="styleSheet">
         <string notr="true"/>
        </property>

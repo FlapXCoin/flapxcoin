@@ -27,9 +27,6 @@
          <verstretch>0</verstretch>
         </sizepolicy>
        </property>
-       <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;img src=&quot;:/toolTip/res/tooltips/sendToMultipleRecipientsTooltip.png&quot;/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-       </property>
        <property name="text">
         <string>Add &amp;Recipient</string>
        </property>
@@ -49,9 +46,6 @@
          <horstretch>0</horstretch>
          <verstretch>0</verstretch>
         </sizepolicy>
-       </property>
-       <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;img src=&quot;:/toolTip/res/tooltips/removeAllTransactionFieldsTooltip.png&quot;/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="text">
         <string>Clear &amp;All</string>
@@ -356,9 +350,6 @@
        </property>
        <property name="acceptDrops">
         <bool>true</bool>
-       </property>
-       <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;img src=&quot;:/toolTip/res/tooltips/confirmSendActionTooltip.png&quot;/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="autoFillBackground">
         <bool>false</bool>
@@ -1242,7 +1233,7 @@ background: transparent;
           <x>0</x>
           <y>0</y>
           <width>811</width>
-          <height>102</height>
+          <height>98</height>
          </rect>
         </property>
         <property name="sizePolicy">

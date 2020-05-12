@@ -63,12 +63,7 @@
         <file>res/images/FlapXcoin/FlapX Art/P3.png</file>
         <file>res/images/FlapXcoin/FlapX Art/space.png</file>
         <file>res/images/FlapXcoin/Social/Discord.png</file>
-        <file>res/images/FlapXcoin/Community/WW.png</file>
-        <file>res/images/FlapXcoin/Community/NET.png</file>
         <file>res/images/FlapXcoin/FlapX Art/N2.png</file>
-        <file>res/images/FlapXcoin/Community/Elite.png</file>
-        <file>res/images/FlapXcoin/Community/SAT2.png</file>
-        <file>res/images/FlapXcoin/Community/HYP.png</file>
         <file>res/images/FlapXcoin/Social/Cc.png</file>
         <file>res/images/FlapXcoin/FlapXCoin/Pipe.png</file>
         <file>res/images/FlapXcoin/Social/Panic.png</file>
@@ -76,34 +71,23 @@
         <file>res/images/FlapXcoin/Community/FlapX.png</file>
         <file>res/images/FlapXcoin/FlapX Art/space2.png</file>
         <file>res/images/FlapXcoin/FlapX Art/DrNET.png</file>
-        <file>res/images/FlapXcoin/Social/ML.png</file>
         <file>res/images/FlapXcoin/FlapXCoin/Pool.png</file>
-        <file>res/images/FlapXcoin/Community/GDC.png</file>
         <file>res/images/FlapXcoin/FlapX Art/Logo.png</file>
         <file>res/images/FlapXcoin/FlapXCoin/Home.png</file>
         <file>res/images/FlapXcoin/FlapXCoin/Links.png</file>
         <file>res/images/FlapXcoin/FlapXCoin/Tipbot.png</file>
         <file>res/images/FlapXcoin/Social/Discord2.png</file>
         <file>res/images/FlapXcoin/Social/btct2.png</file>
-        <file>res/images/FlapXcoin/Community/Maza.png</file>
         <file>res/images/FlapXcoin/Social/Ccity.png</file>
-        <file>res/images/FlapXcoin/Social/play.png</file>
-        <file>res/images/FlapXcoin/Social/Gplay.png</file>
-        <file>res/images/FlapXcoin/Crypto Links/1337F.png</file>
-        <file>res/images/FlapXcoin/Crypto Links/MRR.png</file>
-        <file>res/images/FlapXcoin/Crypto Links/CCA.png</file>
         <file>res/images/FlapXcoin/FlapX Art/FBR.png</file>
         <file>res/images/FlapXcoin/FlapX Art/FBS.png</file>
         <file>res/images/FlapXcoin/Crypto Links/frei.png</file>
         <file>res/images/FlapXcoin/Crypto Links/elitecraft.png</file>
         <file>res/images/FlapXcoin/Crypto Links/nerdlabs001.png</file>
-        <file>res/images/FlapXcoin/Crypto Links/safeseafood.png</file>
         <file>res/images/FlapXcoin/Crypto Links/NerdLabMiniLogo_128.png</file>
-        <file>res/images/FlapXcoin/Crypto Links/chantha_avatar_maximum_squeeze.png</file>
         <file>res/images/nerdlabs001/nerdlabs001icon.png</file>
         <file>res/images/nerdlabs001/elitecraft.png</file>
         <file>res/images/nerdlabs001/elitecraftvideo.png</file>
-        <file>res/images/cryptocity/cryptocity.png</file>
         <file>res/images/art/nerdlabs128.png</file>
         <file>res/images/art/flapxexplorer.png</file>
         <file>res/images/art/cctext.png</file>
@@ -120,6 +104,21 @@
         <file>res/images/art/ccmaza.png</file>
         <file>res/images/art/ccww.png</file>
         <file>res/images/art/ccnlabs.png</file>
+        <file>res/images/art/ccssf.png</file>
+        <file>res/images/art/cctop3.png</file>
+        <file>res/images/art/unnamed.png</file>
+        <file>res/images/art/ccunnamed.png</file>
+        <file>res/images/art/cchbn.png</file>
+        <file>res/images/art/cccir.png</file>
+        <file>res/images/art/fp2.png</file>
+        <file>res/images/art/cccon.png</file>
+        <file>res/images/art/ccfrei.png</file>
+        <file>res/images/art/ccpiggy.png</file>
+        <file>res/images/art/discord2.png</file>
+        <file>res/images/art/cccc.png</file>
+        <file>res/images/art/ccdiscord.png</file>
+        <file>res/images/art/ccflt.png</file>
+        <file>res/images/art/ccdgb.png</file>
     </qresource>
     <qresource prefix="/movies">
         <file alias="update_spinner">res/movies/update_spinner.mng</file>
@@ -128,9 +127,7 @@
     </qresource>
     <qresource prefix="/translations"/>
     <qresource prefix="/toolTip"/>
-    <qresource prefix="/">
-        <file>res/images/cryptocity/cryptocity.png</file>
-    </qresource>
+    <qresource prefix="/"/>
     <qresource prefix="/qt/themes">
         <file>themes/flapxcoin/b1.png</file>
         <file>themes/flapxcoin/o1.png</file>
@@ -140,11 +137,9 @@
         <file>art/logo1.png</file>
         <file>art/flying-blurb.png</file>
         <file>art/wallet-base/flapxsky.png</file>
-        <file>art/exchanges/altexchanger.png</file>
         <file>art/wallet-base/flapxblue.png</file>
         <file>art/wallet-base/pipe.png</file>
         <file>art/wallet-base/flapxyellow.png</file>
-        <file>art/community/Cu.png</file>
         <file>art/wallet-base/flapxspace.png</file>
     </qresource>
 </RCC>
