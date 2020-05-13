@@ -122,6 +122,8 @@
         <file>res/images/art/networkpage.png</file>
         <file>res/images/art/games.png</file>
         <file>res/images/art/swag.png</file>
+        <file>res/images/art/elitecrafttext.png</file>
+        <file>res/images/art/swagnl.png</file>
     </qresource>
     <qresource prefix="/movies">
         <file alias="update_spinner">res/movies/update_spinner.mng</file>
@@ -131,15 +133,11 @@
     <qresource prefix="/translations"/>
     <qresource prefix="/toolTip"/>
     <qresource prefix="/"/>
-    <qresource prefix="/qt/themes">
-        <file>themes/flapxcoin/b1.png</file>
-        <file>themes/flapxcoin/o1.png</file>
-    </qresource>
+    <qresource prefix="/qt/themes"/>
     <qresource prefix="/qt/art">
         <file>art/flapwork.png</file>
         <file>art/logo1.png</file>
         <file>art/flying-blurb.png</file>
-        <file>art/wallet-base/flapxsky.png</file>
         <file>art/wallet-base/flapxblue.png</file>
         <file>art/wallet-base/pipe.png</file>
         <file>art/wallet-base/flapxyellow.png</file>
