@@ -1,5 +1,7 @@
-// Copyright (c) 2012 The Bitcoin developers
-// Copyright (c) 2012 Litecoin Developers
+// Copyright (c) 2021 The Bitcoin developers
+// Copyright (c) 2021 Litecoin Developers
+// Copyright (c) 2021 NerdLabs001
+
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 #ifndef BITCOIN_VERSION_H
@@ -19,10 +21,10 @@
 // #define CLIENT_VERSION_BUILD       0
 
 static const int CLIENT_VERSION =
-                           1000000 * CLIENT_VERSION_MAJOR
-                         +   10000 * CLIENT_VERSION_MINOR 
-                         +     100 * CLIENT_VERSION_REVISION
-                         +       1 * CLIENT_VERSION_BUILD;
+                           1000000 * CLIENT_VERSION_MAJOR    //Manditory
+                         +   10000 * CLIENT_VERSION_MINOR    //Checkpoint update
+                         +     100 * CLIENT_VERSION_REVISION //GUI Update
+                         +       1 * CLIENT_VERSION_BUILD;   //Development (Ignore)
 
 extern const std::string CLIENT_NAME;
 extern const std::string CLIENT_BUILD;
