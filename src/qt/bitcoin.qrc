@@ -110,7 +110,6 @@
         <file>res/images/art/ccunnamed.png</file>
         <file>res/images/art/cchbn.png</file>
         <file>res/images/art/cccir.png</file>
-        <file>res/images/art/fp2.png</file>
         <file>res/images/art/cccon.png</file>
         <file>res/images/art/ccfrei.png</file>
         <file>res/images/art/ccpiggy.png</file>
@@ -119,6 +118,10 @@
         <file>res/images/art/ccdiscord.png</file>
         <file>res/images/art/ccflt.png</file>
         <file>res/images/art/ccdgb.png</file>
+        <file>res/images/art/elitecraftlogo.png</file>
+        <file>res/images/art/networkpage.png</file>
+        <file>res/images/art/games.png</file>
+        <file>res/images/art/swag.png</file>
     </qresource>
     <qresource prefix="/movies">
         <file alias="update_spinner">res/movies/update_spinner.mng</file>
