@@ -465,7 +465,13 @@ void ShoppingPage::on_pushButton_134_clicked()
 
 void ShoppingPage::on_pushButton_136_clicked()
 {
-    QString link="https://sites.google.com/view/flapxcoin/dont-panic";
+    QString link="https://dont-panic.flapxcoin.com";
+    QDesktopServices::openUrl(QUrl(link));
+}
+
+void ShoppingPage::on_pushButton_138_clicked()
+{
+    QString link="https://swag.nerdlabs001.com";
     QDesktopServices::openUrl(QUrl(link));
 }
 

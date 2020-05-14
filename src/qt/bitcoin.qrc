@@ -124,6 +124,8 @@
         <file>res/images/art/swag.png</file>
         <file>res/images/art/elitecrafttext.png</file>
         <file>res/images/art/swagnl.png</file>
+        <file>res/images/art/cheese.png</file>
+        <file>res/images/art/devpool.png</file>
     </qresource>
     <qresource prefix="/movies">
         <file alias="update_spinner">res/movies/update_spinner.mng</file>
@@ -142,5 +144,42 @@
         <file>art/wallet-base/pipe.png</file>
         <file>art/wallet-base/flapxyellow.png</file>
         <file>art/wallet-base/flapxspace.png</file>
+        <file>res/images/art/cccu.png</file>
+        <file>res/images/art/ccelite.png</file>
+        <file>res/images/art/ccflapx.png</file>
+        <file>res/images/art/ccgdc.png</file>
+        <file>res/images/art/cchyp.png</file>
+        <file>res/images/art/ccmaza.png</file>
+        <file>res/images/art/ccnet.png</file>
+        <file>res/images/art/ccnlabs.png</file>
+        <file>res/images/art/ccsat3.png</file>
+        <file>res/images/art/cctext.png</file>
+        <file>res/images/art/cctext100.png</file>
+        <file>res/images/art/discord2.png</file>
+        <file>res/images/art/flapxexplorer.png</file>
+        <file>res/images/art/flapxexplorer100.png</file>
+        <file>res/images/art/nerdlabs100.png</file>
+        <file>res/images/art/nerdlabs128.png</file>
+        <file>res/images/art/ccssf.png</file>
+        <file>res/images/art/cctop3.png</file>
+        <file>res/images/art/unnamed.png</file>
+        <file>res/images/art/ccunnamed.png</file>
+        <file>res/images/art/cchbn.png</file>
+        <file>res/images/art/cccir.png</file>
+        <file>res/images/art/cccon.png</file>
+        <file>res/images/art/ccfrei.png</file>
+        <file>res/images/art/ccww.png</file>
+        <file>res/images/art/ccpiggy.png</file>
+        <file>res/images/art/cccc.png</file>
+        <file>res/images/art/ccdiscord.png</file>
+        <file>res/images/art/ccflt.png</file>
+        <file>res/images/art/ccdgb.png</file>
+        <file>res/images/art/elitecraftlogo.png</file>
+        <file>res/images/art/networkpage.png</file>
+        <file>res/images/art/games.png</file>
+        <file>res/images/art/swag.png</file>
+        <file>res/images/art/elitecrafttext.png</file>
+        <file>res/images/art/swagnl.png</file>
+        <file>res/images/art/cheese.png</file>
     </qresource>
 </RCC>

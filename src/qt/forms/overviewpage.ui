@@ -6965,6 +6965,15 @@
                   </color>
                  </brush>
                 </colorrole>
+                <colorrole role="Midlight">
+                 <brush brushstyle="SolidPattern">
+                  <color alpha="255">
+                   <red>255</red>
+                   <green>255</green>
+                   <blue>0</blue>
+                  </color>
+                 </brush>
+                </colorrole>
                 <colorrole role="Dark">
                  <brush brushstyle="SolidPattern">
                   <color alpha="255">
@@ -6987,8 +6996,8 @@
                  <brush brushstyle="SolidPattern">
                   <color alpha="255">
                    <red>255</red>
-                   <green>0</green>
-                   <blue>0</blue>
+                   <green>255</green>
+                   <blue>255</blue>
                   </color>
                  </brush>
                 </colorrole>
@@ -7015,6 +7024,15 @@
                   <color alpha="0">
                    <red>0</red>
                    <green>0</green>
+                   <blue>0</blue>
+                  </color>
+                 </brush>
+                </colorrole>
+                <colorrole role="Shadow">
+                 <brush brushstyle="SolidPattern">
+                  <color alpha="255">
+                   <red>255</red>
+                   <green>255</green>
                    <blue>0</blue>
                   </color>
                  </brush>
@@ -7039,6 +7057,15 @@
                   </color>
                  </brush>
                 </colorrole>
+                <colorrole role="Midlight">
+                 <brush brushstyle="SolidPattern">
+                  <color alpha="255">
+                   <red>255</red>
+                   <green>255</green>
+                   <blue>0</blue>
+                  </color>
+                 </brush>
+                </colorrole>
                 <colorrole role="Dark">
                  <brush brushstyle="SolidPattern">
                   <color alpha="255">
@@ -7061,8 +7088,8 @@
                  <brush brushstyle="SolidPattern">
                   <color alpha="255">
                    <red>255</red>
-                   <green>0</green>
-                   <blue>0</blue>
+                   <green>255</green>
+                   <blue>255</blue>
                   </color>
                  </brush>
                 </colorrole>
@@ -7093,6 +7120,15 @@
                   </color>
                  </brush>
                 </colorrole>
+                <colorrole role="Shadow">
+                 <brush brushstyle="SolidPattern">
+                  <color alpha="255">
+                   <red>255</red>
+                   <green>255</green>
+                   <blue>0</blue>
+                  </color>
+                 </brush>
+                </colorrole>
                </inactive>
                <disabled>
                 <colorrole role="WindowText">
@@ -7109,6 +7145,15 @@
                   <color alpha="0">
                    <red>0</red>
                    <green>0</green>
+                   <blue>0</blue>
+                  </color>
+                 </brush>
+                </colorrole>
+                <colorrole role="Midlight">
+                 <brush brushstyle="SolidPattern">
+                  <color alpha="255">
+                   <red>255</red>
+                   <green>255</green>
                    <blue>0</blue>
                   </color>
                  </brush>
@@ -7163,6 +7208,15 @@
                   <color alpha="0">
                    <red>0</red>
                    <green>0</green>
+                   <blue>0</blue>
+                  </color>
+                 </brush>
+                </colorrole>
+                <colorrole role="Shadow">
+                 <brush brushstyle="SolidPattern">
+                  <color alpha="255">
+                   <red>255</red>
+                   <green>255</green>
                    <blue>0</blue>
                   </color>
                  </brush>
