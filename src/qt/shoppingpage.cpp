@@ -469,8 +469,6 @@ void ShoppingPage::on_pushButton_136_clicked()
     QDesktopServices::openUrl(QUrl(link));
 }
 
-
-//FlapXM
 void ShoppingPage::on_pushButton_141_clicked()
 {
     QString link="https://sites.google.com/view/nerdlabs001";
@@ -482,24 +480,13 @@ void ShoppingPage::on_pushButton_145_clicked()
     QString link="https://youtu.be/EY-u_mjNGKY";
     QDesktopServices::openUrl(QUrl(link));
 }
-//communities
-//NET
+
 void ShoppingPage::on_pushButton_201_clicked()
 {
     QString link="http://netcoin.io/";
     QDesktopServices::openUrl(QUrl(link));
 }
-void ShoppingPage::on_pushButton_202_clicked()
-{
-    QString link="https://discordapp.com/invite/RCh3xsp";
-    QDesktopServices::openUrl(QUrl(link));
-}
-void ShoppingPage::on_pushButton_203_clicked()
-{
-    QString link="https://www.crypto-city.com/index.php/net-netcoin/";
-    QDesktopServices::openUrl(QUrl(link));
-}
-//FLAPX
+
 void ShoppingPage::on_pushButton_211_clicked()
 {
     QString link="https://sites.google.com/view/flapxcoin/landing-pad";
@@ -515,96 +502,43 @@ void ShoppingPage::on_pushButton_213_clicked()
     QString link="https://www.crypto-city.com/index.php/flapx/";
     QDesktopServices::openUrl(QUrl(link));
 }
-//HYP
-void ShoppingPage::on_pushButton_241_clicked()
-{
-    QString link="http://hyperstake.io/";
-    QDesktopServices::openUrl(QUrl(link));
-}
+
 void ShoppingPage::on_pushButton_242_clicked()
 {
     QString link="https://discordapp.com/invite/dqVrxNV";
     QDesktopServices::openUrl(QUrl(link));
 }
-void ShoppingPage::on_pushButton_243_clicked()
-{
-    QString link="https://www.crypto-city.com/index.php/hyperstake-hyp-ann/";
-    QDesktopServices::openUrl(QUrl(link));
-}
-//ELETE
-void ShoppingPage::on_pushButton_251_clicked()
-{
-    QString link="https://www.elitecurrency.info/";
-    QDesktopServices::openUrl(QUrl(link));
-}
+
 void ShoppingPage::on_pushButton_252_clicked()
 {
     QString link="https://discord.gg/np7BmKV";
     QDesktopServices::openUrl(QUrl(link));
 }
-void ShoppingPage::on_pushButton_253_clicked()
-{
-    QString link="https://bitcointalk.org/index.php?topic=2249640";
-    QDesktopServices::openUrl(QUrl(link));
-}
-//888
+
 void ShoppingPage::on_pushButton_524_clicked()
 {
     QString link="https://altexchanger.com/trade/index/market/flapx_doge/";
     QDesktopServices::openUrl(QUrl(link));
 }
-void ShoppingPage::on_pushButton_261_clicked()
-{
-    QString link="https://www.crypto-city.com/index.php/ssfcoin/";
-    QDesktopServices::openUrl(QUrl(link));
-}
+
 void ShoppingPage::on_pushButton_523_clicked()
 {
    QString link="https://freiexchange.com/market";
      QDesktopServices::openUrl(QUrl(link));
 }
-void ShoppingPage::on_pushButton_254_clicked()
-{
-   QString link="https://bitcoingarden.org/forum/index.php?topic=67923";
-   QDesktopServices::openUrl(QUrl(link));
-}
+
 void ShoppingPage::on_pushButton_262_clicked()
 {
    QString link="https://discord.gg/2bABBgE";
    QDesktopServices::openUrl(QUrl(link));
 }
-//SAT3
-void ShoppingPage::on_pushButton_281_clicked()
-{
-    QString link="https://sites.google.com/view/sat3coin/home";
-    QDesktopServices::openUrl(QUrl(link));
-}
-void ShoppingPage::on_pushButton_282_clicked()
-{
-    QString link="https://discord.gg/EGzXQrZ";
-    QDesktopServices::openUrl(QUrl(link));
-}
-void ShoppingPage::on_pushButton_283_clicked()
-{
-    QString link="https://www.crypto-city.com/index.php/sat3/";
-    QDesktopServices::openUrl(QUrl(link));
-}
 
-void ShoppingPage::on_pushButton_331_clicked()
-{
-    QString link="https://www.crypto-city.com/index.php/grandcoin-gdc/info";
-    QDesktopServices::openUrl(QUrl(link));
-}
 void ShoppingPage::on_pushButton_332_clicked()
 {
     QString link="https://discordapp.com/invite/ZrdbSNZ";
     QDesktopServices::openUrl(QUrl(link));
 }
-void ShoppingPage::on_pushButton_333_clicked()
-{
-    QString link="https://www.crypto-city.com/index.php/grandcoin-gdc/";
-    QDesktopServices::openUrl(QUrl(link));
-}
+
 
 
 
