@@ -390,7 +390,8 @@
    <string>Form</string>
   </property>
   <property name="styleSheet">
-   <string notr="true">background:transparent;</string>
+   <string notr="true">background-image:url(:/images/res/images/art/ovbg.png);
+</string>
   </property>
   <layout class="QGridLayout" name="gridLayout_5">
    <property name="sizeConstraint">
@@ -430,11 +431,6 @@
      </property>
      <property name="autoFillBackground">
       <bool>false</bool>
-     </property>
-     <property name="styleSheet">
-      <string notr="true">background-image:url(:/qt/art/art/wallet-base/flapxspace.png);
-
-</string>
      </property>
      <property name="frameShape">
       <enum>QFrame::NoFrame</enum>
@@ -6515,7 +6511,7 @@
                <enum>QFrame::Plain</enum>
               </property>
               <layout class="QGridLayout" name="gridLayout_8">
-               <item row="1" column="0">
+               <item row="2" column="0">
                 <widget class="QLabel" name="label_5">
                  <property name="maximumSize">
                   <size>
@@ -6530,14 +6526,14 @@
                   <string/>
                  </property>
                  <property name="pixmap">
-                  <pixmap resource="../bitcoin.qrc">:/qt/art/art/wallet-base/flapxyellow.png</pixmap>
+                  <pixmap>../res/images/art/flapxred.png</pixmap>
                  </property>
                  <property name="scaledContents">
                   <bool>true</bool>
                  </property>
                 </widget>
                </item>
-               <item row="0" column="0">
+               <item row="1" column="0">
                 <widget class="QLabel" name="label_10">
                  <property name="minimumSize">
                   <size>
@@ -6555,7 +6551,7 @@
                   <string/>
                  </property>
                  <property name="pixmap">
-                  <pixmap resource="../bitcoin.qrc">:/qt/art/art/wallet-base/flapxblue.png</pixmap>
+                  <pixmap resource="../bitcoin.qrc">:/qt/art/res/images/art/flapxyellow.png</pixmap>
                  </property>
                  <property name="scaledContents">
                   <bool>true</bool>

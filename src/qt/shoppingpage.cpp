@@ -498,11 +498,7 @@ void ShoppingPage::on_pushButton_211_clicked()
     QString link="https://www.elitecurrency.info/";
     QDesktopServices::openUrl(QUrl(link));
 }
-void ShoppingPage::on_pushButton_212_clicked()
-{
-    QString link="https://discord.gg/UZK4wVU";
-    QDesktopServices::openUrl(QUrl(link));
-}
+
 void ShoppingPage::on_pushButton_213_clicked()
 {
     QString link="https://www.crypto-city.com/index.php/flapx/";
@@ -512,12 +508,6 @@ void ShoppingPage::on_pushButton_213_clicked()
 void ShoppingPage::on_pushButton_242_clicked()
 {
     QString link="https://discordapp.com/invite/dqVrxNV";
-    QDesktopServices::openUrl(QUrl(link));
-}
-
-void ShoppingPage::on_pushButton_252_clicked()
-{
-    QString link="https://discord.gg/np7BmKV";
     QDesktopServices::openUrl(QUrl(link));
 }
 
@@ -532,21 +522,6 @@ void ShoppingPage::on_pushButton_523_clicked()
    QString link="https://freiexchange.com/market";
      QDesktopServices::openUrl(QUrl(link));
 }
-
-void ShoppingPage::on_pushButton_262_clicked()
-{
-   QString link="https://discord.gg/2bABBgE";
-   QDesktopServices::openUrl(QUrl(link));
-}
-
-void ShoppingPage::on_pushButton_332_clicked()
-{
-    QString link="https://discordapp.com/invite/ZrdbSNZ";
-    QDesktopServices::openUrl(QUrl(link));
-}
-
-
-
 
 ShoppingPage::~ShoppingPage()
 {
