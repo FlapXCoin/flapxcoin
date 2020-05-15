@@ -469,6 +469,12 @@ void ShoppingPage::on_pushButton_136_clicked()
     QDesktopServices::openUrl(QUrl(link));
 }
 
+void ShoppingPage::on_pushButton_137_clicked()
+{
+    QString link="https://swag.flapxcoin.com";
+    QDesktopServices::openUrl(QUrl(link));
+}
+
 void ShoppingPage::on_pushButton_138_clicked()
 {
     QString link="https://swag.nerdlabs001.com";
