@@ -35,59 +35,18 @@
         <file alias="tx_inout">res/icons/tx_inout.png</file>
         <file alias="lock_closed">res/icons/lock_closed.png</file>
         <file alias="lock_open">res/icons/lock_open.png</file>
-        <file alias="minting">res/icons/mining.png</file>
         <file alias="key">res/icons/key.png</file>
         <file alias="filesave">res/icons/filesave.png</file>
         <file alias="qrcode">res/icons/qrcode.png</file>
         <file alias="debugwindow">res/icons/debugwindow.png</file>
         <file>res/icons/staking_off.png</file>
-        <file>res/icons/staking_on.png</file>
         <file alias="overview">res/icons/overview.png</file>
         <file>res/icons/services.png</file>
         <file>res/icons/stakingTab.png</file>
-        <file>res/images/FlapXcoin/FlapXCoin/Links.png</file>
     </qresource>
     <qresource prefix="/images">
         <file alias="about">res/images/about.png</file>
         <file alias="splash">res/images/splash.png</file>
-        <file>res/images/FlapXcoin/Social/Twitter.png</file>
-        <file>res/images/FlapXcoin/FlapX Art/P2.png</file>
-        <file>res/images/FlapXcoin/FlapX Art/P1.png</file>
-        <file>res/images/FlapXcoin/FlapX Art/N1.png</file>
-        <file>res/images/FlapXcoin/FlapX Art/ISS.png</file>
-        <file>res/images/FlapXcoin/FlapX Art/FM.png</file>
-        <file>res/images/FlapXcoin/FlapX Art/FBT.png</file>
-        <file>res/images/FlapXcoin/FlapX Art/FBB.png</file>
-        <file>res/images/FlapXcoin/FlapX Art/FB.png</file>
-        <file>res/images/FlapXcoin/FlapX Art/fb1.png</file>
-        <file>res/images/FlapXcoin/FlapX Art/P3.png</file>
-        <file>res/images/FlapXcoin/FlapX Art/space.png</file>
-        <file>res/images/FlapXcoin/Social/Discord.png</file>
-        <file>res/images/FlapXcoin/FlapX Art/N2.png</file>
-        <file>res/images/FlapXcoin/Social/Cc.png</file>
-        <file>res/images/FlapXcoin/FlapXCoin/Pipe.png</file>
-        <file>res/images/FlapXcoin/Social/Panic.png</file>
-        <file>res/images/FlapXcoin/Social/btct.png</file>
-        <file>res/images/FlapXcoin/Community/FlapX.png</file>
-        <file>res/images/FlapXcoin/FlapX Art/space2.png</file>
-        <file>res/images/FlapXcoin/FlapX Art/DrNET.png</file>
-        <file>res/images/FlapXcoin/FlapXCoin/Pool.png</file>
-        <file>res/images/FlapXcoin/FlapX Art/Logo.png</file>
-        <file>res/images/FlapXcoin/FlapXCoin/Home.png</file>
-        <file>res/images/FlapXcoin/FlapXCoin/Links.png</file>
-        <file>res/images/FlapXcoin/FlapXCoin/Tipbot.png</file>
-        <file>res/images/FlapXcoin/Social/Discord2.png</file>
-        <file>res/images/FlapXcoin/Social/btct2.png</file>
-        <file>res/images/FlapXcoin/Social/Ccity.png</file>
-        <file>res/images/FlapXcoin/FlapX Art/FBR.png</file>
-        <file>res/images/FlapXcoin/FlapX Art/FBS.png</file>
-        <file>res/images/FlapXcoin/Crypto Links/frei.png</file>
-        <file>res/images/FlapXcoin/Crypto Links/elitecraft.png</file>
-        <file>res/images/FlapXcoin/Crypto Links/nerdlabs001.png</file>
-        <file>res/images/FlapXcoin/Crypto Links/NerdLabMiniLogo_128.png</file>
-        <file>res/images/nerdlabs001/nerdlabs001icon.png</file>
-        <file>res/images/nerdlabs001/elitecraft.png</file>
-        <file>res/images/nerdlabs001/elitecraftvideo.png</file>
         <file>res/images/art/nerdlabs128.png</file>
         <file>res/images/art/flapxexplorer.png</file>
         <file>res/images/art/cctext.png</file>
@@ -96,7 +55,6 @@
         <file>res/images/art/cctext100.png</file>
         <file>res/images/art/ccnet.png</file>
         <file>res/images/art/cccu.png</file>
-        <file>res/images/art/ccelite.png</file>
         <file>res/images/art/ccflapx.png</file>
         <file>res/images/art/ccgdc.png</file>
         <file>res/images/art/cchyp.png</file>
@@ -120,12 +78,37 @@
         <file>res/images/art/ccdgb.png</file>
         <file>res/images/art/elitecraftlogo.png</file>
         <file>res/images/art/networkpage.png</file>
-        <file>res/images/art/games.png</file>
         <file>res/images/art/swag.png</file>
         <file>res/images/art/elitecrafttext.png</file>
         <file>res/images/art/swagnl.png</file>
         <file>res/images/art/cheese.png</file>
         <file>res/images/art/devpool.png</file>
+        <file>res/images/art/elite2020.png</file>
+        <file>res/images/art/eklogo.png</file>
+        <file>res/images/art/btct.png</file>
+        <file>res/images/art/ccity.png</file>
+        <file>res/images/art/elitecraftvideo.png</file>
+        <file>res/images/art/FB.png</file>
+        <file>res/images/art/fb1.png</file>
+        <file>res/images/art/FBB.png</file>
+        <file>res/images/art/FBR.png</file>
+        <file>res/images/art/FBS.png</file>
+        <file>res/images/art/FBT.png</file>
+        <file>res/images/art/FM.png</file>
+        <file>res/images/art/Home.png</file>
+        <file>res/images/art/Links.png</file>
+        <file>res/images/art/Logo.png</file>
+        <file>res/images/art/N1.png</file>
+        <file>res/images/art/nerdlabs001icon.png</file>
+        <file>res/images/art/P1.png</file>
+        <file>res/images/art/P2.png</file>
+        <file>res/images/art/P3.png</file>
+        <file>res/images/art/Panic.png</file>
+        <file>res/images/art/Pipe.png</file>
+        <file>res/images/art/Pool.png</file>
+        <file>res/images/art/space.png</file>
+        <file>res/images/art/Tipbot.png</file>
+        <file>res/images/art/Discord.png</file>
     </qresource>
     <qresource prefix="/movies">
         <file alias="update_spinner">res/movies/update_spinner.mng</file>
@@ -137,15 +120,7 @@
     <qresource prefix="/"/>
     <qresource prefix="/qt/themes"/>
     <qresource prefix="/qt/art">
-        <file>art/flapwork.png</file>
-        <file>art/logo1.png</file>
-        <file>art/flying-blurb.png</file>
-        <file>art/wallet-base/flapxblue.png</file>
-        <file>art/wallet-base/pipe.png</file>
-        <file>art/wallet-base/flapxyellow.png</file>
-        <file>art/wallet-base/flapxspace.png</file>
         <file>res/images/art/cccu.png</file>
-        <file>res/images/art/ccelite.png</file>
         <file>res/images/art/ccflapx.png</file>
         <file>res/images/art/ccgdc.png</file>
         <file>res/images/art/cchyp.png</file>
@@ -176,10 +151,35 @@
         <file>res/images/art/ccdgb.png</file>
         <file>res/images/art/elitecraftlogo.png</file>
         <file>res/images/art/networkpage.png</file>
-        <file>res/images/art/games.png</file>
         <file>res/images/art/swag.png</file>
         <file>res/images/art/elitecrafttext.png</file>
         <file>res/images/art/swagnl.png</file>
         <file>res/images/art/cheese.png</file>
+        <file>res/images/art/btct.png</file>
+        <file>res/images/art/Discord.png</file>
+        <file>res/images/art/elitecraftvideo.png</file>
+        <file>res/images/art/FB.png</file>
+        <file>res/images/art/fb1.png</file>
+        <file>res/images/art/FBB.png</file>
+        <file>res/images/art/FBR.png</file>
+        <file>res/images/art/FBS.png</file>
+        <file>res/images/art/FBT.png</file>
+        <file>res/images/art/FM.png</file>
+        <file>res/images/art/Home.png</file>
+        <file>res/images/art/Links.png</file>
+        <file>res/images/art/Logo.png</file>
+        <file>res/images/art/N1.png</file>
+        <file>res/images/art/nerdlabs001icon.png</file>
+        <file>res/images/art/P1.png</file>
+        <file>res/images/art/P2.png</file>
+        <file>res/images/art/P3.png</file>
+        <file>res/images/art/Panic.png</file>
+        <file>res/images/art/Pipe.png</file>
+        <file>res/images/art/Pool.png</file>
+        <file>res/images/art/space.png</file>
+        <file>res/images/art/Tipbot.png</file>
+        <file>res/images/art/devpool.png</file>
+        <file>res/images/art/elite2020.png</file>
+        <file>res/images/art/eklogo.png</file>
     </qresource>
 </RCC>

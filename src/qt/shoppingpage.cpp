@@ -483,19 +483,19 @@ void ShoppingPage::on_pushButton_141_clicked()
 
 void ShoppingPage::on_pushButton_145_clicked()
 {
-    QString link="https://youtu.be/EY-u_mjNGKY";
+    QString link="https://sites.google.com/view/nerdlabs001/development/elitecraft/getting-started";
     QDesktopServices::openUrl(QUrl(link));
 }
 
 void ShoppingPage::on_pushButton_201_clicked()
 {
-    QString link="http://netcoin.io/";
+    QString link="https://sites.google.com/view/nerdlabs001/development/elitecraft";
     QDesktopServices::openUrl(QUrl(link));
 }
 
 void ShoppingPage::on_pushButton_211_clicked()
 {
-    QString link="https://sites.google.com/view/flapxcoin/landing-pad";
+    QString link="https://www.elitecurrency.info/";
     QDesktopServices::openUrl(QUrl(link));
 }
 void ShoppingPage::on_pushButton_212_clicked()
