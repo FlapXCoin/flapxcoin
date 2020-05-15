@@ -436,7 +436,7 @@ void ShoppingPage::on_pushButton_112_clicked()
 }
 void ShoppingPage::on_pushButton_113_clicked()
 {
-    QString link="https://devpool.nerdlabs001.com";
+    QString link="https://www.crypto-city.com/index.php/flapx/pools/";
     QDesktopServices::openUrl(QUrl(link));
 }
 
