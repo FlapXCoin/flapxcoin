@@ -11,12 +11,6 @@
     <verstretch>0</verstretch>
    </sizepolicy>
   </property>
-  <property name="minimumSize">
-   <size>
-    <width>1300</width>
-    <height>0</height>
-   </size>
-  </property>
   <property name="palette">
    <palette>
     <active>
@@ -492,6 +486,9 @@
             </property>
             <item row="0" column="0">
              <widget class="QFrame" name="frame_6">
+              <property name="styleSheet">
+               <string notr="true">background:transparent;border:0;</string>
+              </property>
               <property name="frameShape">
                <enum>QFrame::NoFrame</enum>
               </property>
@@ -2411,12 +2408,13 @@
                 </widget>
                </item>
               </layout>
-              <zorder></zorder>
-              <zorder>groupBox_2</zorder>
              </widget>
             </item>
             <item row="1" column="0">
              <widget class="QFrame" name="frame_7">
+              <property name="styleSheet">
+               <string notr="true">background:transparent;border:0;</string>
+              </property>
               <property name="frameShape">
                <enum>QFrame::NoFrame</enum>
               </property>
@@ -2446,6 +2444,9 @@
                    <width>325</width>
                    <height>16777215</height>
                   </size>
+                 </property>
+                 <property name="styleSheet">
+                  <string notr="true">background:transparent;border:0;</string>
                  </property>
                  <property name="frameShape">
                   <enum>QFrame::NoFrame</enum>
@@ -2497,13 +2498,13 @@
                     <property name="minimumSize">
                      <size>
                       <width>127</width>
-                      <height>55</height>
+                      <height>50</height>
                      </size>
                     </property>
                     <property name="maximumSize">
                      <size>
                       <width>127</width>
-                      <height>55</height>
+                      <height>50</height>
                      </size>
                     </property>
                     <property name="palette">
@@ -2772,13 +2773,13 @@
                     <property name="minimumSize">
                      <size>
                       <width>127</width>
-                      <height>55</height>
+                      <height>50</height>
                      </size>
                     </property>
                     <property name="maximumSize">
                      <size>
                       <width>127</width>
-                      <height>55</height>
+                      <height>50</height>
                      </size>
                     </property>
                     <property name="palette">
@@ -6646,6 +6647,9 @@
                    <height>200</height>
                   </size>
                  </property>
+                 <property name="styleSheet">
+                  <string notr="true">background:transparent;border:0;</string>
+                 </property>
                  <property name="frameShape">
                   <enum>QFrame::NoFrame</enum>
                  </property>
@@ -6710,7 +6714,6 @@
               <zorder>frame_4</zorder>
               <zorder>groupBox_3</zorder>
               <zorder>frame_3</zorder>
-              <zorder>labelMyWeight</zorder>
              </widget>
             </item>
            </layout>
@@ -7908,9 +7911,12 @@
            <property name="orientation">
             <enum>Qt::Horizontal</enum>
            </property>
+           <property name="sizeType">
+            <enum>QSizePolicy::Fixed</enum>
+           </property>
            <property name="sizeHint" stdset="0">
             <size>
-             <width>373</width>
+             <width>20</width>
              <height>20</height>
             </size>
            </property>
@@ -7946,7 +7952,6 @@
         <zorder>frame_5</zorder>
         <zorder>horizontalSpacer</zorder>
         <zorder>frame_8</zorder>
-        <zorder>labelMyWeight</zorder>
        </widget>
       </item>
      </layout>

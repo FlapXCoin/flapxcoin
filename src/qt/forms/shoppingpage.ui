@@ -31,6 +31,43 @@
     <height>999999</height>
    </size>
   </property>
+  <property name="palette">
+   <palette>
+    <active>
+     <colorrole role="Highlight">
+      <brush brushstyle="SolidPattern">
+       <color alpha="255">
+        <red>0</red>
+        <green>0</green>
+        <blue>0</blue>
+       </color>
+      </brush>
+     </colorrole>
+    </active>
+    <inactive>
+     <colorrole role="Highlight">
+      <brush brushstyle="SolidPattern">
+       <color alpha="255">
+        <red>0</red>
+        <green>0</green>
+        <blue>0</blue>
+       </color>
+      </brush>
+     </colorrole>
+    </inactive>
+    <disabled>
+     <colorrole role="Highlight">
+      <brush brushstyle="SolidPattern">
+       <color alpha="255">
+        <red>240</red>
+        <green>240</green>
+        <blue>240</blue>
+       </color>
+      </brush>
+     </colorrole>
+    </disabled>
+   </palette>
+  </property>
   <property name="windowTitle">
    <string>Address Book</string>
   </property>
@@ -92,7 +129,7 @@
       <enum>QTabWidget::Rounded</enum>
      </property>
      <property name="currentIndex">
-      <number>0</number>
+      <number>5</number>
      </property>
      <property name="iconSize">
       <size>
@@ -295,6 +332,15 @@
                  </color>
                 </brush>
                </colorrole>
+               <colorrole role="Highlight">
+                <brush brushstyle="SolidPattern">
+                 <color alpha="255">
+                  <red>0</red>
+                  <green>0</green>
+                  <blue>0</blue>
+                 </color>
+                </brush>
+               </colorrole>
               </active>
               <inactive>
                <colorrole role="Button">
@@ -318,6 +364,15 @@
                <colorrole role="Window">
                 <brush brushstyle="SolidPattern">
                  <color alpha="0">
+                  <red>0</red>
+                  <green>0</green>
+                  <blue>0</blue>
+                 </color>
+                </brush>
+               </colorrole>
+               <colorrole role="Highlight">
+                <brush brushstyle="SolidPattern">
+                 <color alpha="255">
                   <red>0</red>
                   <green>0</green>
                   <blue>0</blue>
@@ -350,6 +405,15 @@
                   <red>0</red>
                   <green>0</green>
                   <blue>0</blue>
+                 </color>
+                </brush>
+               </colorrole>
+               <colorrole role="Highlight">
+                <brush brushstyle="SolidPattern">
+                 <color alpha="255">
+                  <red>240</red>
+                  <green>240</green>
+                  <blue>240</blue>
                  </color>
                 </brush>
                </colorrole>
@@ -415,6 +479,15 @@
                  </color>
                 </brush>
                </colorrole>
+               <colorrole role="Highlight">
+                <brush brushstyle="SolidPattern">
+                 <color alpha="255">
+                  <red>0</red>
+                  <green>0</green>
+                  <blue>0</blue>
+                 </color>
+                </brush>
+               </colorrole>
               </active>
               <inactive>
                <colorrole role="Button">
@@ -438,6 +511,15 @@
                <colorrole role="Window">
                 <brush brushstyle="SolidPattern">
                  <color alpha="0">
+                  <red>0</red>
+                  <green>0</green>
+                  <blue>0</blue>
+                 </color>
+                </brush>
+               </colorrole>
+               <colorrole role="Highlight">
+                <brush brushstyle="SolidPattern">
+                 <color alpha="255">
                   <red>0</red>
                   <green>0</green>
                   <blue>0</blue>
@@ -470,6 +552,15 @@
                   <red>0</red>
                   <green>0</green>
                   <blue>0</blue>
+                 </color>
+                </brush>
+               </colorrole>
+               <colorrole role="Highlight">
+                <brush brushstyle="SolidPattern">
+                 <color alpha="255">
+                  <red>240</red>
+                  <green>240</green>
+                  <blue>240</blue>
                  </color>
                 </brush>
                </colorrole>
@@ -535,6 +626,15 @@
                  </color>
                 </brush>
                </colorrole>
+               <colorrole role="Highlight">
+                <brush brushstyle="SolidPattern">
+                 <color alpha="255">
+                  <red>0</red>
+                  <green>0</green>
+                  <blue>0</blue>
+                 </color>
+                </brush>
+               </colorrole>
               </active>
               <inactive>
                <colorrole role="Button">
@@ -558,6 +658,15 @@
                <colorrole role="Window">
                 <brush brushstyle="SolidPattern">
                  <color alpha="0">
+                  <red>0</red>
+                  <green>0</green>
+                  <blue>0</blue>
+                 </color>
+                </brush>
+               </colorrole>
+               <colorrole role="Highlight">
+                <brush brushstyle="SolidPattern">
+                 <color alpha="255">
                   <red>0</red>
                   <green>0</green>
                   <blue>0</blue>
@@ -590,6 +699,15 @@
                   <red>0</red>
                   <green>0</green>
                   <blue>0</blue>
+                 </color>
+                </brush>
+               </colorrole>
+               <colorrole role="Highlight">
+                <brush brushstyle="SolidPattern">
+                 <color alpha="255">
+                  <red>240</red>
+                  <green>240</green>
+                  <blue>240</blue>
                  </color>
                 </brush>
                </colorrole>
@@ -3389,8 +3507,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>142</width>
-            <height>78</height>
+            <width>908</width>
+            <height>572</height>
            </rect>
           </property>
           <property name="styleSheet">
@@ -4717,8 +4835,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>670</width>
-            <height>463</height>
+            <width>908</width>
+            <height>572</height>
            </rect>
           </property>
           <property name="styleSheet">
