@@ -91,9 +91,7 @@
         <file>res/images/art/flapxblue.png</file>
         <file>res/images/art/flapxexplorer.png</file>
         <file>res/images/art/flapxexplorer100.png</file>
-        <file>res/images/art/flapxred.png</file>
         <file>res/images/art/flapxspace.png</file>
-        <file>res/images/art/flapxyellow.png</file>
         <file>res/images/art/flying-blurb.png</file>
         <file>res/images/art/home.png</file>
         <file>res/images/art/links.png</file>
@@ -108,7 +106,6 @@
         <file>res/images/art/p2.png</file>
         <file>res/images/art/p3.png</file>
         <file>res/images/art/panic.png</file>
-        <file>res/images/art/pipe.png</file>
         <file>res/images/art/pool.png</file>
         <file>res/images/art/swag.png</file>
         <file>res/images/art/swagnl.png</file>
@@ -173,15 +170,12 @@
         <file>res/images/art/fbt.png</file>
         <file>res/images/art/flapwork.png</file>
         <file>res/images/art/flapxblue.png</file>
-        <file>res/images/art/flapxred.png</file>
         <file>res/images/art/flapxspace.png</file>
-        <file>res/images/art/flapxyellow.png</file>
         <file>res/images/art/flying-blurb.png</file>
         <file>res/images/art/logo1.png</file>
         <file>res/images/art/p1.png</file>
         <file>res/images/art/p2.png</file>
         <file>res/images/art/p3.png</file>
-        <file>res/images/art/pipe.png</file>
         <file>res/images/art/esg1.png</file>
         <file>res/images/art/fbs.png</file>
         <file>res/images/art/flaplogo.png</file>
@@ -256,15 +250,12 @@
         <file>res/images/art/fbt.png</file>
         <file>res/images/art/flapwork.png</file>
         <file>res/images/art/flapxblue.png</file>
-        <file>res/images/art/flapxred.png</file>
         <file>res/images/art/flapxspace.png</file>
-        <file>res/images/art/flapxyellow.png</file>
         <file>res/images/art/flying-blurb.png</file>
         <file>res/images/art/logo1.png</file>
         <file>res/images/art/p1.png</file>
         <file>res/images/art/p2.png</file>
         <file>res/images/art/p3.png</file>
-        <file>res/images/art/pipe.png</file>
         <file>res/images/art/esg1.png</file>
         <file>res/images/art/esg2.png</file>
         <file>res/images/art/elitecraftlogo2.png</file>

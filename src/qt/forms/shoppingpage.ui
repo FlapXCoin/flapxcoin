@@ -129,7 +129,7 @@
       <enum>QTabWidget::Rounded</enum>
      </property>
      <property name="currentIndex">
-      <number>2</number>
+      <number>0</number>
      </property>
      <property name="iconSize">
       <size>
@@ -1590,25 +1590,34 @@
           <property name="topMargin">
            <number>0</number>
           </property>
+          <property name="rightMargin">
+           <number>0</number>
+          </property>
+          <property name="bottomMargin">
+           <number>0</number>
+          </property>
+          <property name="spacing">
+           <number>0</number>
+          </property>
           <item row="0" column="0">
            <widget class="QLabel" name="label10_29">
             <property name="minimumSize">
              <size>
-              <width>10</width>
-              <height>150</height>
+              <width>175</width>
+              <height>175</height>
              </size>
             </property>
             <property name="maximumSize">
              <size>
-              <width>150</width>
-              <height>150</height>
+              <width>200</width>
+              <height>200</height>
              </size>
             </property>
             <property name="text">
              <string/>
             </property>
             <property name="pixmap">
-             <pixmap resource="../bitcoin.qrc">:/qt/art/res/images/art/flapxyellow.png</pixmap>
+             <pixmap resource="../bitcoin.qrc">:/qt/art/res/images/art/moon.png</pixmap>
             </property>
             <property name="scaledContents">
              <bool>true</bool>
@@ -2195,7 +2204,7 @@
             </property>
            </spacer>
           </item>
-          <item row="0" column="1" rowspan="2">
+          <item row="0" column="1">
            <widget class="QLabel" name="label10_36">
             <property name="minimumSize">
              <size>
@@ -2229,7 +2238,7 @@
             </property>
            </widget>
           </item>
-          <item row="0" column="2" rowspan="2">
+          <item row="0" column="2">
            <widget class="QLabel" name="label10_40">
             <property name="minimumSize">
              <size>
@@ -2244,10 +2253,7 @@
              </size>
             </property>
             <property name="text">
-             <string/>
-            </property>
-            <property name="pixmap">
-             <pixmap resource="../bitcoin.qrc">:/qt/art/res/images/art/flying-blurb.png</pixmap>
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;a href=&quot;https://listings.flapxcoin.com/&quot;&gt;&lt;img src=&quot;:/images/res/images/art/flying-blurb.png&quot;/&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
             <property name="scaledContents">
              <bool>true</bool>
@@ -2266,7 +2272,7 @@
             </property>
            </widget>
           </item>
-          <item row="1" column="3">
+          <item row="0" column="3">
            <spacer name="horizontalSpacer_19">
             <property name="orientation">
              <enum>Qt::Horizontal</enum>
