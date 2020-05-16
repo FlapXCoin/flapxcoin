@@ -507,13 +507,13 @@ void ShoppingPage::on_pushButton_211_clicked()
 
 void ShoppingPage::on_pushButton_213_clicked()
 {
-    QString link="https://www.crypto-city.com/index.php/flapx/";
+    QString link="https://sites.google.com/view/nerdlabs001/development/elitecraft";
     QDesktopServices::openUrl(QUrl(link));
 }
 
 void ShoppingPage::on_pushButton_242_clicked()
 {
-    QString link="https://discordapp.com/invite/dqVrxNV";
+    QString link="https://discord.gg/5n5UrM2";
     QDesktopServices::openUrl(QUrl(link));
 }
 
