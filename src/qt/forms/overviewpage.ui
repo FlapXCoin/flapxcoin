@@ -461,7 +461,7 @@
        <widget class="QFrame" name="frame_2">
         <property name="maximumSize">
          <size>
-          <width>1400</width>
+          <width>1300</width>
           <height>16777215</height>
          </size>
         </property>
@@ -925,7 +925,7 @@
                   </font>
                  </property>
                  <property name="styleSheet">
-                  <string notr="true">background-image:url(:/qt/themes/themes/flapxcoin/b1.png);</string>
+                  <string notr="true">background-image:url(:/icons/res/images/art/b1.png);</string>
                  </property>
                  <property name="text">
                   <string>Multisend</string>
@@ -1684,10 +1684,10 @@
                   </font>
                  </property>
                  <property name="styleSheet">
-                  <string notr="true">background-image:url(:/qt/themes/themes/flapxcoin/b1.png);</string>
+                  <string notr="true">background-image:url(:/icons/res/images/art/b1.png);</string>
                  </property>
                  <property name="text">
-                  <string>Unlock FlapX</string>
+                  <string>Lock/Unlock</string>
                  </property>
                 </widget>
                </item>
@@ -6545,18 +6545,56 @@
                   <enum>QFrame::Plain</enum>
                  </property>
                  <layout class="QGridLayout" name="gridLayout_8">
-                  <item row="1" column="0">
-                   <widget class="QLabel" name="label_10">
+                  <item row="0" column="0">
+                   <spacer name="horizontalSpacer">
+                    <property name="orientation">
+                     <enum>Qt::Horizontal</enum>
+                    </property>
+                    <property name="sizeHint" stdset="0">
+                     <size>
+                      <width>118</width>
+                      <height>5</height>
+                     </size>
+                    </property>
+                   </spacer>
+                  </item>
+                  <item row="0" column="1" rowspan="2" colspan="2">
+                   <widget class="QLabel" name="label_11">
                     <property name="minimumSize">
                      <size>
-                      <width>100</width>
-                      <height>100</height>
+                      <width>75</width>
+                      <height>75</height>
                      </size>
                     </property>
                     <property name="maximumSize">
                      <size>
-                      <width>100</width>
-                      <height>100</height>
+                      <width>75</width>
+                      <height>75</height>
+                     </size>
+                    </property>
+                    <property name="text">
+                     <string/>
+                    </property>
+                    <property name="pixmap">
+                     <pixmap resource="../bitcoin.qrc">:/qt/art/res/images/art/flapxblue.png</pixmap>
+                    </property>
+                    <property name="scaledContents">
+                     <bool>true</bool>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="1" column="0" rowspan="3">
+                   <widget class="QLabel" name="label_10">
+                    <property name="minimumSize">
+                     <size>
+                      <width>75</width>
+                      <height>75</height>
+                     </size>
+                    </property>
+                    <property name="maximumSize">
+                     <size>
+                      <width>75</width>
+                      <height>75</height>
                      </size>
                     </property>
                     <property name="text">
@@ -6569,6 +6607,73 @@
                      <bool>true</bool>
                     </property>
                    </widget>
+                  </item>
+                  <item row="2" column="1">
+                   <spacer name="horizontalSpacer_8">
+                    <property name="orientation">
+                     <enum>Qt::Horizontal</enum>
+                    </property>
+                    <property name="sizeHint" stdset="0">
+                     <size>
+                      <width>117</width>
+                      <height>5</height>
+                     </size>
+                    </property>
+                   </spacer>
+                  </item>
+                  <item row="3" column="1" rowspan="2">
+                   <widget class="QLabel" name="label_15">
+                    <property name="minimumSize">
+                     <size>
+                      <width>75</width>
+                      <height>75</height>
+                     </size>
+                    </property>
+                    <property name="maximumSize">
+                     <size>
+                      <width>75</width>
+                      <height>75</height>
+                     </size>
+                    </property>
+                    <property name="text">
+                     <string/>
+                    </property>
+                    <property name="pixmap">
+                     <pixmap resource="../bitcoin.qrc">:/qt/art/res/images/art/flapxred.png</pixmap>
+                    </property>
+                    <property name="scaledContents">
+                     <bool>true</bool>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="4" column="0">
+                   <spacer name="horizontalSpacer_9">
+                    <property name="orientation">
+                     <enum>Qt::Horizontal</enum>
+                    </property>
+                    <property name="sizeHint" stdset="0">
+                     <size>
+                      <width>118</width>
+                      <height>20</height>
+                     </size>
+                    </property>
+                   </spacer>
+                  </item>
+                  <item row="4" column="2">
+                   <spacer name="horizontalSpacer_10">
+                    <property name="orientation">
+                     <enum>Qt::Horizontal</enum>
+                    </property>
+                    <property name="sizeType">
+                     <enum>QSizePolicy::Fixed</enum>
+                    </property>
+                    <property name="sizeHint" stdset="0">
+                     <size>
+                      <width>10</width>
+                      <height>5</height>
+                     </size>
+                    </property>
+                   </spacer>
                   </item>
                  </layout>
                 </widget>

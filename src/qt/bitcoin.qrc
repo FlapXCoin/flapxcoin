@@ -116,6 +116,7 @@
         <file>res/images/art/swagnl.png</file>
         <file>res/images/art/Tipbot.png</file>
         <file>res/images/art/unnamed.png</file>
+        <file>res/images/art/b1.png</file>
     </qresource>
     <qresource prefix="/images">
         <file alias="about">res/images/about.png</file>
