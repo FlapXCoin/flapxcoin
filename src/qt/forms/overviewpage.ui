@@ -444,12 +444,6 @@
       </property>
       <item row="0" column="0">
        <widget class="QFrame" name="frame_2">
-        <property name="minimumSize">
-         <size>
-          <width>1300</width>
-          <height>0</height>
-         </size>
-        </property>
         <property name="maximumSize">
          <size>
           <width>1300</width>
@@ -7074,12 +7068,6 @@
                      <verstretch>3</verstretch>
                     </sizepolicy>
                    </property>
-                   <property name="minimumSize">
-                    <size>
-                     <width>400</width>
-                     <height>400</height>
-                    </size>
-                   </property>
                    <property name="palette">
                     <palette>
                      <active>
@@ -7384,12 +7372,6 @@
                </item>
                <item row="0" column="0">
                 <widget class="QFrame" name="frame">
-                 <property name="minimumSize">
-                  <size>
-                   <width>500</width>
-                   <height>40</height>
-                  </size>
-                 </property>
                  <property name="maximumSize">
                   <size>
                    <width>16777215</width>
