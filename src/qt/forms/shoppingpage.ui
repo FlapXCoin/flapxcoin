@@ -92,7 +92,7 @@
       <enum>QTabWidget::Rounded</enum>
      </property>
      <property name="currentIndex">
-      <number>2</number>
+      <number>5</number>
      </property>
      <property name="iconSize">
       <size>
@@ -117,7 +117,7 @@
      </property>
      <widget class="QWidget" name="flapxcoin">
       <property name="styleSheet">
-       <string notr="true">background-image:url(:/images/res/images/art/space.png);</string>
+       <string notr="true">background-image:url(:/images/res/images/art/flapxspace.png);</string>
       </property>
       <attribute name="icon">
        <iconset resource="../bitcoin.qrc">
