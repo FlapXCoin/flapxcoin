@@ -10,7 +10,7 @@
     <x>0</x>
     <y>0</y>
     <width>912</width>
-    <height>516</height>
+    <height>612</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -35,9 +35,21 @@
    <string>Address Book</string>
   </property>
   <property name="styleSheet">
-   <string notr="true">background-image:url(:/images/res/images/art/flapxspace.png);</string>
+   <string notr="true">background-image:url(:/images/res/images/art/ovbg.png);</string>
   </property>
   <layout class="QGridLayout" name="gridLayout_11">
+   <property name="leftMargin">
+    <number>20</number>
+   </property>
+   <property name="topMargin">
+    <number>20</number>
+   </property>
+   <property name="rightMargin">
+    <number>20</number>
+   </property>
+   <property name="bottomMargin">
+    <number>20</number>
+   </property>
    <item row="0" column="0">
     <widget class="QTabWidget" name="tabWidget">
      <property name="enabled">
@@ -71,7 +83,7 @@
       <bool>false</bool>
      </property>
      <property name="styleSheet">
-      <string notr="true">background-image:url(:/images/res/images/art/flapxspace.png);border:0;</string>
+      <string notr="true">background-image:url(:/images/res/images/art/flapxspace.png);</string>
      </property>
      <property name="tabPosition">
       <enum>QTabWidget::North</enum>
@@ -80,7 +92,7 @@
       <enum>QTabWidget::Rounded</enum>
      </property>
      <property name="currentIndex">
-      <number>0</number>
+      <number>2</number>
      </property>
      <property name="iconSize">
       <size>
@@ -105,7 +117,7 @@
      </property>
      <widget class="QWidget" name="flapxcoin">
       <property name="styleSheet">
-       <string notr="true">background:transparent;</string>
+       <string notr="true">background-image:url(:/images/res/images/art/space.png);</string>
       </property>
       <attribute name="icon">
        <iconset resource="../bitcoin.qrc">
@@ -115,25 +127,6 @@
        <string>FlapXcoin</string>
       </attribute>
       <layout class="QGridLayout" name="gridLayout_13">
-       <item row="5" column="0" colspan="2">
-        <widget class="Line" name="line_3">
-         <property name="minimumSize">
-          <size>
-           <width>600</width>
-           <height>0</height>
-          </size>
-         </property>
-         <property name="maximumSize">
-          <size>
-           <width>16777215</width>
-           <height>1</height>
-          </size>
-         </property>
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-        </widget>
-       </item>
        <item row="0" column="0" colspan="2">
         <widget class="QFrame" name="frame_100">
          <property name="minimumSize">
@@ -358,7 +351,7 @@
              </palette>
             </property>
             <property name="styleSheet">
-             <string notr="true">background:transparent;</string>
+             <string notr="true">background:transparent;border:0;</string>
             </property>
             <property name="icon">
              <iconset resource="../bitcoin.qrc">
@@ -478,7 +471,7 @@
              </palette>
             </property>
             <property name="styleSheet">
-             <string notr="true">background:transparent;</string>
+             <string notr="true">background:transparent;border:0;</string>
             </property>
             <property name="icon">
              <iconset resource="../bitcoin.qrc">
@@ -598,7 +591,7 @@
              </palette>
             </property>
             <property name="styleSheet">
-             <string notr="true">background:transparent;</string>
+             <string notr="true">background:transparent;border:0;</string>
             </property>
             <property name="icon">
              <iconset resource="../bitcoin.qrc">
@@ -826,7 +819,7 @@
              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;img src=&quot;:/toolTip/res/tooltips/CoinserverTooltip.png&quot;/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
             <property name="styleSheet">
-             <string notr="true">background:transparent;</string>
+             <string notr="true">background:transparent;border:0;</string>
             </property>
             <property name="text">
              <string/>
@@ -962,7 +955,7 @@
              </palette>
             </property>
             <property name="styleSheet">
-             <string notr="true">background:transparent;</string>
+             <string notr="true">bacbackground:transparent;border:0;kground:transparent;</string>
             </property>
             <property name="text">
              <string/>
@@ -1098,7 +1091,7 @@
              </palette>
             </property>
             <property name="styleSheet">
-             <string notr="true">background:transparent;</string>
+             <string notr="true">background:tranbackground:transparent;border:0;sparent;</string>
             </property>
             <property name="text">
              <string/>
@@ -1221,7 +1214,7 @@
              </palette>
             </property>
             <property name="styleSheet">
-             <string notr="true">background:transparent;</string>
+             <string notr="true">backgrobackground:transparent;border:0;und:transparent;</string>
             </property>
             <property name="text">
              <string/>
@@ -1347,7 +1340,7 @@
              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;img src=&quot;:/toolTip/res/tooltips/CoinserverTooltip.png&quot;/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
             <property name="styleSheet">
-             <string notr="true">background:transparent;</string>
+             <string notr="true">backbackground:transparent;border:0;ground:transparent;</string>
             </property>
             <property name="text">
              <string/>
@@ -1417,51 +1410,6 @@
            </spacer>
           </item>
          </layout>
-        </widget>
-       </item>
-       <item row="6" column="1">
-        <widget class="Line" name="line_2">
-         <property name="minimumSize">
-          <size>
-           <width>250</width>
-           <height>0</height>
-          </size>
-         </property>
-         <property name="maximumSize">
-          <size>
-           <width>250</width>
-           <height>1</height>
-          </size>
-         </property>
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-        </widget>
-       </item>
-       <item row="3" column="1">
-        <widget class="Line" name="line">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-        </widget>
-       </item>
-       <item row="4" column="0">
-        <widget class="Line" name="line_4">
-         <property name="minimumSize">
-          <size>
-           <width>600</width>
-           <height>0</height>
-          </size>
-         </property>
-         <property name="maximumSize">
-          <size>
-           <width>16777215</width>
-           <height>1</height>
-          </size>
-         </property>
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
         </widget>
        </item>
       </layout>
@@ -1667,7 +1615,7 @@
            </palette>
           </property>
           <property name="styleSheet">
-           <string notr="true">background:transparent;</string>
+           <string notr="true">background:transparent;border:0;</string>
           </property>
           <property name="icon">
            <iconset resource="../bitcoin.qrc">
@@ -1787,7 +1735,7 @@
            </palette>
           </property>
           <property name="styleSheet">
-           <string notr="true">background:transparent;</string>
+           <string notr="true">background:transparent;border:0;</string>
           </property>
           <property name="icon">
            <iconset resource="../bitcoin.qrc">
@@ -1907,7 +1855,7 @@
            </palette>
           </property>
           <property name="styleSheet">
-           <string notr="true">background:transparent;</string>
+           <string notr="true">background:transparent;border:0;</string>
           </property>
           <property name="text">
            <string/>
@@ -2902,7 +2850,7 @@
              <enum>Qt::LeftToRight</enum>
             </property>
             <property name="styleSheet">
-             <string notr="true">background:transparent;</string>
+             <string notr="true">background:transparent;border:0;</string>
             </property>
             <property name="text">
              <string/>
@@ -3174,8 +3122,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>894</width>
-            <height>461</height>
+            <width>868</width>
+            <height>532</height>
            </rect>
           </property>
           <property name="styleSheet">
@@ -3943,7 +3891,7 @@
             <property name="maximumSize">
              <size>
               <width>700</width>
-              <height>150</height>
+              <height>175</height>
              </size>
             </property>
             <property name="frameShape">
@@ -4053,7 +4001,7 @@
                 </palette>
                </property>
                <property name="styleSheet">
-                <string notr="true">background:transparent;</string>
+                <string notr="true">background:transparent;border:0;</string>
                </property>
                <property name="icon">
                 <iconset resource="../bitcoin.qrc">
@@ -4072,13 +4020,13 @@
                <property name="minimumSize">
                 <size>
                  <width>10</width>
-                 <height>10</height>
+                 <height>100</height>
                 </size>
                </property>
                <property name="maximumSize">
                 <size>
                  <width>150</width>
-                 <height>150</height>
+                 <height>175</height>
                 </size>
                </property>
                <property name="text">
@@ -4329,7 +4277,7 @@
                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;img src=&quot;:/toolTip/res/tooltips/CoinserverTooltip.png&quot;/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                </property>
                <property name="styleSheet">
-                <string notr="true">background:transparent;</string>
+                <string notr="true">background:transparent;border:0;</string>
                </property>
                <property name="text">
                 <string/>
@@ -4502,8 +4450,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>894</width>
-            <height>461</height>
+            <width>868</width>
+            <height>532</height>
            </rect>
           </property>
           <property name="styleSheet">
