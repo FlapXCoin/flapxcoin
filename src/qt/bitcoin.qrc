@@ -81,7 +81,6 @@
         <file>res/images/art/elitecraftvideo.png</file>
         <file>res/images/art/esg1.png</file>
         <file>res/images/art/esg2.png</file>
-        <file>res/images/art/exhome.png</file>
         <file>res/images/art/fb.png</file>
         <file>res/images/art/fb1.png</file>
         <file>res/images/art/fbb.png</file>
@@ -96,8 +95,8 @@
         <file>res/images/art/flapxspace.png</file>
         <file>res/images/art/flapxyellow.png</file>
         <file>res/images/art/flying-blurb.png</file>
-        <file>res/images/art/Home.png</file>
-        <file>res/images/art/Links.png</file>
+        <file>res/images/art/home.png</file>
+        <file>res/images/art/links.png</file>
         <file>res/images/art/logo1.png</file>
         <file>res/images/art/moon.png</file>
         <file>res/images/art/n1.png</file>
@@ -108,14 +107,15 @@
         <file>res/images/art/p1.png</file>
         <file>res/images/art/p2.png</file>
         <file>res/images/art/p3.png</file>
-        <file>res/images/art/Panic.png</file>
+        <file>res/images/art/panic.png</file>
         <file>res/images/art/pipe.png</file>
         <file>res/images/art/pool.png</file>
         <file>res/images/art/swag.png</file>
         <file>res/images/art/swagnl.png</file>
-        <file>res/images/art/Tipbot.png</file>
+        <file>res/images/art/tipbot.png</file>
         <file>res/images/art/unnamed.png</file>
         <file>res/images/art/b1.png</file>
+        <file>res/images/art/listings.png</file>
     </qresource>
     <qresource prefix="/images">
         <file alias="about">res/images/about.png</file>
@@ -162,11 +162,11 @@
         <file>res/images/art/ccity.png</file>
         <file>res/images/art/elitecraftvideo.png</file>
         <file>res/images/art/fb1.png</file>
-        <file>res/images/art/Home.png</file>
-        <file>res/images/art/Links.png</file>
+        <file>res/images/art/home.png</file>
+        <file>res/images/art/links.png</file>
         <file>res/images/art/nerdlabs001icon.png</file>
-        <file>res/images/art/Panic.png</file>
-        <file>res/images/art/Tipbot.png</file>
+        <file>res/images/art/panic.png</file>
+        <file>res/images/art/tipbot.png</file>
         <file>res/images/art/blurb.png</file>
         <file>res/images/art/fb.png</file>
         <file>res/images/art/fbb.png</file>
@@ -183,13 +183,16 @@
         <file>res/images/art/p3.png</file>
         <file>res/images/art/pipe.png</file>
         <file>res/images/art/esg1.png</file>
-        <file>res/images/art/exhome.png</file>
         <file>res/images/art/fbs.png</file>
         <file>res/images/art/flaplogo.png</file>
         <file>res/images/art/moon.png</file>
         <file>res/images/art/pool.png</file>
         <file>res/images/art/discord.png</file>
         <file>res/images/art/esg2.png</file>
+        <file>res/images/art/b1.png</file>
+        <file>res/images/art/elitecraftlogo2.png</file>
+        <file>res/images/art/listings.png</file>
+        <file>res/images/art/n1.png</file>
     </qresource>
     <qresource prefix="/movies">
         <file alias="update_spinner">res/movies/update_spinner.mng</file>
@@ -238,11 +241,11 @@
         <file>res/images/art/btct.png</file>
         <file>res/images/art/elitecraftvideo.png</file>
         <file>res/images/art/fb1.png</file>
-        <file>res/images/art/Home.png</file>
-        <file>res/images/art/Links.png</file>
+        <file>res/images/art/home.png</file>
+        <file>res/images/art/links.png</file>
         <file>res/images/art/nerdlabs001icon.png</file>
-        <file>res/images/art/Panic.png</file>
-        <file>res/images/art/Tipbot.png</file>
+        <file>res/images/art/panic.png</file>
+        <file>res/images/art/tipbot.png</file>
         <file>res/images/art/devpool.png</file>
         <file>res/images/art/elite2020.png</file>
         <file>res/images/art/eklogo.png</file>
@@ -263,7 +266,6 @@
         <file>res/images/art/p3.png</file>
         <file>res/images/art/pipe.png</file>
         <file>res/images/art/esg1.png</file>
-        <file>res/images/art/exhome.png</file>
         <file>res/images/art/esg2.png</file>
         <file>res/images/art/elitecraftlogo2.png</file>
         <file>res/images/art/discord.png</file>
@@ -271,5 +273,9 @@
         <file>res/images/art/flaplogo.png</file>
         <file>res/images/art/moon.png</file>
         <file>res/images/art/pool.png</file>
+        <file>res/images/art/b1.png</file>
+        <file>res/images/art/freib.png</file>
+        <file>res/images/art/listings.png</file>
+        <file>res/images/art/n1.png</file>
     </qresource>
 </RCC>

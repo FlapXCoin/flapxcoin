@@ -418,8 +418,8 @@
      </property>
      <property name="minimumSize">
       <size>
-       <width>0</width>
-       <height>0</height>
+       <width>700</width>
+       <height>700</height>
       </size>
      </property>
      <property name="maximumSize">
@@ -481,7 +481,7 @@
            </property>
            <property name="minimumSize">
             <size>
-             <width>0</width>
+             <width>400</width>
              <height>320</height>
             </size>
            </property>
@@ -629,13 +629,25 @@
             <bool>false</bool>
            </property>
            <layout class="QGridLayout" name="gridLayout_3">
+            <property name="leftMargin">
+             <number>0</number>
+            </property>
             <property name="topMargin">
              <number>15</number>
+            </property>
+            <property name="rightMargin">
+             <number>0</number>
+            </property>
+            <property name="bottomMargin">
+             <number>0</number>
+            </property>
+            <property name="spacing">
+             <number>0</number>
             </property>
             <item row="0" column="0">
              <layout class="QGridLayout" name="gridLayout_2">
               <property name="topMargin">
-               <number>10</number>
+               <number>25</number>
               </property>
               <item row="1" column="1">
                <widget class="QLabel" name="labelStake">
@@ -6618,37 +6630,6 @@
                    <bool>true</bool>
                   </property>
                  </widget>
-                 <widget class="QLabel" name="label_15">
-                  <property name="geometry">
-                   <rect>
-                    <x>90</x>
-                    <y>130</y>
-                    <width>50</width>
-                    <height>50</height>
-                   </rect>
-                  </property>
-                  <property name="minimumSize">
-                   <size>
-                    <width>50</width>
-                    <height>50</height>
-                   </size>
-                  </property>
-                  <property name="maximumSize">
-                   <size>
-                    <width>50</width>
-                    <height>50</height>
-                   </size>
-                  </property>
-                  <property name="text">
-                   <string/>
-                  </property>
-                  <property name="pixmap">
-                   <pixmap resource="../bitcoin.qrc">:/qt/art/res/images/art/flapxyellow.png</pixmap>
-                  </property>
-                  <property name="scaledContents">
-                   <bool>true</bool>
-                  </property>
-                 </widget>
                 </widget>
                </item>
               </layout>
@@ -6664,7 +6645,7 @@
            </property>
            <property name="minimumSize">
             <size>
-             <width>0</width>
+             <width>400</width>
              <height>500</height>
             </size>
            </property>
@@ -6975,7 +6956,19 @@
             <bool>false</bool>
            </property>
            <layout class="QGridLayout" name="gridLayout_9">
+            <property name="leftMargin">
+             <number>0</number>
+            </property>
             <property name="topMargin">
+             <number>0</number>
+            </property>
+            <property name="rightMargin">
+             <number>0</number>
+            </property>
+            <property name="bottomMargin">
+             <number>0</number>
+            </property>
+            <property name="spacing">
              <number>0</number>
             </property>
             <item row="3" column="0">
@@ -7300,7 +7293,7 @@
              <widget class="QFrame" name="frame">
               <property name="minimumSize">
                <size>
-                <width>100</width>
+                <width>500</width>
                 <height>40</height>
                </size>
               </property>
@@ -7325,6 +7318,24 @@
                <number>0</number>
               </property>
               <layout class="QGridLayout" name="gridLayout_10">
+               <property name="leftMargin">
+                <number>0</number>
+               </property>
+               <property name="topMargin">
+                <number>0</number>
+               </property>
+               <property name="rightMargin">
+                <number>0</number>
+               </property>
+               <property name="bottomMargin">
+                <number>0</number>
+               </property>
+               <property name="horizontalSpacing">
+                <number>10</number>
+               </property>
+               <property name="verticalSpacing">
+                <number>0</number>
+               </property>
                <item row="0" column="2">
                 <widget class="QLabel" name="label_8">
                  <property name="sizePolicy">
