@@ -779,7 +779,7 @@ void BitcoinGUI::incomingTransaction(const QModelIndex & parent, int start, int 
                         .data(Qt::DecorationRole));
 
         notificator->notify(Notificator::Information,
-                            (amount)<0 ? (fS4CNotificator == true ? tr("Sent S4C transaction") : tr("Sent transaction") ):
+                            (amount)<0 ? (fS4CNotificator == true ? tr("Sent transaction") : tr("Sent transaction") ):
                                          tr("Incoming transaction"),
                               tr("Date: %1\n"
                                  "Amount: %2\n"

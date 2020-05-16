@@ -519,7 +519,7 @@ void ShoppingPage::on_pushButton_242_clicked()
 
 void ShoppingPage::on_pushButton_524_clicked()
 {
-    QString link="https://altexchanger.com/trade/index/market/flapx_doge/";
+    QString link="https://www.unnamed.exchange/Exchange?market=FLAPX_LTC";
     QDesktopServices::openUrl(QUrl(link));
 }
 

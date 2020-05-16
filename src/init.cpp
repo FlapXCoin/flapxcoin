@@ -919,7 +919,7 @@ bool AppInit2(boost::thread_group& threadGroup)
     }
     if (pindexBest != pindexRescan && pindexBest && pindexRescan && pindexBest->nHeight > pindexRescan->nHeight)
     {
-        uiInterface.InitMessage(_("Rescanning..."));
+        uiInterface.InitMessage(_("Flapping The Fappin Blocks....Please Hold"));
         printf("Rescanning last %i blocks (from block %i)...\n", pindexBest->nHeight - pindexRescan->nHeight, pindexRescan->nHeight);
         nStart = GetTimeMillis();
         pwalletMain->ScanForWalletTransactions(pindexRescan, true);
@@ -980,7 +980,7 @@ bool AppInit2(boost::thread_group& threadGroup)
 
     // ********************************************************* Step 10: load peers
 
-    uiInterface.InitMessage(_("Loading addresses..."));
+    uiInterface.InitMessage(_("Final Coundown"));
     printf("Loading addresses...\n");
     nStart = GetTimeMillis();
 
@@ -1027,7 +1027,7 @@ bool AppInit2(boost::thread_group& threadGroup)
 
     // ********************************************************* Step 12: finished
 
-    uiInterface.InitMessage(_("Done loading"));
+    uiInterface.InitMessage(_("Launching"));
     printf("Done loading\n");
 
     // Add wallet transactions that aren't already in a block to mapTransactions

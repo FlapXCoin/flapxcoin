@@ -35,20 +35,23 @@
    <string>Address Book</string>
   </property>
   <property name="styleSheet">
-   <string notr="true">background-image:url(:/images/res/images/art/ovbg.png);</string>
+   <string notr="true">background-image:url(:/images/res/images/art/flapxspace.png);</string>
   </property>
   <layout class="QGridLayout" name="gridLayout_11">
    <property name="leftMargin">
-    <number>20</number>
+    <number>0</number>
    </property>
    <property name="topMargin">
-    <number>20</number>
+    <number>0</number>
    </property>
    <property name="rightMargin">
-    <number>20</number>
+    <number>0</number>
    </property>
    <property name="bottomMargin">
-    <number>20</number>
+    <number>0</number>
+   </property>
+   <property name="spacing">
+    <number>0</number>
    </property>
    <item row="0" column="0">
     <widget class="QTabWidget" name="tabWidget">
@@ -82,9 +85,6 @@
      <property name="autoFillBackground">
       <bool>false</bool>
      </property>
-     <property name="styleSheet">
-      <string notr="true">background-image:url(:/images/res/images/art/flapxspace.png);</string>
-     </property>
      <property name="tabPosition">
       <enum>QTabWidget::North</enum>
      </property>
@@ -92,7 +92,7 @@
       <enum>QTabWidget::Rounded</enum>
      </property>
      <property name="currentIndex">
-      <number>5</number>
+      <number>4</number>
      </property>
      <property name="iconSize">
       <size>
@@ -140,6 +140,9 @@
            <width>90000</width>
            <height>70</height>
           </size>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">background:transparent;border:0;</string>
          </property>
          <property name="frameShape">
           <enum>QFrame::NoFrame</enum>
@@ -221,6 +224,9 @@
            <width>16777215</width>
            <height>130</height>
           </size>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">background:transparent;border:0;</string>
          </property>
          <property name="frameShape">
           <enum>QFrame::NoFrame</enum>
@@ -700,6 +706,9 @@
            <height>150</height>
           </size>
          </property>
+         <property name="styleSheet">
+          <string notr="true">background:transparent;border:0;</string>
+         </property>
          <property name="frameShape">
           <enum>QFrame::NoFrame</enum>
          </property>
@@ -955,7 +964,7 @@
              </palette>
             </property>
             <property name="styleSheet">
-             <string notr="true">bacbackground:transparent;border:0;kground:transparent;</string>
+             <string notr="true">background:transparent;border:0;</string>
             </property>
             <property name="text">
              <string/>
@@ -1091,7 +1100,7 @@
              </palette>
             </property>
             <property name="styleSheet">
-             <string notr="true">background:tranbackground:transparent;border:0;sparent;</string>
+             <string notr="true">background:transparent;border:0;</string>
             </property>
             <property name="text">
              <string/>
@@ -1214,7 +1223,7 @@
              </palette>
             </property>
             <property name="styleSheet">
-             <string notr="true">backgrobackground:transparent;border:0;und:transparent;</string>
+             <string notr="true">background:transparent;border:0;</string>
             </property>
             <property name="text">
              <string/>
@@ -1340,7 +1349,7 @@
              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;img src=&quot;:/toolTip/res/tooltips/CoinserverTooltip.png&quot;/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
             <property name="styleSheet">
-             <string notr="true">backbackground:transparent;border:0;ground:transparent;</string>
+             <string notr="true">background:transparent;border:0;</string>
             </property>
             <property name="text">
              <string/>
@@ -3125,8 +3134,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>868</width>
-            <height>532</height>
+            <width>908</width>
+            <height>572</height>
            </rect>
           </property>
           <property name="styleSheet">
@@ -3136,10 +3145,10 @@
            <item row="0" column="0">
             <widget class="QFrame" name="frame_12">
              <property name="frameShape">
-              <enum>QFrame::StyledPanel</enum>
+              <enum>QFrame::NoFrame</enum>
              </property>
              <property name="frameShadow">
-              <enum>QFrame::Raised</enum>
+              <enum>QFrame::Plain</enum>
              </property>
              <layout class="QGridLayout" name="gridLayout_21">
               <item row="0" column="0">
@@ -3880,6 +3889,19 @@
        <string>NerdLabs001</string>
       </attribute>
       <layout class="QGridLayout" name="gridLayout_29">
+       <item row="1" column="0">
+        <spacer name="verticalSpacer_10">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
        <item row="0" column="0">
         <widget class="QFrame" name="frame_2">
          <property name="frameShape">
@@ -3893,7 +3915,7 @@
            <widget class="QFrame" name="frame_4">
             <property name="maximumSize">
              <size>
-              <width>700</width>
+              <width>1000</width>
               <height>175</height>
              </size>
             </property>
@@ -3908,7 +3930,7 @@
               <widget class="QPushButton" name="pushButton_141">
                <property name="maximumSize">
                 <size>
-                 <width>500</width>
+                 <width>400</width>
                  <height>16777215</height>
                 </size>
                </property>
@@ -4389,19 +4411,6 @@
          </layout>
         </widget>
        </item>
-       <item row="1" column="0">
-        <spacer name="verticalSpacer_10">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>20</width>
-           <height>40</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
       </layout>
      </widget>
      <widget class="QWidget" name="tab_3">
@@ -4453,8 +4462,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>868</width>
-            <height>532</height>
+            <width>908</width>
+            <height>572</height>
            </rect>
           </property>
           <property name="styleSheet">
@@ -10100,6 +10109,9 @@
                              <bold>true</bold>
                             </font>
                            </property>
+                           <property name="styleSheet">
+                            <string notr="true">background:transparent;border:0;</string>
+                           </property>
                            <property name="maximum">
                             <number>99999999</number>
                            </property>
@@ -10121,7 +10133,7 @@
                            </property>
                            <property name="maximumSize">
                             <size>
-                             <width>16777215</width>
+                             <width>150</width>
                              <height>16777215</height>
                             </size>
                            </property>
@@ -10131,9 +10143,9 @@
                               <colorrole role="Button">
                                <brush brushstyle="SolidPattern">
                                 <color alpha="0">
-                                 <red>0</red>
-                                 <green>0</green>
-                                 <blue>0</blue>
+                                 <red>30</red>
+                                 <green>255</green>
+                                 <blue>240</blue>
                                 </color>
                                </brush>
                               </colorrole>
@@ -10141,7 +10153,7 @@
                                <brush brushstyle="SolidPattern">
                                 <color alpha="255">
                                  <red>0</red>
-                                 <green>225</green>
+                                 <green>0</green>
                                  <blue>0</blue>
                                 </color>
                                </brush>
@@ -10169,9 +10181,9 @@
                               <colorrole role="Button">
                                <brush brushstyle="SolidPattern">
                                 <color alpha="0">
-                                 <red>0</red>
-                                 <green>0</green>
-                                 <blue>0</blue>
+                                 <red>30</red>
+                                 <green>255</green>
+                                 <blue>240</blue>
                                 </color>
                                </brush>
                               </colorrole>
@@ -10179,7 +10191,7 @@
                                <brush brushstyle="SolidPattern">
                                 <color alpha="255">
                                  <red>0</red>
-                                 <green>225</green>
+                                 <green>0</green>
                                  <blue>0</blue>
                                 </color>
                                </brush>
@@ -10207,9 +10219,9 @@
                               <colorrole role="Button">
                                <brush brushstyle="SolidPattern">
                                 <color alpha="0">
-                                 <red>0</red>
-                                 <green>0</green>
-                                 <blue>0</blue>
+                                 <red>30</red>
+                                 <green>255</green>
+                                 <blue>240</blue>
                                 </color>
                                </brush>
                               </colorrole>
