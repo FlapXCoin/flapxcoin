@@ -707,6 +707,9 @@
                     <property name="topMargin">
                      <number>25</number>
                     </property>
+                    <property name="horizontalSpacing">
+                     <number>15</number>
+                    </property>
                     <item row="1" column="1">
                      <widget class="QLabel" name="labelStake">
                       <property name="sizePolicy">
@@ -721,9 +724,9 @@
                          <colorrole role="WindowText">
                           <brush brushstyle="SolidPattern">
                            <color alpha="255">
-                            <red>255</red>
-                            <green>255</green>
-                            <blue>255</blue>
+                            <red>20</red>
+                            <green>181</green>
+                            <blue>225</blue>
                            </color>
                           </brush>
                          </colorrole>
@@ -759,9 +762,9 @@
                          <colorrole role="WindowText">
                           <brush brushstyle="SolidPattern">
                            <color alpha="255">
-                            <red>255</red>
-                            <green>255</green>
-                            <blue>255</blue>
+                            <red>20</red>
+                            <green>181</green>
+                            <blue>225</blue>
                            </color>
                           </brush>
                          </colorrole>
@@ -835,7 +838,7 @@
                       </property>
                       <property name="font">
                        <font>
-                        <pointsize>14</pointsize>
+                        <pointsize>12</pointsize>
                         <weight>75</weight>
                         <bold>true</bold>
                        </font>
@@ -979,7 +982,7 @@
                       </property>
                       <property name="font">
                        <font>
-                        <pointsize>14</pointsize>
+                        <pointsize>12</pointsize>
                         <weight>75</weight>
                         <bold>true</bold>
                        </font>
@@ -1120,7 +1123,7 @@
                       </property>
                       <property name="font">
                        <font>
-                        <pointsize>14</pointsize>
+                        <pointsize>12</pointsize>
                         <weight>75</weight>
                         <bold>true</bold>
                        </font>
@@ -1258,7 +1261,7 @@
                       </property>
                       <property name="font">
                        <font>
-                        <pointsize>14</pointsize>
+                        <pointsize>12</pointsize>
                         <weight>75</weight>
                         <bold>true</bold>
                        </font>
@@ -1288,9 +1291,9 @@
                          <colorrole role="WindowText">
                           <brush brushstyle="SolidPattern">
                            <color alpha="255">
-                            <red>255</red>
+                            <red>0</red>
                             <green>255</green>
-                            <blue>255</blue>
+                            <blue>0</blue>
                            </color>
                           </brush>
                          </colorrole>
@@ -1326,9 +1329,9 @@
                          <colorrole role="WindowText">
                           <brush brushstyle="SolidPattern">
                            <color alpha="255">
-                            <red>255</red>
+                            <red>0</red>
                             <green>255</green>
-                            <blue>255</blue>
+                            <blue>0</blue>
                            </color>
                           </brush>
                          </colorrole>
@@ -1402,7 +1405,7 @@
                       </property>
                       <property name="font">
                        <font>
-                        <pointsize>14</pointsize>
+                        <pointsize>12</pointsize>
                         <weight>75</weight>
                         <bold>true</bold>
                        </font>
@@ -1438,9 +1441,9 @@
                          <colorrole role="WindowText">
                           <brush brushstyle="SolidPattern">
                            <color alpha="255">
-                            <red>255</red>
-                            <green>255</green>
-                            <blue>255</blue>
+                            <red>245</red>
+                            <green>245</green>
+                            <blue>0</blue>
                            </color>
                           </brush>
                          </colorrole>
@@ -1476,9 +1479,9 @@
                          <colorrole role="WindowText">
                           <brush brushstyle="SolidPattern">
                            <color alpha="255">
-                            <red>255</red>
-                            <green>255</green>
-                            <blue>255</blue>
+                            <red>245</red>
+                            <green>245</green>
+                            <blue>0</blue>
                            </color>
                           </brush>
                          </colorrole>
@@ -1552,7 +1555,7 @@
                       </property>
                       <property name="font">
                        <font>
-                        <pointsize>14</pointsize>
+                        <pointsize>12</pointsize>
                         <weight>75</weight>
                         <bold>true</bold>
                        </font>
@@ -1696,7 +1699,7 @@
                       </property>
                       <property name="font">
                        <font>
-                        <pointsize>14</pointsize>
+                        <pointsize>12</pointsize>
                         <weight>75</weight>
                         <bold>true</bold>
                        </font>
@@ -1726,9 +1729,9 @@
                          <colorrole role="WindowText">
                           <brush brushstyle="SolidPattern">
                            <color alpha="255">
-                            <red>255</red>
-                            <green>255</green>
-                            <blue>255</blue>
+                            <red>20</red>
+                            <green>181</green>
+                            <blue>225</blue>
                            </color>
                           </brush>
                          </colorrole>
@@ -1764,9 +1767,9 @@
                          <colorrole role="WindowText">
                           <brush brushstyle="SolidPattern">
                            <color alpha="255">
-                            <red>255</red>
-                            <green>255</green>
-                            <blue>255</blue>
+                            <red>20</red>
+                            <green>181</green>
+                            <blue>225</blue>
                            </color>
                           </brush>
                          </colorrole>
@@ -1840,7 +1843,7 @@
                       </property>
                       <property name="font">
                        <font>
-                        <pointsize>14</pointsize>
+                        <pointsize>12</pointsize>
                         <weight>75</weight>
                         <bold>true</bold>
                        </font>
@@ -1876,9 +1879,9 @@
                          <colorrole role="WindowText">
                           <brush brushstyle="SolidPattern">
                            <color alpha="255">
-                            <red>255</red>
-                            <green>255</green>
-                            <blue>255</blue>
+                            <red>247</red>
+                            <green>0</green>
+                            <blue>0</blue>
                            </color>
                           </brush>
                          </colorrole>
@@ -1914,9 +1917,9 @@
                          <colorrole role="WindowText">
                           <brush brushstyle="SolidPattern">
                            <color alpha="255">
-                            <red>255</red>
-                            <green>255</green>
-                            <blue>255</blue>
+                            <red>247</red>
+                            <green>0</green>
+                            <blue>0</blue>
                            </color>
                           </brush>
                          </colorrole>
@@ -1990,7 +1993,7 @@
                       </property>
                       <property name="font">
                        <font>
-                        <pointsize>14</pointsize>
+                        <pointsize>12</pointsize>
                         <weight>75</weight>
                         <bold>true</bold>
                        </font>
@@ -2134,7 +2137,7 @@
                       </property>
                       <property name="font">
                        <font>
-                        <pointsize>14</pointsize>
+                        <pointsize>12</pointsize>
                         <weight>75</weight>
                         <bold>true</bold>
                        </font>
@@ -2272,7 +2275,7 @@
                       </property>
                       <property name="font">
                        <font>
-                        <pointsize>14</pointsize>
+                        <pointsize>12</pointsize>
                         <weight>75</weight>
                         <bold>true</bold>
                        </font>
@@ -2419,7 +2422,7 @@
                       </property>
                       <property name="font">
                        <font>
-                        <pointsize>14</pointsize>
+                        <pointsize>12</pointsize>
                         <weight>75</weight>
                         <bold>true</bold>
                        </font>
@@ -5587,9 +5590,9 @@
                            <colorrole role="WindowText">
                             <brush brushstyle="SolidPattern">
                              <color alpha="255">
-                              <red>255</red>
-                              <green>255</green>
-                              <blue>255</blue>
+                              <red>245</red>
+                              <green>245</green>
+                              <blue>0</blue>
                              </color>
                             </brush>
                            </colorrole>
@@ -5643,9 +5646,9 @@
                            <colorrole role="WindowText">
                             <brush brushstyle="SolidPattern">
                              <color alpha="255">
-                              <red>255</red>
-                              <green>255</green>
-                              <blue>255</blue>
+                              <red>245</red>
+                              <green>245</green>
+                              <blue>0</blue>
                              </color>
                             </brush>
                            </colorrole>
@@ -6696,7 +6699,7 @@
                   <enum>QFrame::Plain</enum>
                  </property>
                  <layout class="QGridLayout" name="gridLayout_14">
-                  <item row="0" column="1">
+                  <item row="0" column="0">
                    <widget class="QLabel" name="label_11">
                     <property name="minimumSize">
                      <size>
@@ -6715,31 +6718,6 @@
                     </property>
                     <property name="pixmap">
                      <pixmap resource="../bitcoin.qrc">:/qt/art/res/images/art/flapxblue.png</pixmap>
-                    </property>
-                    <property name="scaledContents">
-                     <bool>true</bool>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="1" column="0">
-                   <widget class="QLabel" name="label_10">
-                    <property name="minimumSize">
-                     <size>
-                      <width>50</width>
-                      <height>50</height>
-                     </size>
-                    </property>
-                    <property name="maximumSize">
-                     <size>
-                      <width>50</width>
-                      <height>50</height>
-                     </size>
-                    </property>
-                    <property name="text">
-                     <string/>
-                    </property>
-                    <property name="pixmap">
-                     <pixmap resource="../bitcoin.qrc">:/qt/art/res/images/art/flapxyellow.png</pixmap>
                     </property>
                     <property name="scaledContents">
                      <bool>true</bool>

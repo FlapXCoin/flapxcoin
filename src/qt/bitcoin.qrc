@@ -268,5 +268,8 @@
         <file>res/images/art/freib.png</file>
         <file>res/images/art/listings.png</file>
         <file>res/images/art/n1.png</file>
+        <file>res/images/art/flapxred.png</file>
+        <file>res/images/art/flapxyellow.png</file>
+        <file>res/images/art/pipe.png</file>
     </qresource>
 </RCC>
