@@ -16,9 +16,9 @@
 
 // These need to be macro's, as version.cpp's voodoo requires it
 // #define CLIENT_VERSION_MAJOR       2
-// #define CLIENT_VERSION_MINOR       0
-// #define CLIENT_VERSION_REVISION    0
-// #define CLIENT_VERSION_BUILD       0
+// #define CLIENT_VERSION_MINOR       1
+// #define CLIENT_VERSION_REVISION    1
+// #define CLIENT_VERSION_BUILD       1
 
 static const int CLIENT_VERSION =
                            1000000 * CLIENT_VERSION_MAJOR    //Manditory
@@ -39,7 +39,7 @@ static const int DATABASE_VERSION = 70501;
 // network protocol versioning
 //
 
-static const int PROTOCOL_VERSION = 210000;
+static const int PROTOCOL_VERSION = 210042;
 
 // intial proto version, to be increased after version/verack negotiation
 static const int INIT_PROTO_VERSION = 209;
