@@ -143,7 +143,7 @@ TransactionView::TransactionView(QWidget *parent) :
     QAction *copyTxIDAction = new QAction(tr("Copy transaction ID"), this);
     QAction *editLabelAction = new QAction(tr("Edit label"), this);
     QAction *showDetailsAction = new QAction(tr("Show transaction details"), this);
-    QAction *viewOnPandachain = new QAction(tr("Search Explorer @ Crypto-city.com"), this);
+    QAction *viewOnPandachain = new QAction(tr("Search Explorer blocks.flapxcoin.com"), this);
 
     contextMenu = new QMenu();
     contextMenu->addAction(copyAddressAction);
@@ -407,7 +407,7 @@ void TransactionView::viewOnPandachain()
     QModelIndexList selection = transactionView->selectionModel()->selectedRows();
     if(!selection.isEmpty())
     {
-        QString format("https://flapx.crypto-city.com/tx/");
+        QString format("https://blocks.flapxcoin.com/tx/");
         format += selection.at(0).data(TransactionTableModel::TxIDRole).toString();
 
         QDesktopServices::openUrl(QUrl(format));
