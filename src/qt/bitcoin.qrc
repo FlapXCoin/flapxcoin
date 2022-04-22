@@ -45,30 +45,16 @@
         <file>res/icons/stakingTab.png</file>
         <file>res/images/art/blurb.png</file>
         <file>res/images/art/btct.png</file>
-        <file>res/images/art/cccc.png</file>
-        <file>res/images/art/cccir.png</file>
-        <file>res/images/art/cccon.png</file>
         <file>res/images/art/cccu.png</file>
-        <file>res/images/art/ccdgb.png</file>
         <file>res/images/art/ccdiscord.png</file>
         <file>res/images/art/ccflapx.png</file>
-        <file>res/images/art/ccflt.png</file>
         <file>res/images/art/ccfrei.png</file>
-        <file>res/images/art/ccgdc.png</file>
-        <file>res/images/art/cchbn.png</file>
-        <file>res/images/art/cchyp.png</file>
-        <file>res/images/art/ccity.png</file>
         <file>res/images/art/ccmaza.png</file>
         <file>res/images/art/ccnet.png</file>
         <file>res/images/art/ccnlabs.png</file>
-        <file>res/images/art/ccpiggy.png</file>
         <file>res/images/art/ccsat3.png</file>
         <file>res/images/art/ccssf.png</file>
-        <file>res/images/art/cctext.png</file>
-        <file>res/images/art/cctext100.png</file>
-        <file>res/images/art/cctop3.png</file>
         <file>res/images/art/ccunnamed.png</file>
-        <file>res/images/art/ccww.png</file>
         <file>res/images/art/cheese.png</file>
         <file>res/images/art/devpool.png</file>
         <file>res/images/art/discord.png</file>
@@ -119,33 +105,20 @@
         <file alias="splash">res/images/splash.png</file>
         <file>res/images/art/nerdlabs128.png</file>
         <file>res/images/art/flapxexplorer.png</file>
-        <file>res/images/art/cctext.png</file>
         <file>res/images/art/flapxexplorer100.png</file>
         <file>res/images/art/nerdlabs100.png</file>
-        <file>res/images/art/cctext100.png</file>
         <file>res/images/art/ccnet.png</file>
         <file>res/images/art/cccu.png</file>
         <file>res/images/art/ccflapx.png</file>
-        <file>res/images/art/ccgdc.png</file>
-        <file>res/images/art/cchyp.png</file>
         <file>res/images/art/ccsat3.png</file>
         <file>res/images/art/ccmaza.png</file>
-        <file>res/images/art/ccww.png</file>
         <file>res/images/art/ccnlabs.png</file>
         <file>res/images/art/ccssf.png</file>
-        <file>res/images/art/cctop3.png</file>
         <file>res/images/art/unnamed.png</file>
         <file>res/images/art/ccunnamed.png</file>
-        <file>res/images/art/cchbn.png</file>
-        <file>res/images/art/cccir.png</file>
-        <file>res/images/art/cccon.png</file>
         <file>res/images/art/ccfrei.png</file>
-        <file>res/images/art/ccpiggy.png</file>
         <file>res/images/art/discord2.png</file>
-        <file>res/images/art/cccc.png</file>
         <file>res/images/art/ccdiscord.png</file>
-        <file>res/images/art/ccflt.png</file>
-        <file>res/images/art/ccdgb.png</file>
         <file>res/images/art/elitecraftlogo.png</file>
         <file>res/images/art/networkpage.png</file>
         <file>res/images/art/swag.png</file>
@@ -156,7 +129,6 @@
         <file>res/images/art/elite2020.png</file>
         <file>res/images/art/eklogo.png</file>
         <file>res/images/art/btct.png</file>
-        <file>res/images/art/ccity.png</file>
         <file>res/images/art/elitecraftvideo.png</file>
         <file>res/images/art/fb1.png</file>
         <file>res/images/art/home.png</file>
@@ -199,33 +171,20 @@
     <qresource prefix="/qt/art">
         <file>res/images/art/cccu.png</file>
         <file>res/images/art/ccflapx.png</file>
-        <file>res/images/art/ccgdc.png</file>
-        <file>res/images/art/cchyp.png</file>
         <file>res/images/art/ccmaza.png</file>
         <file>res/images/art/ccnet.png</file>
         <file>res/images/art/ccnlabs.png</file>
         <file>res/images/art/ccsat3.png</file>
-        <file>res/images/art/cctext.png</file>
-        <file>res/images/art/cctext100.png</file>
         <file>res/images/art/discord2.png</file>
         <file>res/images/art/flapxexplorer.png</file>
         <file>res/images/art/flapxexplorer100.png</file>
         <file>res/images/art/nerdlabs100.png</file>
         <file>res/images/art/nerdlabs128.png</file>
         <file>res/images/art/ccssf.png</file>
-        <file>res/images/art/cctop3.png</file>
         <file>res/images/art/unnamed.png</file>
         <file>res/images/art/ccunnamed.png</file>
-        <file>res/images/art/cchbn.png</file>
-        <file>res/images/art/cccir.png</file>
-        <file>res/images/art/cccon.png</file>
         <file>res/images/art/ccfrei.png</file>
-        <file>res/images/art/ccww.png</file>
-        <file>res/images/art/ccpiggy.png</file>
-        <file>res/images/art/cccc.png</file>
         <file>res/images/art/ccdiscord.png</file>
-        <file>res/images/art/ccflt.png</file>
-        <file>res/images/art/ccdgb.png</file>
         <file>res/images/art/elitecraftlogo.png</file>
         <file>res/images/art/networkpage.png</file>
         <file>res/images/art/swag.png</file>
@@ -244,7 +203,6 @@
         <file>res/images/art/elite2020.png</file>
         <file>res/images/art/eklogo.png</file>
         <file>res/images/art/blurb.png</file>
-        <file>res/images/art/ccity.png</file>
         <file>res/images/art/fb.png</file>
         <file>res/images/art/fbb.png</file>
         <file>res/images/art/fbt.png</file>

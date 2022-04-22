@@ -436,7 +436,7 @@ void ShoppingPage::on_pushButton_112_clicked()
 }
 void ShoppingPage::on_pushButton_113_clicked()
 {
-    QString link="https://www.crypto-city.com/index.php/flapx/pools/";
+    QString link="https://sites.google.com/view/flapxcoin/landing-pad";
     QDesktopServices::openUrl(QUrl(link));
 }
 
@@ -448,7 +448,7 @@ void ShoppingPage::on_pushButton_127_clicked()
 
 void ShoppingPage::on_pushButton_131_clicked()
 {
-    QString link="https://www.crypto-city.com/index.php/flapx/wall";
+    QString link="https://sites.google.com/view/flapxcoin/landing-pad";
     QDesktopServices::openUrl(QUrl(link));
 }
 void ShoppingPage::on_pushButton_132_clicked()
