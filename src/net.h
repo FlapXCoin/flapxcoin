@@ -1,10 +1,12 @@
-// Copyright (c) 2009-2021 Satoshi Nakamoto
-// Copyright (c) 2009-2021 The Bitcoin developers
-// Copyright (c) 2011-2021 Litecoin Developers
+// Copyright (c) 2009-2023 Satoshi Nakamoto
+// Copyright (c) 2009-2023 The Bitcoin developers
+// Copyright (c) 2011-2023 FLAPX Developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
+
 #ifndef BITCOIN_NET_H
 #define BITCOIN_NET_H
+
 #include <stdint.h>
 #include <deque>
 #include <boost/array.hpp>
@@ -673,5 +675,4 @@ inline void RelayMessage<>(const CInv& inv, const CDataStream& ss)
     RelayInventory(inv);
 }
 
-
-#endif
+#endif // BITCOIN_NET_H
