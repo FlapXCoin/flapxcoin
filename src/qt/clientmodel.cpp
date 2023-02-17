@@ -1,28 +1,42 @@
+// Copyright (c) 2011-2023 The Bitcoin Core developers
+// Copyright (c) 2011-2023 The Flappycoin developers
+// Distributed under the MIT software license, see the accompanying
+// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+
 #include "clientmodel.h"
 #include "guiconstants.h"
+#include "guiutil.h"
 #include "optionsmodel.h"
 #include "addresstablemodel.h"
 #include "transactiontablemodel.h"
 
 #include "chainparams.h"
-#include "alert.h"
+#include "checkpoints.h"
 #include "main.h"
+#include "net.h"
 #include "ui_interface.h"
+#include "util.h"
 
 #include <QDateTime>
 #include <QTimer>
 
+#include <boost/bind/bind.hpp>
+
+class CBlockIndex;
+
 static const int64_t nClientStartupTime = GetTime();
 
 ClientModel::ClientModel(OptionsModel *optionsModel, QObject *parent) :
-    QObject(parent), optionsModel(optionsModel),
-    cachedNumBlocks(0), numBlocksAtStartup(-1), pollTimer(0)
+    QObject(parent), 
+    optionsModel(optionsModel),
+    cachedNumBlocks(0),
+    numBlocksAtStartup(-1), 
+    pollTimer(0)
 {
     // numBlocksAtStartup = -1;
 
     pollTimer = new QTimer(this);
-    pollTimer->setInterval(MODEL_UPDATE_DELAY);
-    pollTimer->start();
+    pollTimer->start(MODEL_UPDATE_DELAY);  
     connect(pollTimer, SIGNAL(timeout()), this, SLOT(updateTimer()));
 
     subscribeToCoreSignals();
@@ -53,6 +67,7 @@ int ClientModel::getNumBlocksAtStartup()
 QDateTime ClientModel::getLastBlockDate() const
 {
     LOCK(cs_main);
+    
     if (pindexBest)
         return QDateTime::fromTime_t(pindexBest->GetBlockTime());
     else
@@ -85,27 +100,16 @@ void ClientModel::updateTimer()
 
 void ClientModel::updateNumConnections(int numConnections)
 {
-    emit numConnectionsChanged(numConnections);
+    Q_EMIT numConnectionsChanged(numConnections);
 }
 
-void ClientModel::updateAlert(const QString &hash, int status)
+void ClientModel::updateAlert()
 {
-    // Show error message notification for new alert
-    if(status == CT_NEW)
-    {
-        uint256 hash_256;
-        hash_256.SetHex(hash.toStdString());
-        CAlert alert = CAlert::getAlertByHash(hash_256);
-        if(!alert.IsNull())
-        {
-            emit error(tr("Network Alert"), QString::fromStdString(alert.strStatusBar), false);
-        }
-    }
-
+    
     // Emit a numBlocksChanged when the status message changes,
     // so that the view recomputes and updates the status bar.
     // emit numBlocksChanged(getNumBlocks(), getNumBlocksOfPeers());
-    emit alertsChanged(getStatusBarWarnings());
+     Q_EMIT alertsChanged(getStatusBarWarnings());
 }
 
 bool ClientModel::isTestNet() const
@@ -160,7 +164,6 @@ QString ClientModel::formatClientStartupTime() const
     return QDateTime::fromTime_t(nClientStartupTime).toString();
 }
 
-// Handlers for core signals
 static void NotifyBlocksChanged(ClientModel *clientmodel)
 {
     // This notification is too frequent. Don't trigger a signal.
@@ -169,17 +172,15 @@ static void NotifyBlocksChanged(ClientModel *clientmodel)
 
 static void NotifyNumConnectionsChanged(ClientModel *clientmodel, int newNumConnections)
 {
-    // Too noisy: OutputDebugStringF("NotifyNumConnectionsChanged %i\n", newNumConnections);
+    // Too noisy: qDebug() << "NotifyNumConnectionsChanged: " + QString::number(newNumConnections);
     QMetaObject::invokeMethod(clientmodel, "updateNumConnections", Qt::QueuedConnection,
                               Q_ARG(int, newNumConnections));
 }
 
 static void NotifyAlertChanged(ClientModel *clientmodel, const uint256 &hash, ChangeType status)
 {
-    OutputDebugStringF("NotifyAlertChanged %s status=%i\n", hash.GetHex().c_str(), status);
-    QMetaObject::invokeMethod(clientmodel, "updateAlert", Qt::QueuedConnection,
-                              Q_ARG(QString, QString::fromStdString(hash.GetHex())),
-                              Q_ARG(int, status));
+    qDebug() << "NotifyAlertChanged";
+    QMetaObject::invokeMethod(clientmodel, "updateAlert", Qt::QueuedConnection);
 }
 
 void ClientModel::subscribeToCoreSignals()
@@ -187,7 +188,7 @@ void ClientModel::subscribeToCoreSignals()
     // Connect signals to client
     uiInterface.NotifyBlocksChanged.connect(boost::bind(NotifyBlocksChanged, this));
     uiInterface.NotifyNumConnectionsChanged.connect(boost::bind(NotifyNumConnectionsChanged, this, _1));
-    uiInterface.NotifyAlertChanged.connect(boost::bind(NotifyAlertChanged, this, _1, _2));
+    uiInterface.NotifyAlertChanged.connect(boost::bind(NotifyAlertChanged, this));
 }
 
 void ClientModel::unsubscribeFromCoreSignals()
@@ -195,5 +196,5 @@ void ClientModel::unsubscribeFromCoreSignals()
     // Disconnect signals from client
     uiInterface.NotifyBlocksChanged.disconnect(boost::bind(NotifyBlocksChanged, this));
     uiInterface.NotifyNumConnectionsChanged.disconnect(boost::bind(NotifyNumConnectionsChanged, this, _1));
-    uiInterface.NotifyAlertChanged.disconnect(boost::bind(NotifyAlertChanged, this, _1, _2));
+    uiInterface.NotifyAlertChanged.disconnect(boost::bind(NotifyAlertChanged, this));
 }
