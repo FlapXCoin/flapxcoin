@@ -1,13 +1,15 @@
-// Copyright (c) 2010 Satoshi Nakamoto
-// Copyright (c) 2012 The Bitcoin developers
-// Copyright (c) 2012 Litecoin Developers
+// Copyright (c) 2023 Satoshi Nakamoto
+// Copyright (c) 2023 The Bitcoin Developers
+// Copyright (c) 2023 The Flappycoin Developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
+
 #ifndef BITCOIN_UI_INTERFACE_H
 #define BITCOIN_UI_INTERFACE_H
 
 #include <stdint.h>
 #include <string>
+
 #include "util.h" // for int64
 #include <boost/signals2/signal.hpp>
 #include <boost/signals2/last_value.hpp>
@@ -15,6 +17,7 @@
 class CBasicKeyStore;
 class CWallet;
 class uint256;
+class CBlockIndex;
 
 /** General change type (added, updated, removed). */
 enum ChangeType
@@ -83,10 +86,9 @@ public:
     boost::signals2::signal<void (int newNumConnections)> NotifyNumConnectionsChanged;
 
     /**
-     * New, updated or cancelled alert.
-     * @note called with lock cs_mapAlerts held.
+     * Status bar alerts changed.
      */
-    boost::signals2::signal<void (const uint256 &hash, ChangeType status)> NotifyAlertChanged;
+    boost::signals2::signal<void ()> NotifyAlertChanged;
 };
 
 extern CClientUIInterface uiInterface;
@@ -101,4 +103,4 @@ inline std::string _(const char* psz)
     return rv ? (*rv) : psz;
 }
 
-#endif
+#endif // BITCOIN_UI_INTERFACE_H
