@@ -1,17 +1,19 @@
-// Copyright (c) 2009 Satoshi Nakamoto
-// Copyright (c) 2009 The Bitcoin developers
-// Copyright (c) 2011 Litecoin Developers
-// Copyright (c) 2013 Luckycoin Developers
-// Copyright (c) 2013-2021 Florincoin Developers
-// Copyright (c) 2013 PandaCoin Developers
-// Copyright (c) 2014 NetCoin Developers
-// Copyright (c) 2015 BlackCoin Developers
-// Copyright (c) 2018-2021 FlapX Developers
-
+// Copyright (c) 2009-2023 Satoshi Nakamoto
+// Copyright (c) 2009-2023 The Bitcoin developers
+// Copyright (c) 2023 Litecoin Developers
+// Copyright (c) 2023 Luckycoin Developers
+// Copyright (c) 2023 Florincoin Developers
+// Copyright (c) 2023 PandaCoin Developers
+// Copyright (c) 2023 NetCoin Developers
+// Copyright (c) 2023 BlackCoin Developers
+// Copyright (c) 2018-2023 FlapX Developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include "alert.h"
+#include <boost/algorithm/string/replace.hpp>
+#include <boost/filesystem.hpp>
+#include <boost/filesystem/fstream.hpp>
+
 #include "checkpoints.h"
 #include "db.h"
 #include "txdb.h"
@@ -31,6 +33,7 @@
 #include <QtPlugin>
 Q_IMPORT_PLUGIN (QWindowsIntegrationPlugin);
 #endif
+
 using namespace std;
 using namespace boost;
 
@@ -212,7 +215,7 @@ bool AddOrphanTx(const CTransaction& tx)
 
     if (nSize > 5000)
     {
-        printf("ignoring large orphan tx (size: %" PRIszu ", hash: %s)\n", nSize, hash.ToString().c_str());
+        printf("mempool" "ignoring large orphan tx (size: %" PRIszu ", hash: %s)\n", nSize, hash.ToString().c_str());
         return false;
     }
 
