@@ -2,11 +2,11 @@
 // Copyright (c) 2009 The Bitcoin developers
 // Copyright (c) 2011 Litecoin Developers
 // Copyright (c) 2013 Luckycoin Developers
-// Copyright (c) 2013-2021 Florincoin Developers
+// Copyright (c) 2013-2023 Florincoin Developers
 // Copyright (c) 2013 PandaCoin Developers
 // Copyright (c) 2014 NetCoin Developers
 // Copyright (c) 2015 BlackCoin Developers
-// Copyright (c) 2018-2021 FlapX Developers
+// Copyright (c) 2014-2023 FlapX Developers
 
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
