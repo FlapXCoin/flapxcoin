@@ -1,6 +1,5 @@
 // Copyright (c) 2009-2023 Satoshi Nakamoto
-// Copyright (c) 2009-2023 The Bitcoin developers
-// Copyright (c) 2009-2023 The Flappycoin developers
+// Copyright (c) 2009-2013 The Bitcoin developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -56,6 +55,7 @@ public:
 
     const uint256& HashGenesisBlock() const { return hashGenesisBlock; }
     const MessageStartChars& MessageStart() const { return pchMessageStart; }
+    const vector<unsigned char>& AlertKey() const { return vAlertPubKey; }
     int GetDefaultPort() const { return nDefaultPort; }
     const CBigNum& ProofOfWorkLimit() const { return bnProofOfWorkLimit; }
     int SubsidyHalvingInterval() const { return nSubsidyHalvingInterval; }
@@ -64,7 +64,7 @@ public:
     const string& DataDir() const { return strDataDir; }
     virtual Network NetworkID() const = 0;
     const vector<CDNSSeedData>& DNSSeeds() const { return vSeeds; }
-    const std::vector<unsigned char>& Base58Prefix(Base58Type type) const { return base58Prefixes[type]; }
+    const std::vector<unsigned char> &Base58Prefix(Base58Type type) const { return base58Prefixes[type]; }
     virtual const vector<CAddress>& FixedSeeds() const = 0;
     int RPCPort() const { return nRPCPort; }
     int LastPOWBlock() const { return nLastPOWBlock; }
@@ -73,6 +73,8 @@ protected:
 
     uint256 hashGenesisBlock;
     MessageStartChars pchMessageStart;
+    // Raw pub key bytes for the broadcast alert signing key.
+    vector<unsigned char> vAlertPubKey;
     int nDefaultPort;
     int nRPCPort;
     CBigNum bnProofOfWorkLimit;
@@ -103,4 +105,4 @@ inline bool TestNet() {
     return Params().NetworkID() == CChainParams::TESTNET;
 }
 
-#endif // BITCOIN_CHAINPARAMS_H
+#endif

@@ -1,9 +1,9 @@
-// Copyright (c) 2009-2021 Satoshi Nakamoto
-// Copyright (c) 2009-2021 The Bitcoin developers
-// Copyright (c) 2011-2021 Litecoin Developers
-// Copyright (c) 2013-2021 Florincoin Developers
-// Copyright (c) 2013-2021 NetCoin Developers
-// Copyright (c) 2018-2021 FlapXCoin Developers
+// Copyright (c) 2009-2023 Satoshi Nakamoto
+// Copyright (c) 2009-2023 The Bitcoin developers
+// Copyright (c) 2011-2023 Litecoin Developers
+// Copyright (c) 2013-2023 Florincoin Developers
+// Copyright (c) 2013-2023 NetCoin Developers
+// Copyright (c) 2014-2023 FlapXCoin Developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 #ifndef BITCOIN_MAIN_H

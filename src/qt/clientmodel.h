@@ -1,8 +1,3 @@
-// Copyright (c) 2011-2023 The Bitcoin Core developers
-// Copyright (c) 2011-2023 The Flappycoin developers
-// Distributed under the MIT software license, see the accompanying
-// file COPYING or http://www.opensource.org/licenses/mit-license.php.
-
 #ifndef CLIENTMODEL_H
 #define CLIENTMODEL_H
 
@@ -68,7 +63,7 @@ signals:
 public slots:
     void updateTimer();
     void updateNumConnections(int numConnections);
-    void updateAlert();
+    void updateAlert(const QString &hash, int status);
 };
 
-#endif // BITCOIN_QT_CLIENTMODEL_H
+#endif // CLIENTMODEL_H

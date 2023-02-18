@@ -1,8 +1,8 @@
 /*
  * Qt4 bitcoin GUI.
  *
- * W.J. van der Laan 2011-2021
- * The Bitcoin Developers 2011-2021
+ * W.J. van der Laan 2011-2023
+ * The Bitcoin Developers 2011-2023
  */
 #include "bitcoingui.h"
 #include "calcdialog.h"
