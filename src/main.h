@@ -2,6 +2,7 @@
 // Copyright (c) 2009-2023 The Bitcoin developers
 // Copyright (c) 2011-2023 Litecoin Developers
 // Copyright (c) 2013-2023 Florincoin Developers
+// Copyright (c) 2015-2023 Litedoge Developers
 // Copyright (c) 2013-2023 NetCoin Developers
 // Copyright (c) 2014-2023 FlapXCoin Developers
 // Distributed under the MIT/X11 software license, see the accompanying
@@ -50,14 +51,14 @@ static const unsigned int MAX_P2SH_SIGOPS = 15;
 static const unsigned int MAX_TX_SIGOPS = MAX_BLOCK_SIGOPS/5;
 static const unsigned int MAX_ORPHAN_TRANSACTIONS = MAX_BLOCK_SIZE/100;
 /** Default for -maxorphanblocksmib, maximum number of memory to keep orphan blocks */
-static const unsigned int DEFAULT_MAX_ORPHAN_BLOCKS = 40;
+static const unsigned int DEFAULT_MAX_ORPHAN_BLOCKS = 100;
 static const unsigned int MAX_INV_SZ = 50000;
-static const int64_t MIN_TX_FEE = 1000000;
-static const int64_t MIN_RELAY_TX_FEE = MIN_TX_FEE;
+static const int64_t MIN_TX_FEE = CENT/10;
+static const int64_t MIN_RELAY_TX_FEE =  CENT/50;
 static const int64_t DUST_SOFT_LIMIT = 100000000;
 static const int64_t DUST_HARD_LIMIT = 1000000;
 static const int64_t MAX_MONEY = 2000000000 * COIN; // FlapX: maximum of 325M coins
-static const int64_t MIN_TXOUT_AMOUNT = MIN_TX_FEE;
+static const int64_t MIN_TXOUT_AMOUNT = CENT/100;
 static const int64_t PREMINE = 1172000000 * COIN;
 
 
