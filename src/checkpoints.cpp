@@ -78,28 +78,15 @@ static MapCheckpoints mapCheckpoints =
         (2500000, uint256("0x53d621ec70ae61a97a9ede5f25d24d40f52cfda4a2c514617ed0e5dd651c473e"))
         (2600000, uint256("0xb2c140d171353fbcfc82b80f6c1ee041e7137e6d06c76310336d61a710de1c03"))
         (2650000, uint256("0x5b87ec66086de7697c8144fb080075ecb042d1d455245536d7b084c44612c99a"))
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        (2700000, uint256("0xfb4e23eec825068ffd67af9ccadba135a7e9024d2fb88f2c62fd7071a5efcbbe"))
+        (2750000, uint256("0xf2d602108810c7b246c8bae49e11d70dc790c24f1b720aa4822bbf3a57e559e0"))
+        (2800000, uint256("0x5eba97d9c892702de3a0258bb605eb1fee8346c4ae9c440afff7a0848bb76552"))
+        (2850000, uint256("0xb703e60bfe8b4f1d1e9047fa012960ff11152b8c6e113101e952a185fec2a149"))
+        (2900000, uint256("0x1299c85a110652c78300315ad8d23fad7ee775452877e4ffd6789275e1845e53"))
+        (2950000, uint256("0x92f3fb5da5e5c2676cfeaa7f20c643843d314c68d2da888a06b6f203da69a4c2"))
+        (3000000, uint256("0xecba35382007f16c83dba59e4dfe96881514e95157c4cb814e73213bc3cd2f09"))
         ;
-        ;
+
 
     // TestNet has no checkpoints
     static MapCheckpoints mapCheckpointsTestnet =
