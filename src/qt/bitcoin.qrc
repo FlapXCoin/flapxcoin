@@ -49,12 +49,10 @@
         <file>res/images/art/ccdiscord.png</file>
         <file>res/images/art/ccflapx.png</file>
         <file>res/images/art/ccfrei.png</file>
-        <file>res/images/art/ccmaza.png</file>
         <file>res/images/art/ccnet.png</file>
         <file>res/images/art/ccnlabs.png</file>
         <file>res/images/art/ccsat3.png</file>
         <file>res/images/art/ccssf.png</file>
-        <file>res/images/art/ccunnamed.png</file>
         <file>res/images/art/cheese.png</file>
         <file>res/images/art/devpool.png</file>
         <file>res/images/art/discord.png</file>
@@ -96,7 +94,6 @@
         <file>res/images/art/swag.png</file>
         <file>res/images/art/swagnl.png</file>
         <file>res/images/art/tipbot.png</file>
-        <file>res/images/art/unnamed.png</file>
         <file>res/images/art/b1.png</file>
         <file>res/images/art/listings.png</file>
     </qresource>
@@ -111,11 +108,8 @@
         <file>res/images/art/cccu.png</file>
         <file>res/images/art/ccflapx.png</file>
         <file>res/images/art/ccsat3.png</file>
-        <file>res/images/art/ccmaza.png</file>
         <file>res/images/art/ccnlabs.png</file>
         <file>res/images/art/ccssf.png</file>
-        <file>res/images/art/unnamed.png</file>
-        <file>res/images/art/ccunnamed.png</file>
         <file>res/images/art/ccfrei.png</file>
         <file>res/images/art/discord2.png</file>
         <file>res/images/art/ccdiscord.png</file>
@@ -171,7 +165,6 @@
     <qresource prefix="/qt/art">
         <file>res/images/art/cccu.png</file>
         <file>res/images/art/ccflapx.png</file>
-        <file>res/images/art/ccmaza.png</file>
         <file>res/images/art/ccnet.png</file>
         <file>res/images/art/ccnlabs.png</file>
         <file>res/images/art/ccsat3.png</file>
@@ -181,8 +174,6 @@
         <file>res/images/art/nerdlabs100.png</file>
         <file>res/images/art/nerdlabs128.png</file>
         <file>res/images/art/ccssf.png</file>
-        <file>res/images/art/unnamed.png</file>
-        <file>res/images/art/ccunnamed.png</file>
         <file>res/images/art/ccfrei.png</file>
         <file>res/images/art/ccdiscord.png</file>
         <file>res/images/art/elitecraftlogo.png</file>
