@@ -446,11 +446,6 @@ void ShoppingPage::on_pushButton_127_clicked()
     QDesktopServices::openUrl(QUrl(link));
 }
 
-void ShoppingPage::on_pushButton_131_clicked()
-{
-    QString link="https://sites.google.com/view/flapxcoin/landing-pad";
-    QDesktopServices::openUrl(QUrl(link));
-}
 void ShoppingPage::on_pushButton_132_clicked()
 {
     QString link="https://discord.gg/qbZ6hxx";
@@ -477,7 +472,7 @@ void ShoppingPage::on_pushButton_137_clicked()
 
 void ShoppingPage::on_pushButton_138_clicked()
 {
-    QString link="https://swag.nerdlabs001.com";
+    QString link="https://www.teepublic.com/user/nerdlabs001";
     QDesktopServices::openUrl(QUrl(link));
 }
 
@@ -495,7 +490,7 @@ void ShoppingPage::on_pushButton_145_clicked()
 
 void ShoppingPage::on_pushButton_201_clicked()
 {
-    QString link="https://sites.google.com/view/nerdlabs001/development/elitecraft";
+    QString link="https://nerdcraft.dev";
     QDesktopServices::openUrl(QUrl(link));
 }
 
@@ -513,13 +508,7 @@ void ShoppingPage::on_pushButton_213_clicked()
 
 void ShoppingPage::on_pushButton_242_clicked()
 {
-    QString link="https://discord.gg/5n5UrM2";
-    QDesktopServices::openUrl(QUrl(link));
-}
-
-void ShoppingPage::on_pushButton_524_clicked()
-{
-    QString link="https://www.unnamed.exchange/Exchange?market=FLAPX_LTC";
+    QString link="https://discord.flapxcoin.com";
     QDesktopServices::openUrl(QUrl(link));
 }
 

@@ -284,7 +284,7 @@ void BitcoinGUI::createActions()
     addressBookAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_5));
     tabGroup->addAction(addressBookAction);
 
-    shoppingAction = new QAction(QIcon(":/icons/res/icons/services.png"), tr("&Services"), this);
+    shoppingAction = new QAction(QIcon(":/icons/res/icons/services.png"), tr("&Links"), this);
     shoppingAction->setCheckable(true);
     shoppingAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_6));
     tabGroup->addAction(shoppingAction);
