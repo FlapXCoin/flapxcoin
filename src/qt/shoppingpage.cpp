@@ -436,7 +436,7 @@ void ShoppingPage::on_pushButton_112_clicked()
 }
 void ShoppingPage::on_pushButton_113_clicked()
 {
-    QString link="https://sites.google.com/view/flapxcoin/landing-pad";
+    QString link="https://pools.flapxcoin.com";
     QDesktopServices::openUrl(QUrl(link));
 }
 
