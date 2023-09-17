@@ -94,6 +94,7 @@
         <file>res/images/art/tipbot.png</file>
         <file>res/images/art/b1.png</file>
         <file>res/images/art/listings.png</file>
+        <file>res/icons/staking_on.png</file>
     </qresource>
     <qresource prefix="/images">
         <file alias="about">res/images/about.png</file>
