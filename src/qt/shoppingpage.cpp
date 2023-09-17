@@ -446,12 +446,6 @@ void ShoppingPage::on_pushButton_127_clicked()
     QDesktopServices::openUrl(QUrl(link));
 }
 
-void ShoppingPage::on_pushButton_132_clicked()
-{
-    QString link="https://discord.gg/qbZ6hxx";
-    QDesktopServices::openUrl(QUrl(link));
-}
-
 void ShoppingPage::on_pushButton_134_clicked()
 {
     QString link="https://bitcointalk.org/index.php?topic=3031911.0";
@@ -478,7 +472,7 @@ void ShoppingPage::on_pushButton_138_clicked()
 
 void ShoppingPage::on_pushButton_141_clicked()
 {
-    QString link="https://sites.google.com/view/nerdlabs001";
+    QString link="https://nerdcraft.dev";
     QDesktopServices::openUrl(QUrl(link));
 }
 
@@ -503,12 +497,6 @@ void ShoppingPage::on_pushButton_211_clicked()
 void ShoppingPage::on_pushButton_213_clicked()
 {
     QString link="https://sites.google.com/view/nerdlabs001/development/elitecraft";
-    QDesktopServices::openUrl(QUrl(link));
-}
-
-void ShoppingPage::on_pushButton_242_clicked()
-{
-    QString link="https://discord.flapxcoin.com";
     QDesktopServices::openUrl(QUrl(link));
 }
 

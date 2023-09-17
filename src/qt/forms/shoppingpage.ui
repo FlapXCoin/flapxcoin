@@ -3532,7 +3532,7 @@
                 </size>
                </property>
                <property name="text">
-                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;a href=&quot;https://www.nerdlabs001.com/&quot;&gt;&lt;img src=&quot;:/images/res/images/art/nerdlabs128.png&quot;/&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;a href=&quot;https://sites.google.com/view/nerdlabs/home&quot;&gt;&lt;img src=&quot;:/images/res/images/art/nerdlabs128.png&quot;/&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                </property>
                <property name="scaledContents">
                 <bool>false</bool>
@@ -9142,21 +9142,12 @@
                                 </color>
                                </brush>
                               </colorrole>
-                              <colorrole role="Text">
-                               <brush brushstyle="SolidPattern">
-                                <color alpha="255">
-                                 <red>252</red>
-                                 <green>233</green>
-                                 <blue>79</blue>
-                                </color>
-                               </brush>
-                              </colorrole>
                               <colorrole role="ButtonText">
                                <brush brushstyle="SolidPattern">
                                 <color alpha="255">
-                                 <red>252</red>
-                                 <green>233</green>
-                                 <blue>79</blue>
+                                 <red>0</red>
+                                 <green>0</green>
+                                 <blue>0</blue>
                                 </color>
                                </brush>
                               </colorrole>
@@ -9189,21 +9180,12 @@
                                 </color>
                                </brush>
                               </colorrole>
-                              <colorrole role="Text">
-                               <brush brushstyle="SolidPattern">
-                                <color alpha="255">
-                                 <red>252</red>
-                                 <green>233</green>
-                                 <blue>79</blue>
-                                </color>
-                               </brush>
-                              </colorrole>
                               <colorrole role="ButtonText">
                                <brush brushstyle="SolidPattern">
                                 <color alpha="255">
-                                 <red>252</red>
-                                 <green>233</green>
-                                 <blue>79</blue>
+                                 <red>0</red>
+                                 <green>0</green>
+                                 <blue>0</blue>
                                 </color>
                                </brush>
                               </colorrole>
@@ -9233,15 +9215,6 @@
                                  <red>0</red>
                                  <green>0</green>
                                  <blue>0</blue>
-                                </color>
-                               </brush>
-                              </colorrole>
-                              <colorrole role="Text">
-                               <brush brushstyle="SolidPattern">
-                                <color alpha="255">
-                                 <red>190</red>
-                                 <green>190</green>
-                                 <blue>190</blue>
                                 </color>
                                </brush>
                               </colorrole>

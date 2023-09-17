@@ -75,7 +75,7 @@ private:
     QSortFilterProxyModel *proxyModel;
     QMenu *contextMenu;
 
-//Button Layout: Buttons Mapped to frames ie pushButton_211 = Frame 21 Button 1
+//Button Layout: Buttons Mapped to frames ie pushButton_211 = Frame 21 Button 1 (depreciated)
 private slots:
 
 
@@ -86,8 +86,6 @@ private slots:
     void on_pushButton_113_clicked();
 
     void on_pushButton_127_clicked();
-
-    void on_pushButton_132_clicked();
 
     void on_pushButton_134_clicked();
 
@@ -108,8 +106,6 @@ private slots:
     void on_pushButton_213_clicked();
 
     void on_pushButton_523_clicked();
-
-    void on_pushButton_242_clicked();
 
 
 signals:
