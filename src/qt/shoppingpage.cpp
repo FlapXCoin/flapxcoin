@@ -470,12 +470,6 @@ void ShoppingPage::on_pushButton_138_clicked()
     QDesktopServices::openUrl(QUrl(link));
 }
 
-void ShoppingPage::on_pushButton_141_clicked()
-{
-    QString link="https://nerdcraft.dev";
-    QDesktopServices::openUrl(QUrl(link));
-}
-
 void ShoppingPage::on_pushButton_145_clicked()
 {
     QString link="https://sites.google.com/view/nerdlabs001/development/elitecraft/getting-started";
@@ -498,12 +492,6 @@ void ShoppingPage::on_pushButton_213_clicked()
 {
     QString link="https://sites.google.com/view/nerdlabs001/development/elitecraft";
     QDesktopServices::openUrl(QUrl(link));
-}
-
-void ShoppingPage::on_pushButton_523_clicked()
-{
-   QString link="https://freiexchange.com/market";
-     QDesktopServices::openUrl(QUrl(link));
 }
 
 ShoppingPage::~ShoppingPage()

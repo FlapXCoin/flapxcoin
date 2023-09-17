@@ -46,9 +46,7 @@
         <file>res/images/art/blurb.png</file>
         <file>res/images/art/btct.png</file>
         <file>res/images/art/cccu.png</file>
-        <file>res/images/art/ccdiscord.png</file>
         <file>res/images/art/ccflapx.png</file>
-        <file>res/images/art/ccfrei.png</file>
         <file>res/images/art/ccnet.png</file>
         <file>res/images/art/ccnlabs.png</file>
         <file>res/images/art/ccsat3.png</file>
@@ -110,9 +108,7 @@
         <file>res/images/art/ccsat3.png</file>
         <file>res/images/art/ccnlabs.png</file>
         <file>res/images/art/ccssf.png</file>
-        <file>res/images/art/ccfrei.png</file>
         <file>res/images/art/discord2.png</file>
-        <file>res/images/art/ccdiscord.png</file>
         <file>res/images/art/elitecraftlogo.png</file>
         <file>res/images/art/networkpage.png</file>
         <file>res/images/art/swag.png</file>
@@ -153,6 +149,8 @@
         <file>res/images/art/elitecraftlogo2.png</file>
         <file>res/images/art/listings.png</file>
         <file>res/images/art/n1.png</file>
+        <file>res/images/art/fx.png</file>
+        <file>res/images/art/fxl.png</file>
     </qresource>
     <qresource prefix="/movies">
         <file alias="update_spinner">res/movies/update_spinner.mng</file>
@@ -174,8 +172,6 @@
         <file>res/images/art/nerdlabs100.png</file>
         <file>res/images/art/nerdlabs128.png</file>
         <file>res/images/art/ccssf.png</file>
-        <file>res/images/art/ccfrei.png</file>
-        <file>res/images/art/ccdiscord.png</file>
         <file>res/images/art/elitecraftlogo.png</file>
         <file>res/images/art/networkpage.png</file>
         <file>res/images/art/swag.png</file>
@@ -214,11 +210,12 @@
         <file>res/images/art/moon.png</file>
         <file>res/images/art/pool.png</file>
         <file>res/images/art/b1.png</file>
-        <file>res/images/art/freib.png</file>
         <file>res/images/art/listings.png</file>
         <file>res/images/art/n1.png</file>
         <file>res/images/art/flapxred.png</file>
         <file>res/images/art/flapxyellow.png</file>
         <file>res/images/art/pipe.png</file>
+        <file>res/images/art/fx.png</file>
+        <file>res/images/art/fxl.png</file>
     </qresource>
 </RCC>

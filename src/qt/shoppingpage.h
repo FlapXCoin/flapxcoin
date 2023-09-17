@@ -95,8 +95,6 @@ private slots:
 
     void on_pushButton_138_clicked();
 
-    void on_pushButton_141_clicked();
-
     void on_pushButton_145_clicked();
 
     void on_pushButton_201_clicked();
@@ -105,7 +103,6 @@ private slots:
 
     void on_pushButton_213_clicked();
 
-    void on_pushButton_523_clicked();
 
 
 signals:
