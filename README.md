@@ -51,7 +51,7 @@ FAIR-WEIGHT protocol replaces the idea of 'block splitting' to prevent very larg
 Build notes.
 
 Berkeley db 4.8 Deprecation 
-Users on Ubuntu 20+ and Debian 11+ repectivly 
+Users on Ubuntu 20+ and Debian 11+ respectively 
 must use Cmake to compile
 
 ##################################################################################################
