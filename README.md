@@ -48,6 +48,35 @@ FAIR-WEIGHT protocol replaces the idea of 'block splitting' to prevent very larg
 
 70 confirmations for minted blocks
    	
+Build notes.
+
+Berkeley db 4.8 Deprecation 
+Users on Ubuntu 20+ and Debian 11+ repectivly 
+must use Cmake to compile
+
+##################################################################################################
+sudo apt install build-essential libpng-dev zlib1g-dev libbz2-dev python3-pip python3-requirements
+
+sudo make -C upstream unarchive BASE_OS=ubuntu20
+
+
+*for 4.8 atleast do * sudo make -C upstream patches
+answer y no next steps if prompted patch exists
+
+
+sudo make -C upstream build BASE_OS=ubuntu20
+
+daemon
+
+sudo make -C src -f makefile.unix STATIC=1
+
+sudo apt-get install qttools5-dev-tools qtbase5-dev qtchooser qt5-qmake qtbase5-dev-tools
+
+qmake "CONFIG += static" "CONFIG += release"
+make
+
+#############################################################################################
+
 Development process
 ===================
 
@@ -76,8 +105,7 @@ Issues with no commits will be given a similar warning, and closed after
 15 days from their last activity. Issues closed in this manner will be 
 labeled 'stale'. 
 # FlapX
-this will be edited shortly 
-webhook test
 
 
-for tillk
+
+

@@ -4,7 +4,6 @@
 
 #include "leveldb/table.h"
 
-#include <stdint.h>
 #include <map>
 #include <string>
 #include "db/dbformat.h"
@@ -788,10 +787,10 @@ TEST(MemTableTest, Simple) {
 static bool Between(uint64_t val, uint64_t low, uint64_t high) {
   bool result = (val >= low) && (val <= high);
   if (!result) {
-    fprintf(stderr, "Value %" PRIu64 " is not in range [%" PRIu64 ", %" PRIu64 "]\n",
-            (uint64_t)(val),
-            (uint64_t)(low),
-            (uint64_t)(high));
+    fprintf(stderr, "Value %llu is not in range [%llu, %llu]\n",
+            (unsigned long long)(val),
+            (unsigned long long)(low),
+            (unsigned long long)(high));
   }
   return result;
 }

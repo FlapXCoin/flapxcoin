@@ -4,8 +4,6 @@
 
 #include "util/logging.h"
 
-#include <stdint.h>
-#include <inttypes.h>
 #include <errno.h>
 #include <stdarg.h>
 #include <stdio.h>
@@ -17,7 +15,7 @@ namespace leveldb {
 
 void AppendNumberTo(std::string* str, uint64_t num) {
   char buf[30];
-  snprintf(buf, sizeof(buf), "%" PRIu64, num);
+  snprintf(buf, sizeof(buf), "%llu", (unsigned long long) num);
   str->append(buf);
 }
 

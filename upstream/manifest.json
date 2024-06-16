@@ -1,0 +1,31 @@
+{
+	"files": {
+		"berkeley-db": {
+			"url": "http://download.oracle.com/berkeley-db/db-4.8.30.NC.tar.gz",
+			"filename": "db-4.8.30.NC.tar.gz",
+			"dir": "db-4.8.30.NC"
+		},
+		"qrencode": {
+			"url": "http://fukuchi.org/works/qrencode/qrencode-3.4.4.tar.gz",
+			"filename": "qrencode-3.4.4.tar.gz",
+			"dir": "qrencode-3.4.4"
+		},
+		"miniupnpc": {
+			"url": "http://miniupnp.free.fr/files/download.php?file=miniupnpc-2.2.3.tar.gz",
+			"filename": "miniupnpc-2.2.3.tar.gz",
+			"dir": "miniupnpc-2.2.3"
+		},
+		"boost": {
+			"url": "https://downloads.sourceforge.net/project/boost/boost/1.55.0/boost_1_55_0.tar.bz2",
+			"filename": "boost-1.55.0.tar.bz2",
+			"dir": "boost_1_55_0"
+		},
+		"openssl": {
+			"url": "https://www.openssl.org/source/openssl-1.0.2l.tar.gz",
+			"filename": "upenssl-1.0.2l.tar.gz",
+			"dir": "openssl-1.0.2l"
+		}
+	},
+	"ubuntu18": ["berkeley-db", "qrencode", "miniupnpc", "boost"],
+	"ubuntu20": ["berkeley-db", "qrencode", "miniupnpc", "boost", "openssl"]
+}

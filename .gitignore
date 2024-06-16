@@ -227,3 +227,5 @@ Makefile.Debug
 Makefile.Release
 *.qm
 
+upstream/patches/done.db-4.8.30.NC
+/upstream/ssl
