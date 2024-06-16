@@ -18,7 +18,6 @@
 #include <map>
 #include <set>
 #include <vector>
-#include <stdint.h>
 #include "db/dbformat.h"
 #include "db/version_edit.h"
 #include "port/port.h"

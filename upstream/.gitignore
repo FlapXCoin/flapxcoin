@@ -1,0 +1,7 @@
+!Makefile
+src/
+include/
+lib/
+docs/
+archive/
+bin/

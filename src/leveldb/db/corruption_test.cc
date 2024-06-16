@@ -6,7 +6,6 @@
 
 #include <errno.h>
 #include <fcntl.h>
-#include <stdint.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include "leveldb/cache.h"

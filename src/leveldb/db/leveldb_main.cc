@@ -3,7 +3,6 @@
 // found in the LICENSE file. See the AUTHORS file for names of contributors.
 
 #include <stdio.h>
-#include <stdint.h>
 #include "db/dbformat.h"
 #include "db/filename.h"
 #include "db/log_reader.h"
@@ -57,8 +56,8 @@ bool PrintLogContents(Env* env, const std::string& fname,
   Slice record;
   std::string scratch;
   while (reader.ReadRecord(&record, &scratch)) {
-    printf("--- offset %" PRIu64 "; ",
-           static_cast<uint64_t>(reader.LastRecordOffset()));
+    printf("--- offset %llu; ",
+           static_cast<unsigned long long>(reader.LastRecordOffset()));
     (*func)(record);
   }
   delete file;
@@ -93,8 +92,8 @@ static void WriteBatchPrinter(Slice record) {
   }
   WriteBatch batch;
   WriteBatchInternal::SetContents(&batch, record);
-  printf("sequence %" PRIu64 "\n",
-         static_cast<uint64_t>(WriteBatchInternal::Sequence(&batch)));
+  printf("sequence %llu\n",
+         static_cast<unsigned long long>(WriteBatchInternal::Sequence(&batch)));
   WriteBatchItemPrinter batch_item_printer;
   Status s = batch.Iterate(&batch_item_printer);
   if (!s.ok()) {
@@ -166,7 +165,7 @@ bool DumpTable(Env* env, const std::string& fname) {
       }
       printf("'%s' @ %8llu : %s => '%s'\n",
              EscapeString(key.user_key).c_str(),
-             static_cast<uint64_t>(key.sequence),
+             static_cast<unsigned long long>(key.sequence),
              type,
              EscapeString(iter->value()).c_str());
     }
