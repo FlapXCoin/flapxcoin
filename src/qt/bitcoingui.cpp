@@ -213,7 +213,7 @@ BitcoinGUI::BitcoinGUI(QWidget *parent):
     statusBar()->addWidget(progressBarLabel);
     statusBar()->addWidget(progressBar);
     statusBar()->addPermanentWidget(frameBlocks);
-    syncIconMovie = new QMovie(":/movies/update_spinner", "mng", this);
+    syncIconMovie = new QMovie(":/icons/transaction_0", "png", this);
 
     // Clicking on a transaction on the overview page simply sends you to transaction history page
     connect(overviewPage, SIGNAL(transactionClicked(QModelIndex)), this, SLOT(gotoHistoryPage()));

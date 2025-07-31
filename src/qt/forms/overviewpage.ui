@@ -2980,121 +2980,6 @@
                <number>0</number>
               </property>
               <layout class="QGridLayout" name="gridLayout_14">
-               <item row="1" column="1">
-                <widget class="QFrame" name="frame_9">
-                 <property name="styleSheet">
-                  <string notr="true">background:transparent;border:0;</string>
-                 </property>
-                 <property name="frameShape">
-                  <enum>QFrame::NoFrame</enum>
-                 </property>
-                 <property name="frameShadow">
-                  <enum>QFrame::Plain</enum>
-                 </property>
-                 <layout class="QGridLayout" name="gridLayout_11">
-                  <item row="4" column="3">
-                   <widget class="QLabel" name="label_18">
-                    <property name="minimumSize">
-                     <size>
-                      <width>30</width>
-                      <height>30</height>
-                     </size>
-                    </property>
-                    <property name="maximumSize">
-                     <size>
-                      <width>30</width>
-                      <height>30</height>
-                     </size>
-                    </property>
-                    <property name="text">
-                     <string/>
-                    </property>
-                    <property name="pixmap">
-                     <pixmap resource="../bitcoin.qrc">:/qt/art/res/images/art/flapxyellow.png</pixmap>
-                    </property>
-                    <property name="scaledContents">
-                     <bool>true</bool>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="2" column="3">
-                   <widget class="QLabel" name="label_21">
-                    <property name="minimumSize">
-                     <size>
-                      <width>40</width>
-                      <height>40</height>
-                     </size>
-                    </property>
-                    <property name="maximumSize">
-                     <size>
-                      <width>30</width>
-                      <height>30</height>
-                     </size>
-                    </property>
-                    <property name="text">
-                     <string/>
-                    </property>
-                    <property name="pixmap">
-                     <pixmap resource="../bitcoin.qrc">:/qt/art/res/images/art/flying-blurb.png</pixmap>
-                    </property>
-                    <property name="scaledContents">
-                     <bool>true</bool>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="3" column="2">
-                   <widget class="QLabel" name="label_11">
-                    <property name="minimumSize">
-                     <size>
-                      <width>30</width>
-                      <height>30</height>
-                     </size>
-                    </property>
-                    <property name="maximumSize">
-                     <size>
-                      <width>30</width>
-                      <height>30</height>
-                     </size>
-                    </property>
-                    <property name="text">
-                     <string/>
-                    </property>
-                    <property name="pixmap">
-                     <pixmap resource="../bitcoin.qrc">:/qt/art/res/images/art/flapxblue.png</pixmap>
-                    </property>
-                    <property name="scaledContents">
-                     <bool>true</bool>
-                    </property>
-                   </widget>
-                  </item>
-                  <item row="5" column="2">
-                   <widget class="QLabel" name="label_15">
-                    <property name="minimumSize">
-                     <size>
-                      <width>30</width>
-                      <height>30</height>
-                     </size>
-                    </property>
-                    <property name="maximumSize">
-                     <size>
-                      <width>30</width>
-                      <height>30</height>
-                     </size>
-                    </property>
-                    <property name="text">
-                     <string/>
-                    </property>
-                    <property name="pixmap">
-                     <pixmap resource="../bitcoin.qrc">:/qt/art/res/images/art/flapxblue.png</pixmap>
-                    </property>
-                    <property name="scaledContents">
-                     <bool>true</bool>
-                    </property>
-                   </widget>
-                  </item>
-                 </layout>
-                </widget>
-               </item>
                <item row="0" column="0" colspan="2">
                 <widget class="QFrame" name="frame_3">
                  <property name="minimumSize">
@@ -6767,7 +6652,6 @@
               </layout>
               <zorder>frame_4</zorder>
               <zorder>frame_3</zorder>
-              <zorder>frame_9</zorder>
              </widget>
             </item>
            </layout>
@@ -8415,8 +8299,6 @@
    </item>
   </layout>
  </widget>
- <resources>
-  <include location="../bitcoin.qrc"/>
- </resources>
+ <resources/>
  <connections/>
 </ui>
