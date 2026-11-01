@@ -84,7 +84,18 @@ public:
 /*
         N/A
 */
-///new seednodes should improve initial connectivity and sync	    
+///new seednodes should improve initial connectivity and sync
+		vSeeds.push_back(CDNSSeedData("flapx", "flapx00.flapxcoin.com"));
+        vSeeds.push_back(CDNSSeedData("flapx", "flapx01.flapxcoin.com"));
+        vSeeds.push_back(CDNSSeedData("flapx", "flapx02.flapxcoin.com"));
+        vSeeds.push_back(CDNSSeedData("flapx", "flapx03.flapxcoin.com"));
+        vSeeds.push_back(CDNSSeedData("flapx", "flapx04.flapxcoin.com"));
+        vSeeds.push_back(CDNSSeedData("flapx", "flapx05.flapxcoin.com"));
+        vSeeds.push_back(CDNSSeedData("flapx", "flapx06.flapxcoin.com"));
+        vSeeds.push_back(CDNSSeedData("flapx", "flapx07.flapxcoin.com"));
+        vSeeds.push_back(CDNSSeedData("flapx", "flapx08.flapxcoin.com"));
+        vSeeds.push_back(CDNSSeedData("flapx", "flapx09.flapxcoin.com"));
+        vSeeds.push_back(CDNSSeedData("flapx", "flapx10.flapxcoin.com"));
         vSeeds.push_back(CDNSSeedData("flapx", "flapx000.flapxcoin.com"));
         vSeeds.push_back(CDNSSeedData("flapx", "flapx001.flapxcoin.com"));
         vSeeds.push_back(CDNSSeedData("flapx", "flapx002.flapxcoin.com"));
