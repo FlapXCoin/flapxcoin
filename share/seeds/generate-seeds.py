@@ -124,7 +124,7 @@ def main():
         process_nodes(g, f, 'pnSeed6_main', 60042)
     g.write('\n')
     with open(os.path.join(indir,'nodes_test.txt'),'r') as f:
-        process_nodes(g, f, 'pnSeed6_test', 21310)
+        process_nodes(g, f, 'pnSeed6_test', 60043)
     g.write('#endif\n')
 
 if __name__ == '__main__':

@@ -143,8 +143,8 @@ public:
         pchMessageStart[3] = 0xf1;
         bnProofOfWorkLimit = CBigNum(~uint256(0) >> 16);
         vAlertPubKey = ParseHex("0471dc165db490094d35cde15b1f5d755fa6ad6f2b5ed0f340e3f17f57389c3c2af113a8cbcc885bde73305a553b5640c83021128008ddf882e856336269080496");
-        nDefaultPort = 21410;
-        nRPCPort = 21311;
+        nDefaultPort = 60043;
+        nRPCPort = 60143;
         strDataDir = "testnet";
 
         genesis.nTime    = 1300000000;
