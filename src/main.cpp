@@ -26,6 +26,9 @@
 #include <boost/filesystem/fstream.hpp>
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/uniform_int.hpp>
+// Boost 1.73+ no longer puts _1, _2, ... in the global namespace by default
+#include <boost/bind/bind.hpp>
+using namespace boost::placeholders;
 #include <cmath>
 #ifdef WIN32
 #include <QtPlugin>
