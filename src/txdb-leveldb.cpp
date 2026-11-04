@@ -79,9 +79,8 @@ CTxDB::CTxDB(const char* pszMode)
 
     bool fCreate = strchr(pszMode, 'c');
 
-    options = GetOptions();
+    options = GetOptions(); // already sets filter_policy
     options.create_if_missing = fCreate;
-    options.filter_policy = leveldb::NewBloomFilterPolicy(10);
 
     init_blockindex(options); // Init directory
     pdb = txdb;
