@@ -25,9 +25,14 @@ namespace Checkpoints
     //    timestamp before)
     // + Contains no strange transactions
     //
+    // The genesis hashes are written out rather than read from
+    // Params().HashGenesisBlock(): these maps are built during static
+    // initialisation, before chainparams.cpp has constructed its params, so
+    // Params() returned an all-zero hash here and a node with an empty data
+    // directory could not find any checkpoint and failed to start.
 static MapCheckpoints mapCheckpoints =
         boost::assign::map_list_of
-        (      0, Params().HashGenesisBlock() )
+        (      0, uint256("0xf30d6d37c276519974c14eae52dac5538b2bdc358f2e4a3b48a14b201eb48fed"))
         (      5, uint256("0xf87e49aa55da512d4d52d9845548095d79455da0f8ce04333239fa93a411fbaf"))
         ( 100000, uint256("0xbfbe09c7103b672ce64e99b8b02b1eb1a5d7d39ce211331bb9ad3ae6f7d381ed"))
         ( 125000, uint256("0x0c4a145b60b899bcaef36d2c26784b7550dc9f38c9d1ee6866e084e03b3b0372"))
@@ -90,7 +95,7 @@ static MapCheckpoints mapCheckpoints =
     // TestNet has no checkpoints
     static MapCheckpoints mapCheckpointsTestnet =
         boost::assign::map_list_of
-        ( 0, Params().HashGenesisBlock() )
+        ( 0, uint256("0xcc0e6b7fc1e4fa77e38306fd870bd0813178041cf9c1cafb6146c7d7fb8de492"))
         ;
 
     bool CheckHardened(int nHeight, const uint256& hash)

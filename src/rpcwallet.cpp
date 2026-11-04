@@ -64,25 +64,47 @@ string AccountFromValue(const Value& value)
 }
 // Litecoin: Return average network hashes per second based on last number of blocks.
 Value GetNetworkHashPS(int lookup) {
+    // FlapX is a PoW/PoS hybrid, so only proof-of-work blocks represent
+    // hashing. Estimate the hash rate from the last `lookup` PoW blocks: the
+    // work they contain (each at its own difficulty) divided by the time
+    // between the oldest and newest of them.
     if (pindexBest == NULL)
-        return 0;
+        return (boost::int64_t)0;
 
-    // If lookup is -1, then use blocks since last difficulty change.
+    // -1 (or 0) used to mean "since the last difficulty change"; FlapX
+    // retargets every block, so fall back to the default window instead.
     if (lookup <= 0)
-        lookup = pindexBest->nHeight % 2016 + 1;
+        lookup = 120;
 
-    // If lookup is larger than chain, then set it to chain length.
-    if (lookup > pindexBest->nHeight)
-        lookup = pindexBest->nHeight;
+    // Don't walk the whole chain if PoW blocks have become rare.
+    static const int MAX_BLOCKS_SCANNED = 20000;
 
-    CBlockIndex* pindexPrev = pindexBest;
-    for (int i = 0; i < lookup; i++)
-        pindexPrev = pindexPrev->pprev;
+    const CBlockIndex* pindexNewest = NULL;
+    const CBlockIndex* pindexOldest = NULL;
+    double dWork = 0;
+    int nPoWBlocks = 0;
+    int nScanned = 0;
+    for (const CBlockIndex* pindex = pindexBest;
+         pindex && nPoWBlocks <= lookup && nScanned < MAX_BLOCKS_SCANNED;
+         pindex = pindex->pprev, nScanned++)
+    {
+        if (!pindex->IsProofOfWork())
+            continue;
+        if (pindexOldest) // work of every block except the oldest is inside the time span
+            dWork += GetDifficulty(pindexOldest) * pow(2.0, 32);
+        if (!pindexNewest)
+            pindexNewest = pindex;
+        pindexOldest = pindex;
+        nPoWBlocks++;
+    }
 
-    double timeDiff = pindexBest->GetBlockTime() - pindexPrev->GetBlockTime();
-    double timePerBlock = timeDiff / lookup;
+    if (nPoWBlocks < 2)
+        return (boost::int64_t)0;
+    int64_t nTimeSpan = pindexNewest->GetBlockTime() - pindexOldest->GetBlockTime();
+    if (nTimeSpan <= 0)
+        return (boost::int64_t)0;
 
-    return (boost::int64_t)(((double)GetDifficulty() * pow(2.0, 32)) / timePerBlock);
+    return (boost::int64_t)(dWork / nTimeSpan);
 }
 
 Value getnetworkhashps(const Array& params, bool fHelp)

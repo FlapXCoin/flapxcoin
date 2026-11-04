@@ -9,7 +9,6 @@
 #include "transactiontablemodel.h"
 #include "addressbookpage.h"
 #include "shoppingpage.h"
-#include "networkpage.h"
 #include "sendcoinsdialog.h"
 #include "signverifymessagedialog.h"
 #include "optionsdialog.h"
@@ -28,6 +27,7 @@
 #include "askpassphrasedialog.h"
 #include "notificator.h"
 #include "guiutil.h"
+#include "clientversion.h"
 #include "rpcconsole.h"
 #include "wallet.h"
 #include "bitcoinrpc.h"
@@ -94,8 +94,12 @@ BitcoinGUI::BitcoinGUI(QWidget *parent):
     nWeight(0)
 {
 
-    resize(700, 500);
-    setWindowTitle(tr("FlapX-Starhopper") + " - " + tr("2.3"));
+    // Wide enough for every toolbar page button to be visible
+    resize(960, 640);
+    setWindowTitle(tr("FlapX-Starhopper") + " - " + QString("%1.%2.%3.%4")
+                   .arg(CLIENT_VERSION_MAJOR).arg(CLIENT_VERSION_MINOR)
+                   .arg(CLIENT_VERSION_REVISION).arg(CLIENT_VERSION_BUILD)
+                   + " - " + tr("Pre Release"));
 #ifndef Q_OS_MAC
     qApp->setWindowIcon(QIcon(":icons/bitcoin"));
     setWindowIcon(QIcon(":icons/bitcoin"));
@@ -141,7 +145,6 @@ BitcoinGUI::BitcoinGUI(QWidget *parent):
 
     shoppingPage = new ShoppingPage();
 
-    networkPage = new NetworkPage();
 
     receiveCoinsPage = new AddressBookPage(AddressBookPage::ForEditing, AddressBookPage::ReceivingTab);
 
@@ -155,7 +158,6 @@ BitcoinGUI::BitcoinGUI(QWidget *parent):
     centralWidget->addWidget(transactionsPage);
     centralWidget->addWidget(addressBookPage);
     centralWidget->addWidget(shoppingPage);
-    centralWidget->addWidget(networkPage);
     centralWidget->addWidget(receiveCoinsPage);
     centralWidget->addWidget(sendCoinsPage);
     centralWidget->addWidget(stakeForCharityDialog);
@@ -202,18 +204,12 @@ BitcoinGUI::BitcoinGUI(QWidget *parent):
     progressBar->setAlignment(Qt::AlignCenter);
     progressBar->setVisible(false);
 
-    // Override style sheet for progress bar for styles that have a segmented progress bar,
-    // as they make the text unreadable (workaround for issue #1071)
-    // See https://qt-project.org/doc/qt-4.8/gallery.html
-    QString curStyle = qApp->style()->metaObject()->className();
-    if(curStyle == "QWindowsStyle" || curStyle == "QWindowsXPStyle")
-    {
-        progressBar->setStyleSheet("QProgressBar { background-color: #000000; color: white; border: 1px solid grey; border-radius: 7px; padding: 1px; text-align: center; } QProgressBar::chunk { background: QLinearGradient(x1: 0, y1: 0, x2: 1, y2: 0, stop: 0 #ffaa00, stop: 1 orange); border-radius: 7px; margin: 0px; }");
-    }
+    // (the progress bar is styled by the application style sheet, GUIUtil::flapxStyleSheet)
     statusBar()->addWidget(progressBarLabel);
     statusBar()->addWidget(progressBar);
     statusBar()->addPermanentWidget(frameBlocks);
-    syncIconMovie = new QMovie(":/icons/transaction_0", "png", this);
+    // The spinner is a GIF (despite the .mng file name), so let Qt detect the format
+    syncIconMovie = new QMovie(":/movies/update_spinner", QByteArray(), this);
 
     // Clicking on a transaction on the overview page simply sends you to transaction history page
     connect(overviewPage, SIGNAL(transactionClicked(QModelIndex)), this, SLOT(gotoHistoryPage()));
@@ -239,6 +235,7 @@ BitcoinGUI::BitcoinGUI(QWidget *parent):
 
     // Clicking on stake for charity button in the Overview Page sends you to the S4C page
     connect(overviewPage, SIGNAL(stakeForCharitySignal()), this, SLOT(charityClicked()));
+    connect(charityAction, SIGNAL(triggered()), this, SLOT(charityClicked()));
     gotoOverviewPage();
 }
 
@@ -288,12 +285,10 @@ void BitcoinGUI::createActions()
     shoppingAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_6));
     tabGroup->addAction(shoppingAction);
 
-    networkAction = new QAction(QIcon(":/icons/res/icons/stakingTab.png"), tr("&Staking"), this);
-    networkAction->setCheckable(true);
-    networkAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_7));
-    tabGroup->addAction(networkAction);
-
-    charityAction = new QAction(this);
+    charityAction = new QAction(QIcon(":/icons/send"), tr("&Multisend..."), this);
+    charityAction->setToolTip(tr("Automatically send part of your stake rewards to another address"));
+    charityAction->setCheckable(true);
+    tabGroup->addAction(charityAction);
 
     calcAction = new QAction(QIcon(":/icons/bitcoin"), tr("&PIR Calculator"), this);
     calcAction->setToolTip(tr("Open PIR Calculator"));
@@ -310,8 +305,6 @@ void BitcoinGUI::createActions()
     connect(addressBookAction, SIGNAL(triggered()), this, SLOT(gotoAddressBookPage()));
     connect(shoppingAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
     connect(shoppingAction, SIGNAL(triggered()), this, SLOT(gotoShoppingPage()));
-    connect(networkAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
-    connect(networkAction, SIGNAL(triggered()), this, SLOT(gotoNetworkPage()));
     connect(calcAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
     connect(calcAction, SIGNAL(triggered()), this, SLOT(calcClicked()));
 
@@ -443,9 +436,6 @@ void BitcoinGUI::createToolBars()
     toolbar->addAction(historyAction);
     toolbar->addAction(addressBookAction);
     toolbar->addAction(shoppingAction);
-    toolbar->addAction(shoppingAction);
-    toolbar->addAction(networkAction);
-    toolbar->addAction(networkAction);
 
     QToolBar *toolbar2 = addToolBar(tr("Actions toolbar"));
     toolbar2->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
@@ -629,6 +619,7 @@ void BitcoinGUI::setNumBlocks(int count)
     if(secs < 90*60)
     {
         tooltip = tr("Up to date") + QString(".<br>") + tooltip;
+        syncIconMovie->stop();
         labelBlocksIcon->setPixmap(QIcon(":/icons/synced").pixmap(STATUSBAR_ICONSIZE, STATUSBAR_ICONSIZE));
 
         overviewPage->showOutOfSyncWarning(false);
@@ -672,8 +663,10 @@ void BitcoinGUI::setNumBlocks(int count)
         progressBar->setVisible(true);
 
         tooltip = tr("Catching up...") + QString("<br>") + tooltip;
-        labelBlocksIcon->setMovie(syncIconMovie);
-        if(count != prevBlocks)
+        // Attach and start the spinner once, not on every block-count update
+        if (labelBlocksIcon->movie() != syncIconMovie)
+            labelBlocksIcon->setMovie(syncIconMovie);
+        if (syncIconMovie->state() != QMovie::Running)
             syncIconMovie->start();
         prevBlocks = count;
 
@@ -824,12 +817,6 @@ void BitcoinGUI::gotoShoppingPage()
 {
     shoppingAction->setChecked(true);
     centralWidget->setCurrentWidget(shoppingPage);
-}
-
-void BitcoinGUI::gotoNetworkPage()
-{
-    networkAction->setChecked(true);
-    centralWidget->setCurrentWidget(networkPage);
 }
 
 void BitcoinGUI::gotoReceiveCoinsPage()
@@ -1185,8 +1172,8 @@ void BitcoinGUI::loadTheme(QString theme)
             qss.close();
         }
     } else {
-        // If not theme name given - clear styles
-        qApp->setStyleSheet(QString(""));
+        // If no theme name is given, go back to the standard FlapX style
+        qApp->setStyleSheet(GUIUtil::flapxStyleSheet());
     }
 
     // set selected theme and store it in registry

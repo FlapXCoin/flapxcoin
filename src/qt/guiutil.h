@@ -115,6 +115,10 @@ namespace GUIUtil
         QString uiOptions;
     };
 
+    /** The application-wide style sheet: the native look plus a few FlapX touches.
+        All GUI styling lives here instead of in individual widgets. */
+    QString flapxStyleSheet();
+
 } // namespace GUIUtil
 
 #endif // GUIUTIL_H

@@ -1,0 +1,267 @@
+# Builds the FlapX binaries on GitHub's build machines:
+#   - flapxd        Linux daemon (Boost, Berkeley DB, OpenSSL, miniupnpc linked in)
+#   - flapx-qt      Linux GUI wallet
+#   - flapx-qt.exe  Windows GUI wallet (statically linked, single .exe)
+# All are built with UPnP compiled in and on by default (USE_UPNP=1).
+#
+# Every push builds them and keeps them as downloadable "artifacts" on the
+# run's page. Pushing a version tag (e.g. v2.9.0.1) also publishes them as a
+# GitHub release.
+
+name: Build
+
+# Documentation-only changes don't need new binaries (tag pushes always build)
+on:
+  push:
+    branches: [ master, modern-linux-build ]
+    tags: [ 'v*' ]
+    paths-ignore: [ '**.md', 'doc/**', 'README', 'COPYING', 'INSTALL' ]
+  pull_request:
+    paths-ignore: [ '**.md', 'doc/**', 'README', 'COPYING', 'INSTALL' ]
+  workflow_dispatch:
+
+# A newer push to the same branch cancels a build that's still running;
+# release (tag) builds are never cancelled
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: ${{ !startsWith(github.ref, 'refs/tags/') }}
+
+permissions:
+  contents: read
+
+# Speed-ups (they don't change the binaries):
+#  - ccache keeps compiled objects between runs, so only changed files are
+#    recompiled. CCACHE_COMPILERCHECK=content because the compiler is
+#    reinstalled on every run.
+#  - Libraries we build ourselves (Berkeley DB, qrencode) are cached by
+#    version. Bump the "-v1" in their cache keys after changing how they're built.
+env:
+  CCACHE_COMPILERCHECK: content
+  CCACHE_MAXSIZE: 500M
+
+jobs:
+  linux-daemon:
+    name: Linux daemon
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential libssl-dev libdb++-dev \
+            libboost-system-dev libboost-filesystem-dev libboost-program-options-dev \
+            libboost-thread-dev libboost-chrono-dev libminiupnpc-dev zlib1g-dev ccache
+
+      - uses: actions/cache@v4
+        with:
+          path: ${{ runner.temp }}/ccache
+          key: ccache-linux-daemon-${{ github.sha }}
+          restore-keys: ccache-linux-daemon-
+
+      - name: Build flapxd
+        run: |
+          export CCACHE_DIR="$RUNNER_TEMP/ccache"
+          cd src
+          make -f makefile.unix -j"$(nproc)" USE_UPNP=1 STATIC=1 CXX="ccache g++" CC="ccache gcc"
+          strip flapxd
+          ccache -s
+
+      - name: Check the binary
+        run: |
+          file src/flapxd
+          ldd src/flapxd || true
+          ./src/flapxd -? | head -n 3 || true
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: flapxd-linux-x86_64
+          path: src/flapxd
+
+  linux-qt:
+    name: Linux GUI
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential libssl-dev libdb++-dev \
+            libboost-system-dev libboost-filesystem-dev libboost-program-options-dev \
+            libboost-thread-dev libboost-chrono-dev libminiupnpc-dev zlib1g-dev \
+            qtbase5-dev qttools5-dev-tools cmake ccache
+
+      - uses: actions/cache@v4
+        with:
+          path: ${{ runner.temp }}/ccache
+          key: ccache-linux-qt-${{ github.sha }}
+          restore-keys: ccache-linux-qt-
+
+      - uses: actions/cache@v4
+        id: qrcache
+        with:
+          path: ${{ runner.temp }}/qrencode
+          key: linux-qrencode-4.1.1-ubuntu22.04-v1
+
+      # Ubuntu's libqrencode-dev has no static library, so build one
+      - name: Build static libqrencode
+        if: steps.qrcache.outputs.cache-hit != 'true'
+        run: |
+          git clone --depth 1 --branch v4.1.1 https://github.com/fukuchi/libqrencode.git "$RUNNER_TEMP/libqrencode"
+          cmake -S "$RUNNER_TEMP/libqrencode" -B "$RUNNER_TEMP/qrbuild" \
+            -DBUILD_SHARED_LIBS=OFF -DWITH_TOOLS=NO -DWITH_TESTS=NO -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
+            -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_INSTALL_PREFIX="$RUNNER_TEMP/qrencode"
+          cmake --build "$RUNNER_TEMP/qrbuild" -j"$(nproc)"
+          cmake --install "$RUNNER_TEMP/qrbuild"
+
+      - name: Build flapx-qt
+        run: |
+          # RELEASE=1 links Boost, Berkeley DB, OpenSSL, miniupnpc, qrencode and
+          # zlib statically, so only Qt 5 and the C/C++ runtime come from the system
+          export CCACHE_DIR="$RUNNER_TEMP/ccache"
+          qmake -qt=qt5 RELEASE=1 USE_UPNP=1 USE_QRCODE=1 "CONFIG+=release" "CONFIG-=debug_and_release" \
+            "QMAKE_CC=ccache gcc" "QMAKE_CXX=ccache g++" "QMAKE_LINK=g++" \
+            "QRENCODE_INCLUDE_PATH=$RUNNER_TEMP/qrencode/include" "QRENCODE_LIB_PATH=$RUNNER_TEMP/qrencode/lib" \
+            flapx-qt.pro
+          make -j"$(nproc)"
+          strip flapx-qt
+          ccache -s
+
+      - name: Check the binary
+        run: |
+          file flapx-qt
+          ldd flapx-qt
+          if ldd flapx-qt | grep -Ei 'boost|libdb|libssl|libcrypto|miniupnpc|qrencode'; then
+            echo "flapx-qt should not need the shared libraries listed above"; exit 1
+          fi
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: flapx-qt-linux-x86_64
+          path: flapx-qt
+
+      # Run the wallet on a virtual display and screenshot each page and
+      # dialog, so GUI changes can be reviewed from the run's artifacts
+      - name: Take GUI screenshots
+        continue-on-error: true
+        run: |
+          sudo apt-get install -y xvfb xdotool imagemagick
+          PRINT_SCREENSHOTS_BASE64=1 contrib/ci/gui-screenshots.sh ./flapx-qt screenshots
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: gui-screenshots-linux
+          path: screenshots/
+
+  windows-qt:
+    name: Windows GUI
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          update: true
+          install: >-
+            make
+            git
+            diffutils
+            mingw-w64-x86_64-toolchain
+            mingw-w64-x86_64-boost
+            mingw-w64-x86_64-openssl
+            mingw-w64-x86_64-miniupnpc
+            mingw-w64-x86_64-zlib
+            mingw-w64-x86_64-qt5-static
+            mingw-w64-x86_64-cmake
+            mingw-w64-x86_64-ccache
+
+      - uses: actions/cache@v4
+        with:
+          path: ${{ runner.temp }}/ccache
+          key: ccache-windows-qt-${{ github.sha }}
+          restore-keys: ccache-windows-qt-
+
+      - uses: actions/cache@v4
+        id: depcache
+        with:
+          path: |
+            ${{ runner.temp }}/bdb-install
+            ${{ runner.temp }}/qrencode
+          key: windows-deps-bdb5.3.28-qrencode4.1.1-v1
+
+      # Berkeley DB 5.3 (Sleepycat license), the same version the Linux builds
+      # use. MSYS2 only ships 6.x, which is AGPL-licensed and a DLL.
+      - name: Build static Berkeley DB 5.3.28
+        if: steps.depcache.outputs.cache-hit != 'true'
+        run: |
+          T="$(cygpath -u "$RUNNER_TEMP")"
+          git clone --depth 1 --branch v5.3.28 https://github.com/berkeleydb/libdb.git "$T/bdb"
+          cd "$T/bdb"
+          # Rename a function that clashes with a GCC built-in
+          sed -i 's/__atomic_compare_exchange/__atomic_compare_exchange_db/g' src/dbinc/atomic.h
+          cd build_unix
+          # 2012-era C: build as C17 and relax GCC 14+'s stricter defaults
+          export CFLAGS="-O2 -std=gnu17 -Wno-incompatible-pointer-types -Wno-int-conversion -Wno-implicit-function-declaration"
+          export CXXFLAGS="-O2"
+          ../dist/configure --host=x86_64-w64-mingw32 --build=x86_64-w64-mingw32 \
+            --enable-mingw --enable-cxx --disable-shared --disable-replication \
+            --prefix="$T/bdb-install"
+          make -j"$(nproc)" libdb.a libdb_cxx.a
+          make install_lib install_include
+          ls "$T/bdb-install/lib" "$T/bdb-install/include"
+
+      # MSYS2 only ships qrencode as a DLL; build a static copy so the wallet
+      # stays a single self-contained .exe
+      - name: Build static libqrencode
+        if: steps.depcache.outputs.cache-hit != 'true'
+        run: |
+          T="$(cygpath -u "$RUNNER_TEMP")"
+          git clone --depth 1 --branch v4.1.1 https://github.com/fukuchi/libqrencode.git "$T/libqrencode"
+          cmake -S "$T/libqrencode" -B "$T/qrbuild" -G "MSYS Makefiles" \
+            -DBUILD_SHARED_LIBS=OFF -DWITH_TOOLS=NO -DWITH_TESTS=NO -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
+            -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="$T/qrencode"
+          cmake --build "$T/qrbuild" -j"$(nproc)"
+          cmake --install "$T/qrbuild"
+          ls "$T/qrencode/lib"
+
+      - name: Build LevelDB
+        run: |
+          export CCACHE_DIR="$(cygpath -m "$RUNNER_TEMP/ccache")"
+          cd src/leveldb
+          make TARGET_OS=NATIVE_WINDOWS -j"$(nproc)" CC="ccache gcc" CXX="ccache g++" libleveldb.a libmemenv.a
+
+      - name: Build flapx-qt.exe
+        run: |
+          QR="$(cygpath -m "$RUNNER_TEMP/qrencode")"
+          BDB="$(cygpath -m "$RUNNER_TEMP/bdb-install")"
+          export CCACHE_DIR="$(cygpath -m "$RUNNER_TEMP/ccache")"
+          /mingw64/qt5-static/bin/qmake USE_SYSTEM_DEPS=1 USE_UPNP=1 USE_QRCODE=1 \
+            NO_BOOST_SYSTEM_LIB=1 "BOOST_LIB_SUFFIX=-mt" \
+            "QMAKE_CC=ccache gcc" "QMAKE_CXX=ccache g++" "QMAKE_LINK=g++" \
+            "BDB_INCLUDE_PATH=$BDB/include" "BDB_LIB_PATH=$BDB/lib" \
+            "QRENCODE_INCLUDE_PATH=$QR/include" "QRENCODE_LIB_PATH=$QR/lib" flapx-qt.pro
+          make -j"$(nproc)"
+          strip release/flapx-qt.exe
+          ccache -s
+
+      # The .exe must run on its own: fail if it needs any DLL that isn't
+      # part of Windows itself
+      - name: Check the binary is self-contained
+        run: |
+          file release/flapx-qt.exe
+          ldd release/flapx-qt.exe
+          if ldd release/flapx-qt.exe | grep '=>' | grep -vi '/c/windows/'; then
+            echo "flapx-qt.exe depends on non-system DLLs (listed above)"; exit 1
+          fi
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: flapx-qt-windows-x86_64
+          path: release/flapx-qt.exe

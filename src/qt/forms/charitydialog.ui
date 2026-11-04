@@ -14,7 +14,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Stake For Charity</string>
+   <string>Multisend</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
    <property name="leftMargin">
@@ -51,9 +51,6 @@
            <property name="toolTip">
             <string>Percentage of stake to send</string>
            </property>
-           <property name="styleSheet">
-            <string notr="true">background:transparent;</string>
-           </property>
            <property name="text">
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span&gt;Percentage:&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
@@ -64,9 +61,6 @@
            <property name="toolTip">
             <string>Min amount to send</string>
            </property>
-           <property name="styleSheet">
-            <string notr="true">background:transparent;</string>
-           </property>
            <property name="text">
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span&gt;Min Amount:&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
@@ -76,9 +70,6 @@
           <widget class="QLabel" name="label_4">
            <property name="toolTip">
             <string>Max amount to send</string>
-           </property>
-           <property name="styleSheet">
-            <string notr="true">background:transparent;</string>
            </property>
            <property name="text">
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span&quot;&gt;Max Amount:&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -124,7 +115,7 @@
             <string>Address to send portion of stake to</string>
            </property>
            <property name="text">
-            <string>Charity Address:</string>
+            <string>Recipient Address:</string>
            </property>
           </widget>
          </item>
@@ -134,7 +125,7 @@
             <string/>
            </property>
            <property name="placeholderText">
-            <string>Enter Address to Send to</string>
+            <string>Enter the address to send to</string>
            </property>
           </widget>
          </item>
@@ -161,7 +152,7 @@
          <item row="4" column="0">
           <widget class="QLabel" name="label_6">
            <property name="toolTip">
-            <string>The amount left over returned to you</string>
+            <string>The amount left over is returned to you</string>
            </property>
            <property name="text">
             <string>Change Address:</string>
@@ -204,7 +195,7 @@
             <string/>
            </property>
            <property name="statusTip">
-            <string>Check and turn on Stake For Charity</string>
+            <string>Check and turn on Multisend</string>
            </property>
            <property name="text">
             <string>Enable</string>
@@ -214,7 +205,7 @@
          <item row="5" column="2">
           <widget class="QPushButton" name="disableButton">
            <property name="statusTip">
-            <string>Turn off Stake For Charity</string>
+            <string>Turn off Multisend</string>
            </property>
            <property name="text">
             <string>Disable</string>
@@ -227,7 +218,7 @@
             <number>1</number>
            </property>
            <property name="text">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Stake Sharing  allows you to automatically send up to 50% of your stake to another FlapX address after it matures.&lt;/p&gt;&lt;p&gt;Please enter percentage to give and FlapX address to give to. Min and Max amount and change address are optional.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Multisend allows you to automatically send up to 50% of your stake to another FlapX address after it matures.&lt;/p&gt;&lt;p&gt;Please enter the percentage to send and the FlapX address to send it to. Min and Max amount and change address are optional.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="alignment">
             <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
@@ -239,154 +230,6 @@
          </item>
          <item row="5" column="4" colspan="3">
           <widget class="QLabel" name="message">
-           <property name="palette">
-            <palette>
-             <active>
-              <colorrole role="WindowText">
-               <brush brushstyle="SolidPattern">
-                <color alpha="255">
-                 <red>255</red>
-                 <green>170</green>
-                 <blue>0</blue>
-                </color>
-               </brush>
-              </colorrole>
-              <colorrole role="Button">
-               <brush brushstyle="SolidPattern">
-                <color alpha="0">
-                 <red>0</red>
-                 <green>0</green>
-                 <blue>0</blue>
-                </color>
-               </brush>
-              </colorrole>
-              <colorrole role="Text">
-               <brush brushstyle="SolidPattern">
-                <color alpha="255">
-                 <red>255</red>
-                 <green>170</green>
-                 <blue>0</blue>
-                </color>
-               </brush>
-              </colorrole>
-              <colorrole role="Base">
-               <brush brushstyle="SolidPattern">
-                <color alpha="0">
-                 <red>0</red>
-                 <green>0</green>
-                 <blue>0</blue>
-                </color>
-               </brush>
-              </colorrole>
-              <colorrole role="Window">
-               <brush brushstyle="SolidPattern">
-                <color alpha="0">
-                 <red>0</red>
-                 <green>0</green>
-                 <blue>0</blue>
-                </color>
-               </brush>
-              </colorrole>
-             </active>
-             <inactive>
-              <colorrole role="WindowText">
-               <brush brushstyle="SolidPattern">
-                <color alpha="255">
-                 <red>255</red>
-                 <green>170</green>
-                 <blue>0</blue>
-                </color>
-               </brush>
-              </colorrole>
-              <colorrole role="Button">
-               <brush brushstyle="SolidPattern">
-                <color alpha="0">
-                 <red>0</red>
-                 <green>0</green>
-                 <blue>0</blue>
-                </color>
-               </brush>
-              </colorrole>
-              <colorrole role="Text">
-               <brush brushstyle="SolidPattern">
-                <color alpha="255">
-                 <red>255</red>
-                 <green>170</green>
-                 <blue>0</blue>
-                </color>
-               </brush>
-              </colorrole>
-              <colorrole role="Base">
-               <brush brushstyle="SolidPattern">
-                <color alpha="0">
-                 <red>0</red>
-                 <green>0</green>
-                 <blue>0</blue>
-                </color>
-               </brush>
-              </colorrole>
-              <colorrole role="Window">
-               <brush brushstyle="SolidPattern">
-                <color alpha="0">
-                 <red>0</red>
-                 <green>0</green>
-                 <blue>0</blue>
-                </color>
-               </brush>
-              </colorrole>
-             </inactive>
-             <disabled>
-              <colorrole role="WindowText">
-               <brush brushstyle="SolidPattern">
-                <color alpha="255">
-                 <red>120</red>
-                 <green>120</green>
-                 <blue>120</blue>
-                </color>
-               </brush>
-              </colorrole>
-              <colorrole role="Button">
-               <brush brushstyle="SolidPattern">
-                <color alpha="0">
-                 <red>0</red>
-                 <green>0</green>
-                 <blue>0</blue>
-                </color>
-               </brush>
-              </colorrole>
-              <colorrole role="Text">
-               <brush brushstyle="SolidPattern">
-                <color alpha="255">
-                 <red>120</red>
-                 <green>120</green>
-                 <blue>120</blue>
-                </color>
-               </brush>
-              </colorrole>
-              <colorrole role="Base">
-               <brush brushstyle="SolidPattern">
-                <color alpha="0">
-                 <red>0</red>
-                 <green>0</green>
-                 <blue>0</blue>
-                </color>
-               </brush>
-              </colorrole>
-              <colorrole role="Window">
-               <brush brushstyle="SolidPattern">
-                <color alpha="0">
-                 <red>0</red>
-                 <green>0</green>
-                 <blue>0</blue>
-                </color>
-               </brush>
-              </colorrole>
-             </disabled>
-            </palette>
-           </property>
-           <property name="styleSheet">
-            <string notr="true">background:transparent;</string>
-           </property>
            <property name="text">
             <string/>
            </property>

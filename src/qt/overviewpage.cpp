@@ -425,7 +425,7 @@ void OverviewPage::updateStatistics()
     }
     else
     {
-        ui->diffBox->setText(hardness);
+        ui->diffBox2->setText(hardness2);
     }
 
     if(pPawrate2 > netPawratePrevious)
@@ -465,11 +465,11 @@ void OverviewPage::updateStatistics()
 
     if(volume > volumePrevious)
     {
-        ui->volumeBox->setText("<b>" + qVolume + " FLAPX" + "</font></b>");
+        ui->volumeBox->setText("<b>" + qVolume + " FLAPX</b>");
     } 
     else if(volume < volumePrevious) 
     {
-        ui->volumeBox->setText("<b>" + qVolume + " FLAPX" + "</font></b>");
+        ui->volumeBox->setText("<b>" + qVolume + " FLAPX</b>");
     } 
     else 
     {

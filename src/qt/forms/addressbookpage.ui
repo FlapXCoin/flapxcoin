@@ -42,13 +42,6 @@
        <layout class="QGridLayout" name="gridLayout_2">
         <item row="0" column="0">
          <widget class="QLabel" name="labelExplanation">
-          <property name="palette">
-           <palette>
-            <active/>
-            <inactive/>
-            <disabled/>
-           </palette>
-          </property>
           <property name="text">
            <string>Here are your FlapX addresses for receiving payments. You may want to give a different one to each sender so you can keep track of who is paying you.</string>
           </property>
@@ -68,9 +61,6 @@
              <widget class="QTableView" name="tableView">
               <property name="contextMenuPolicy">
                <enum>Qt::CustomContextMenu</enum>
-              </property>
-              <property name="styleSheet">
-               <string notr="true">background:transparent;</string>
               </property>
               <property name="tabKeyNavigation">
                <bool>false</bool>
@@ -99,13 +89,6 @@
               </property>
               <item>
                <widget class="QPushButton" name="deleteButton">
-                <property name="palette">
-                 <palette>
-                  <active/>
-                  <inactive/>
-                  <disabled/>
-                 </palette>
-                </property>
                 <property name="text">
                  <string>&amp;Delete</string>
                 </property>
@@ -117,13 +100,6 @@
               </item>
               <item>
                <widget class="QPushButton" name="copyToClipboard">
-                <property name="palette">
-                 <palette>
-                  <active/>
-                  <inactive/>
-                  <disabled/>
-                 </palette>
-                </property>
                 <property name="text">
                  <string>&amp;Copy Address</string>
                 </property>
@@ -135,13 +111,6 @@
               </item>
               <item>
                <widget class="QPushButton" name="newAddressButton">
-                <property name="palette">
-                 <palette>
-                  <active/>
-                  <inactive/>
-                  <disabled/>
-                 </palette>
-                </property>
                 <property name="text">
                  <string>&amp;New Address</string>
                 </property>
@@ -153,13 +122,6 @@
               </item>
               <item>
                <widget class="QPushButton" name="signMessage">
-                <property name="palette">
-                 <palette>
-                  <active/>
-                  <inactive/>
-                  <disabled/>
-                 </palette>
-                </property>
                 <property name="text">
                  <string>Sign &amp;Message</string>
                 </property>
@@ -171,13 +133,6 @@
               </item>
               <item>
                <widget class="QPushButton" name="verifyMessage">
-                <property name="palette">
-                 <palette>
-                  <active/>
-                  <inactive/>
-                  <disabled/>
-                 </palette>
-                </property>
                 <property name="text">
                  <string>&amp;Verify Message</string>
                 </property>
@@ -189,13 +144,6 @@
               </item>
               <item>
                <widget class="QPushButton" name="showQRCode">
-                <property name="palette">
-                 <palette>
-                  <active/>
-                  <inactive/>
-                  <disabled/>
-                 </palette>
-                </property>
                 <property name="text">
                  <string>Show &amp;QR Code</string>
                 </property>
@@ -207,17 +155,23 @@
               </item>
               <item>
                <widget class="QPushButton" name="stakeForCharityPushButton">
-                <property name="palette">
-                 <palette>
-                  <active/>
-                  <inactive/>
-                  <disabled/>
-                 </palette>
-                </property>
                 <property name="text">
-                 <string>S4E</string>
+                 <string>Multisend</string>
                 </property>
                </widget>
+              </item>
+              <item>
+               <spacer name="buttonsBottomSpacer">
+                <property name="orientation">
+                 <enum>Qt::Vertical</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>20</width>
+                  <height>40</height>
+                 </size>
+                </property>
+               </spacer>
               </item>
              </layout>
             </item>
@@ -227,178 +181,6 @@
            <layout class="QHBoxLayout" name="horizontalLayout_2">
             <item>
              <spacer name="horizontalSpacer">
-              <property name="palette">
-               <palette>
-                <active>
-                 <colorrole role="WindowText">
-                  <brush brushstyle="SolidPattern">
-                   <color alpha="255">
-                    <red>255</red>
-                    <green>170</green>
-                    <blue>0</blue>
-                   </color>
-                  </brush>
-                 </colorrole>
-                 <colorrole role="Button">
-                  <brush brushstyle="SolidPattern">
-                   <color alpha="255">
-                    <red>255</red>
-                    <green>170</green>
-                    <blue>0</blue>
-                   </color>
-                  </brush>
-                 </colorrole>
-                 <colorrole role="Text">
-                  <brush brushstyle="SolidPattern">
-                   <color alpha="255">
-                    <red>255</red>
-                    <green>170</green>
-                    <blue>0</blue>
-                   </color>
-                  </brush>
-                 </colorrole>
-                 <colorrole role="BrightText">
-                  <brush brushstyle="SolidPattern">
-                   <color alpha="255">
-                    <red>255</red>
-                    <green>170</green>
-                    <blue>0</blue>
-                   </color>
-                  </brush>
-                 </colorrole>
-                 <colorrole role="ButtonText">
-                  <brush brushstyle="SolidPattern">
-                   <color alpha="255">
-                    <red>255</red>
-                    <green>170</green>
-                    <blue>0</blue>
-                   </color>
-                  </brush>
-                 </colorrole>
-                 <colorrole role="HighlightedText">
-                  <brush brushstyle="SolidPattern">
-                   <color alpha="255">
-                    <red>255</red>
-                    <green>170</green>
-                    <blue>0</blue>
-                   </color>
-                  </brush>
-                 </colorrole>
-                </active>
-                <inactive>
-                 <colorrole role="WindowText">
-                  <brush brushstyle="SolidPattern">
-                   <color alpha="255">
-                    <red>255</red>
-                    <green>170</green>
-                    <blue>0</blue>
-                   </color>
-                  </brush>
-                 </colorrole>
-                 <colorrole role="Button">
-                  <brush brushstyle="SolidPattern">
-                   <color alpha="255">
-                    <red>255</red>
-                    <green>170</green>
-                    <blue>0</blue>
-                   </color>
-                  </brush>
-                 </colorrole>
-                 <colorrole role="Text">
-                  <brush brushstyle="SolidPattern">
-                   <color alpha="255">
-                    <red>255</red>
-                    <green>170</green>
-                    <blue>0</blue>
-                   </color>
-                  </brush>
-                 </colorrole>
-                 <colorrole role="BrightText">
-                  <brush brushstyle="SolidPattern">
-                   <color alpha="255">
-                    <red>255</red>
-                    <green>170</green>
-                    <blue>0</blue>
-                   </color>
-                  </brush>
-                 </colorrole>
-                 <colorrole role="ButtonText">
-                  <brush brushstyle="SolidPattern">
-                   <color alpha="255">
-                    <red>255</red>
-                    <green>170</green>
-                    <blue>0</blue>
-                   </color>
-                  </brush>
-                 </colorrole>
-                 <colorrole role="HighlightedText">
-                  <brush brushstyle="SolidPattern">
-                   <color alpha="255">
-                    <red>255</red>
-                    <green>170</green>
-                    <blue>0</blue>
-                   </color>
-                  </brush>
-                 </colorrole>
-                </inactive>
-                <disabled>
-                 <colorrole role="WindowText">
-                  <brush brushstyle="SolidPattern">
-                   <color alpha="255">
-                    <red>255</red>
-                    <green>170</green>
-                    <blue>0</blue>
-                   </color>
-                  </brush>
-                 </colorrole>
-                 <colorrole role="Button">
-                  <brush brushstyle="SolidPattern">
-                   <color alpha="255">
-                    <red>255</red>
-                    <green>170</green>
-                    <blue>0</blue>
-                   </color>
-                  </brush>
-                 </colorrole>
-                 <colorrole role="Text">
-                  <brush brushstyle="SolidPattern">
-                   <color alpha="255">
-                    <red>255</red>
-                    <green>170</green>
-                    <blue>0</blue>
-                   </color>
-                  </brush>
-                 </colorrole>
-                 <colorrole role="BrightText">
-                  <brush brushstyle="SolidPattern">
-                   <color alpha="255">
-                    <red>255</red>
-                    <green>170</green>
-                    <blue>0</blue>
-                   </color>
-                  </brush>
-                 </colorrole>
-                 <colorrole role="ButtonText">
-                  <brush brushstyle="SolidPattern">
-                   <color alpha="255">
-                    <red>159</red>
-                    <green>158</green>
-                    <blue>158</blue>
-                   </color>
-                  </brush>
-                 </colorrole>
-                 <colorrole role="HighlightedText">
-                  <brush brushstyle="SolidPattern">
-                   <color alpha="255">
-                    <red>255</red>
-                    <green>170</green>
-                    <blue>0</blue>
-                   </color>
-                  </brush>
-                 </colorrole>
-                </disabled>
-               </palette>
-              </property>
               <property name="orientation">
                <enum>Qt::Horizontal</enum>
               </property>
@@ -417,16 +199,6 @@
                 <horstretch>0</horstretch>
                 <verstretch>0</verstretch>
                </sizepolicy>
-              </property>
-              <property name="palette">
-               <palette>
-                <active/>
-                <inactive/>
-                <disabled/>
-               </palette>
-              </property>
-              <property name="styleSheet">
-               <string notr="true"/>
               </property>
               <property name="standardButtons">
                <set>QDialogButtonBox::Ok</set>

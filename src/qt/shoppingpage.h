@@ -78,6 +78,19 @@ private:
 //Button Layout: Buttons Mapped to frames ie pushButton_211 = Frame 21 Button 1 (depreciated)
 private slots:
 
+
+    void on_pushButton_111_clicked();
+
+    void on_pushButton_112_clicked();
+
+    void on_pushButton_113_clicked();
+
+    void on_pushButton_134_clicked();
+
+    void on_pushButton_136_clicked();
+
+
+
 signals:
 
 };

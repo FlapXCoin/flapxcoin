@@ -22,7 +22,6 @@
 
 #include <boost/filesystem.hpp>
 #include <boost/filesystem/fstream.hpp>
-#include <boost/filesystem/convenience.hpp>
 #include <boost/interprocess/sync/file_lock.hpp>
 #include <boost/algorithm/string/predicate.hpp>
 #include <openssl/crypto.h>
@@ -238,6 +237,12 @@ bool AppInit(int argc, char* argv[])
         delete detectShutdownThread;
         detectShutdownThread = NULL;
     }
+    // Wait for the worker threads (networking, staking, wallet flush) to
+    // actually stop before Shutdown() deletes the wallet and the process
+    // exits; otherwise a thread still running could use the freed wallet or
+    // a destroyed mutex and crash during shutdown.
+    threadGroup.interrupt_all();
+    threadGroup.join_all();
     Shutdown();
 
     return fRet;
@@ -324,6 +329,7 @@ std::string HelpMessage()
         "  -bantime=<n>           " + _("Number of seconds to keep misbehaving peers from reconnecting (default: 86400)") + "\n" +
         "  -maxreceivebuffer=<n>  " + _("Maximum per-connection receive buffer, <n>*1000 bytes (default: 5000)") + "\n" +
         "  -maxsendbuffer=<n>     " + _("Maximum per-connection send buffer, <n>*1000 bytes (default: 1000)") + "\n" +
+        "  -blockbatchsize=<n>    " + _("Number of blocks to send a syncing peer per request, 1-5000 (default: 1000)") + "\n" +
 #ifdef USE_UPNP
 #if USE_UPNP
         "  -upnp                  " + _("Use UPnP to map the listening port (default: 1 when listening)") + "\n" +
@@ -568,7 +574,8 @@ bool AppInit2(boost::thread_group& threadGroup)
     std::string strWalletFileName = GetArg("-wallet", "wallet.dat");
 
     // strWalletFileName must be a plain filename without a directory
-    if (strWalletFileName != boost::filesystem::basename(strWalletFileName) + boost::filesystem::extension(strWalletFileName))
+    // (basename()/extension() and convenience.hpp were removed in Boost 1.85)
+    if (strWalletFileName != boost::filesystem::path(strWalletFileName).filename().string())
         return InitError(strprintf(_("Wallet %s resides outside data directory %s."), strWalletFileName.c_str(), strDataDir.c_str()));
 
     // Make sure only a single FlapX process is using the data directory.
@@ -651,7 +658,7 @@ bool AppInit2(boost::thread_group& threadGroup)
             return false;
     }
 
-    if (filesystem::exists(GetDataDir() / strWalletFileName))
+    if (boost::filesystem::exists(GetDataDir() / strWalletFileName))
     {
         CDBEnv::VerifyResult r = bitdb.Verify(strWalletFileName, CWalletDB::Recover);
         if (r == CDBEnv::RECOVER_OK)
@@ -777,6 +784,12 @@ bool AppInit2(boost::thread_group& threadGroup)
         AddOneShot(strDest);
 
     // ********************************************************* Step 7: load blockchain
+
+    {
+        std::string strBlockFileError;
+        if (!MigrateBlockFiles(strBlockFileError))
+            return InitError(strBlockFileError);
+    }
 
     if (!bitdb.Open(GetDataDir()))
     {
@@ -943,21 +956,21 @@ bool AppInit2(boost::thread_group& threadGroup)
         exit(0);
     }
 
-    filesystem::path pathBootstrap = GetDataDir() / "bootstrap.dat";
-    if (filesystem::exists(pathBootstrap)) {
+    boost::filesystem::path pathBootstrap = GetDataDir() / "bootstrap.dat";
+    if (boost::filesystem::exists(pathBootstrap)) {
         uiInterface.InitMessage(_("Importing bootstrap blockchain data file."));
 
         FILE *file = fopen(pathBootstrap.string().c_str(), "rb");
         if (file) {
-            filesystem::path pathBootstrapOld = GetDataDir() / "bootstrap.dat.old";
+            boost::filesystem::path pathBootstrapOld = GetDataDir() / "bootstrap.dat.old";
             LoadExternalBlockFile(file);
             RenameOver(pathBootstrap, pathBootstrapOld);
         }
     }
 
     // FlapX: import PoW blockchain
-    filesystem::path pathOldblockchain = GetDataDir() / "blocks";
-    if (filesystem::exists(pathOldblockchain)) {
+    boost::filesystem::path pathOldblockchain = GetDataDir() / "blocks";
+    if (boost::filesystem::exists(pathOldblockchain)) {
         uiInterface.InitMessage(_("Importing blockchain from PoW wallet..."));
 
         FILE *file = fopen((pathOldblockchain / "blk00000.dat").string().c_str(), "rb");
@@ -970,11 +983,11 @@ bool AppInit2(boost::thread_group& threadGroup)
         }
 #if BOOST_VERSION >= 105000
         boost::system::error_code errcode;
-        filesystem::remove_all(pathOldblockchain, errcode);
-        filesystem::copy_file(GetDataDir() / "wallet.dat", GetDataDir() / "wallet.dat.old", errcode);
+        boost::filesystem::remove_all(pathOldblockchain, errcode);
+        boost::filesystem::copy_file(GetDataDir() / "wallet.dat", GetDataDir() / "wallet.dat.old", errcode);
 #else
-        filesystem::remove_all(pathOldblockchain);
-        filesystem::copy_file(GetDataDir() / "wallet.dat", GetDataDir() / "wallet.dat.old");
+        boost::filesystem::remove_all(pathOldblockchain);
+        boost::filesystem::copy_file(GetDataDir() / "wallet.dat", GetDataDir() / "wallet.dat.old");
 #endif
     }
 

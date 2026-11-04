@@ -423,6 +423,35 @@ void ShoppingPage::setModel(ClientModel *model)
     this->model = model;
 }
 
+//FlapXcoin
+void ShoppingPage::on_pushButton_111_clicked()
+{
+    QString link="https://sites.google.com/view/flapxcoin/landing-pad";
+    QDesktopServices::openUrl(QUrl(link));
+}
+void ShoppingPage::on_pushButton_112_clicked()
+{
+    QString link="http://blocks.flapxcoin.com";
+    QDesktopServices::openUrl(QUrl(link));
+}
+void ShoppingPage::on_pushButton_113_clicked()
+{
+    QString link="https://pools.flapxcoin.com";
+    QDesktopServices::openUrl(QUrl(link));
+}
+
+void ShoppingPage::on_pushButton_134_clicked()
+{
+    QString link="https://bitcointalk.org/index.php?topic=3031911.0";
+    QDesktopServices::openUrl(QUrl(link));
+}
+
+void ShoppingPage::on_pushButton_136_clicked()
+{
+    QString link="https://dont-panic.flapxcoin.com";
+    QDesktopServices::openUrl(QUrl(link));
+}
+
 ShoppingPage::~ShoppingPage()
 {
     delete ui;

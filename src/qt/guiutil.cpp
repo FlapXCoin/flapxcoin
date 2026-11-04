@@ -454,5 +454,23 @@ void HelpMessageBox::showOrPrint()
 #endif
 }
 
+QString flapxStyleSheet()
+{
+    // FlapX orange, from the logo
+    const QString accent = "#ffaa00";
+    return QString(
+        // Sync progress bar
+        "QProgressBar {"
+        "  border: 1px solid #a0a0a0; border-radius: 4px;"
+        "  background-color: palette(base); color: palette(text);"
+        "  text-align: center; }"
+        "QProgressBar::chunk { background-color: %1; border-radius: 3px; }"
+        // Highlight the selected page in the toolbar
+        "QToolBar QToolButton:checked {"
+        "  background-color: rgba(255, 170, 0, 60);"
+        "  border: 1px solid %1; border-radius: 4px; }"
+    ).arg(accent);
+}
+
 } // namespace GUIUtil
 

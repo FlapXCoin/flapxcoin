@@ -38,7 +38,7 @@ SendCoinsDialog::SendCoinsDialog(QWidget *parent) :
 
 #if QT_VERSION >= 0x040700
     /* Do not move this to the XML file, Qt before 4.7 will choke on it */
-    ui->lineEditCoinControlChange->setPlaceholderText(tr("Enter a FlapX address (e.g. nBZ8YVV3XT3WWWd2a1jo4N9WePiwKB3mJE)"));
+    ui->lineEditCoinControlChange->setPlaceholderText(tr("Enter a FlapX address (starts with X)"));
 #endif
 
     addEntry();
