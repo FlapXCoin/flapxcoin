@@ -156,13 +156,14 @@ public:
     }
 
     ~CECKey() {
-        /*       EC_KEY_free(pkey);
-    pkey = EC_KEY_new_by_curve_name(NID_secp256k1);
-    if (pkey == NULL)
-        throw key_error("CKey::CKey() : EC_KEY_new_by_curve_name failed");
-    fSet = false;
- */
+        // Free the OpenSSL key. Without this every CECKey leaked ~1.9 KB, and
+        // one is created for every signature verification.
+        EC_KEY_free(pkey);
     }
+
+    // CECKey owns pkey, so copying it would free the same key twice.
+    CECKey(const CECKey&) = delete;
+    CECKey& operator=(const CECKey&) = delete;
     /*
 CKey::CKey()
 {
