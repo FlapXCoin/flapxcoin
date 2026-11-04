@@ -12,6 +12,10 @@
 #include <QSet>
 #include <QTimer>
 
+// Boost 1.73+ no longer puts _1, _2, ... in the global namespace by default
+#include <boost/bind/bind.hpp>
+using namespace boost::placeholders;
+
 WalletModel::WalletModel(CWallet *wallet, OptionsModel *optionsModel, QObject *parent) :
     QObject(parent), wallet(wallet), optionsModel(optionsModel), addressTableModel(0),
     transactionTableModel(0),

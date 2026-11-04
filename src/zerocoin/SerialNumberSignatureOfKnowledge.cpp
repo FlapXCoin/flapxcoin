@@ -12,6 +12,8 @@
 
 #include "Zerocoin.h"
 
+using namespace std;
+
 namespace libzerocoin {
 
 SerialNumberSignatureOfKnowledge::SerialNumberSignatureOfKnowledge(const Params* p): params(p) { }
