@@ -47,6 +47,7 @@ if [ -z "$WID" ]; then
     exit 1
 fi
 sleep 8 # let it finish loading
+echo "Window title: $(xdotool getwindowname "$WID")"
 
 focus() { xdotool windowfocus --sync "$WID" 2>/dev/null || true; }
 shot()  { sleep 2; import -window "$1" "$OUT/$2.png" && echo "saved $2.png"; }

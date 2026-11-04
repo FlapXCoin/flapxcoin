@@ -98,7 +98,8 @@ BitcoinGUI::BitcoinGUI(QWidget *parent):
     resize(960, 640);
     setWindowTitle(tr("FlapX-Starhopper") + " - " + QString("%1.%2.%3.%4")
                    .arg(CLIENT_VERSION_MAJOR).arg(CLIENT_VERSION_MINOR)
-                   .arg(CLIENT_VERSION_REVISION).arg(CLIENT_VERSION_BUILD));
+                   .arg(CLIENT_VERSION_REVISION).arg(CLIENT_VERSION_BUILD)
+                   + " - " + tr("Pre Release"));
 #ifndef Q_OS_MAC
     qApp->setWindowIcon(QIcon(":icons/bitcoin"));
     setWindowIcon(QIcon(":icons/bitcoin"));
