@@ -63,13 +63,26 @@ jobs:
           sudo apt-get install -y build-essential libssl-dev libdb++-dev \
             libboost-system-dev libboost-filesystem-dev libboost-program-options-dev \
             libboost-thread-dev libboost-chrono-dev libminiupnpc-dev zlib1g-dev \
-            qtbase5-dev qttools5-dev-tools libqrencode-dev
+            qtbase5-dev qttools5-dev-tools cmake
+
+      # Ubuntu's libqrencode-dev has no static library, so build one
+      - name: Build static libqrencode
+        run: |
+          git clone --depth 1 --branch v4.1.1 https://github.com/fukuchi/libqrencode.git "$RUNNER_TEMP/libqrencode"
+          cmake -S "$RUNNER_TEMP/libqrencode" -B "$RUNNER_TEMP/qrbuild" \
+            -DBUILD_SHARED_LIBS=OFF -DWITH_TOOLS=NO -DWITH_TESTS=NO -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
+            -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_INSTALL_PREFIX="$RUNNER_TEMP/qrencode"
+          cmake --build "$RUNNER_TEMP/qrbuild" -j"$(nproc)"
+          cmake --install "$RUNNER_TEMP/qrbuild"
 
       - name: Build flapx-qt
         run: |
           # RELEASE=1 links Boost, Berkeley DB, OpenSSL, miniupnpc, qrencode and
           # zlib statically, so only Qt 5 and the C/C++ runtime come from the system
-          qmake -qt=qt5 RELEASE=1 USE_UPNP=1 USE_QRCODE=1 "CONFIG+=release" "CONFIG-=debug_and_release" flapx-qt.pro
+          qmake -qt=qt5 RELEASE=1 USE_UPNP=1 USE_QRCODE=1 "CONFIG+=release" "CONFIG-=debug_and_release" \
+            "QRENCODE_INCLUDE_PATH=$RUNNER_TEMP/qrencode/include" "QRENCODE_LIB_PATH=$RUNNER_TEMP/qrencode/lib" \
+            flapx-qt.pro
           make -j"$(nproc)"
           strip flapx-qt
 
