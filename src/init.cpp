@@ -238,6 +238,12 @@ bool AppInit(int argc, char* argv[])
         delete detectShutdownThread;
         detectShutdownThread = NULL;
     }
+    // Wait for the worker threads (networking, staking, wallet flush) to
+    // actually stop before Shutdown() deletes the wallet and the process
+    // exits; otherwise a thread still running could use the freed wallet or
+    // a destroyed mutex and crash during shutdown.
+    threadGroup.interrupt_all();
+    threadGroup.join_all();
     Shutdown();
 
     return fRet;
