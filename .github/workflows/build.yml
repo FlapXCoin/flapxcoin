@@ -97,6 +97,7 @@ jobs:
           install: >-
             make
             git
+            diffutils
             mingw-w64-x86_64-toolchain
             mingw-w64-x86_64-boost
             mingw-w64-x86_64-openssl
@@ -115,6 +116,9 @@ jobs:
           # Rename a function that clashes with a GCC built-in
           sed -i 's/__atomic_compare_exchange/__atomic_compare_exchange_db/g' src/dbinc/atomic.h
           cd build_unix
+          # 2012-era C: build as C17 and relax GCC 14+'s stricter defaults
+          export CFLAGS="-O2 -std=gnu17 -Wno-incompatible-pointer-types -Wno-int-conversion -Wno-implicit-function-declaration"
+          export CXXFLAGS="-O2"
           ../dist/configure --host=x86_64-w64-mingw32 --build=x86_64-w64-mingw32 \
             --enable-mingw --enable-cxx --disable-shared --disable-replication \
             --prefix="$T/bdb-install"
