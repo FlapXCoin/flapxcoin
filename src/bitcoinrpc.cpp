@@ -22,6 +22,7 @@
 #undef printf
 #include <boost/algorithm/string.hpp>
 #include <boost/asio.hpp>
+#include <boost/asio/deadline_timer.hpp> // not included by asio.hpp in newer Boost
 #include <boost/asio/ip/v6_only.hpp>
 #include <boost/asio/ssl.hpp>
 #include <boost/bind.hpp>
