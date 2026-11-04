@@ -348,7 +348,7 @@ bool CKey::IsCompressed() const
     // (the signature is a valid signature of the given data for that key)
     bool Recover(const uint256 &hash, const unsigned char *p64, int rec)
     {
-        if (rec<0 || rec>=3)
+        if (rec<0 || rec>=4) // recovery ids are 0-3
             return false;
         ECDSA_SIG *sig = ECDSA_SIG_new();
         // ECDSA_SIG is opaque since OpenSSL 1.1; set0 takes ownership of r and s
