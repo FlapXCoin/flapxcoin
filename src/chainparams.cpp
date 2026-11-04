@@ -84,7 +84,8 @@ public:
 /*
         N/A
 */
-        // DNS seeds: flapx00-flapx10.flapxcoin.com (no hardcoded IP seeds)
+        // DNS seeds: flapx00-flapx10 on flapxcoin.com and nerdlabs001.com
+        // (no hardcoded IP seeds)
         vSeeds.push_back(CDNSSeedData("flapx00", "flapx00.flapxcoin.com"));
         vSeeds.push_back(CDNSSeedData("flapx01", "flapx01.flapxcoin.com"));
         vSeeds.push_back(CDNSSeedData("flapx02", "flapx02.flapxcoin.com"));
@@ -96,6 +97,17 @@ public:
         vSeeds.push_back(CDNSSeedData("flapx08", "flapx08.flapxcoin.com"));
         vSeeds.push_back(CDNSSeedData("flapx09", "flapx09.flapxcoin.com"));
         vSeeds.push_back(CDNSSeedData("flapx10", "flapx10.flapxcoin.com"));
+        vSeeds.push_back(CDNSSeedData("flapx00", "flapx00.nerdlabs001.com"));
+        vSeeds.push_back(CDNSSeedData("flapx01", "flapx01.nerdlabs001.com"));
+        vSeeds.push_back(CDNSSeedData("flapx02", "flapx02.nerdlabs001.com"));
+        vSeeds.push_back(CDNSSeedData("flapx03", "flapx03.nerdlabs001.com"));
+        vSeeds.push_back(CDNSSeedData("flapx04", "flapx04.nerdlabs001.com"));
+        vSeeds.push_back(CDNSSeedData("flapx05", "flapx05.nerdlabs001.com"));
+        vSeeds.push_back(CDNSSeedData("flapx06", "flapx06.nerdlabs001.com"));
+        vSeeds.push_back(CDNSSeedData("flapx07", "flapx07.nerdlabs001.com"));
+        vSeeds.push_back(CDNSSeedData("flapx08", "flapx08.nerdlabs001.com"));
+        vSeeds.push_back(CDNSSeedData("flapx09", "flapx09.nerdlabs001.com"));
+        vSeeds.push_back(CDNSSeedData("flapx10", "flapx10.nerdlabs001.com"));
 
 
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1, 75); //X
