@@ -3733,7 +3733,11 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
         // Send the rest of the chain
         if (pindex)
             pindex = pindex->pnext;
-        int nLimit = 50;
+        // How many blocks to announce per getblocks request (one sync batch).
+        // Set with -blockbatchsize; kept within 1..5000 (the protocol allows
+        // up to MAX_INV_SZ, but larger batches save little time).
+        int nLimit = (int)GetArg("-blockbatchsize", DEFAULT_BLOCK_BATCH_SIZE);
+        nLimit = std::max(1, std::min(nLimit, 5000));
         printf("getblocks %d to %s limit %d\n", (pindex ? pindex->nHeight : -1), hashStop.ToString().c_str(), nLimit);
         for (; pindex; pindex = pindex->pnext)
         {
