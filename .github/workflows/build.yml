@@ -142,6 +142,20 @@ jobs:
           name: flapx-qt-linux-x86_64
           path: flapx-qt
 
+      # Run the wallet on a virtual display and screenshot each page and
+      # dialog, so GUI changes can be reviewed from the run's artifacts
+      - name: Take GUI screenshots
+        continue-on-error: true
+        run: |
+          sudo apt-get install -y xvfb xdotool imagemagick
+          contrib/ci/gui-screenshots.sh ./flapx-qt screenshots
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: gui-screenshots-linux
+          path: screenshots/
+
   windows-qt:
     name: Windows GUI
     runs-on: windows-latest
