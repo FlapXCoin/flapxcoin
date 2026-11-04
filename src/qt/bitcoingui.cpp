@@ -95,7 +95,8 @@ BitcoinGUI::BitcoinGUI(QWidget *parent):
     nWeight(0)
 {
 
-    resize(700, 500);
+    // Wide enough for every toolbar page button to be visible
+    resize(960, 640);
     setWindowTitle(tr("FlapX-Starhopper") + " - " + QString("%1.%2.%3.%4")
                    .arg(CLIENT_VERSION_MAJOR).arg(CLIENT_VERSION_MINOR)
                    .arg(CLIENT_VERSION_REVISION).arg(CLIENT_VERSION_BUILD));

@@ -711,16 +711,8 @@
                      <layout class="QGridLayout" name="gridLayout_31">
                       <item row="0" column="0">
                        <widget class="QGroupBox" name="groupBox_5">
-                        <property name="font">
-                         <font>
-                          <pointsize>12</pointsize>
-                          <weight>75</weight>
-                          <italic>false</italic>
-                          <bold>true</bold>
-                         </font>
-                        </property>
                         <property name="title">
-                         <string>Local Wallet Chain Explorer ( very slow use web explorer link when possible)</string>
+                         <string>Local Chain Explorer (slow: use the web explorer when you can)</string>
                         </property>
                         <property name="alignment">
                          <set>Qt::AlignCenter</set>
