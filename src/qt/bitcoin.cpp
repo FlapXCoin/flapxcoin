@@ -153,6 +153,9 @@ int main(int argc, char *argv[])
     else
         app.setApplicationName("FlapX-Qt");
 
+    // All GUI styling: native look plus FlapX touches
+    app.setStyleSheet(GUIUtil::flapxStyleSheet());
+
     // ... then GUI settings:
     OptionsModel optionsModel;
 

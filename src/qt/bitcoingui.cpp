@@ -28,6 +28,7 @@
 #include "askpassphrasedialog.h"
 #include "notificator.h"
 #include "guiutil.h"
+#include "clientversion.h"
 #include "rpcconsole.h"
 #include "wallet.h"
 #include "bitcoinrpc.h"
@@ -95,7 +96,9 @@ BitcoinGUI::BitcoinGUI(QWidget *parent):
 {
 
     resize(700, 500);
-    setWindowTitle(tr("FlapX-Starhopper") + " - " + tr("2.3"));
+    setWindowTitle(tr("FlapX-Starhopper") + " - " + QString("%1.%2.%3.%4")
+                   .arg(CLIENT_VERSION_MAJOR).arg(CLIENT_VERSION_MINOR)
+                   .arg(CLIENT_VERSION_REVISION).arg(CLIENT_VERSION_BUILD));
 #ifndef Q_OS_MAC
     qApp->setWindowIcon(QIcon(":icons/bitcoin"));
     setWindowIcon(QIcon(":icons/bitcoin"));
@@ -202,14 +205,7 @@ BitcoinGUI::BitcoinGUI(QWidget *parent):
     progressBar->setAlignment(Qt::AlignCenter);
     progressBar->setVisible(false);
 
-    // Override style sheet for progress bar for styles that have a segmented progress bar,
-    // as they make the text unreadable (workaround for issue #1071)
-    // See https://qt-project.org/doc/qt-4.8/gallery.html
-    QString curStyle = qApp->style()->metaObject()->className();
-    if(curStyle == "QWindowsStyle" || curStyle == "QWindowsXPStyle")
-    {
-        progressBar->setStyleSheet("QProgressBar { background-color: #000000; color: white; border: 1px solid grey; border-radius: 7px; padding: 1px; text-align: center; } QProgressBar::chunk { background: QLinearGradient(x1: 0, y1: 0, x2: 1, y2: 0, stop: 0 #ffaa00, stop: 1 orange); border-radius: 7px; margin: 0px; }");
-    }
+    // (the progress bar is styled by the application style sheet, GUIUtil::flapxStyleSheet)
     statusBar()->addWidget(progressBarLabel);
     statusBar()->addWidget(progressBar);
     statusBar()->addPermanentWidget(frameBlocks);
@@ -1189,8 +1185,8 @@ void BitcoinGUI::loadTheme(QString theme)
             qss.close();
         }
     } else {
-        // If not theme name given - clear styles
-        qApp->setStyleSheet(QString(""));
+        // If no theme name is given, go back to the standard FlapX style
+        qApp->setStyleSheet(GUIUtil::flapxStyleSheet());
     }
 
     // set selected theme and store it in registry
