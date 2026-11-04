@@ -84,23 +84,18 @@ public:
 /*
         N/A
 */
-///new seednodes should improve initial connectivity and sync	    
-        vSeeds.push_back(CDNSSeedData("flapx", "flapx000.flapxcoin.com"));
-        vSeeds.push_back(CDNSSeedData("flapx", "flapx001.flapxcoin.com"));
-        vSeeds.push_back(CDNSSeedData("flapx", "flapx002.flapxcoin.com"));
-        vSeeds.push_back(CDNSSeedData("flapx", "flapx003.flapxcoin.com"));
-        vSeeds.push_back(CDNSSeedData("flapx", "flapx004.flapxcoin.com"));
-        vSeeds.push_back(CDNSSeedData("flapx", "flapx005.flapxcoin.com"));
-        vSeeds.push_back(CDNSSeedData("flapx", "flapx006.flapxcoin.com"));
-        vSeeds.push_back(CDNSSeedData("flapx", "flapx007.flapxcoin.com"));
-        vSeeds.push_back(CDNSSeedData("flapx", "flapx008.flapxcoin.com"));
-        vSeeds.push_back(CDNSSeedData("flapx", "flapx009.flapxcoin.com"));
-        vSeeds.push_back(CDNSSeedData("flapx", "flapx010.flapxcoin.com"));
-        vSeeds.push_back(CDNSSeedData("nlabs", "001.nerdlabs.dev"));
-        vSeeds.push_back(CDNSSeedData("nlabs", "002.nerdlabs.dev"));
-        vSeeds.push_back(CDNSSeedData("nlabs", "003.nerdlabs.dev"));
-        vSeeds.push_back(CDNSSeedData("nlabs", "004.nerdlabs.dev"));
-        vSeeds.push_back(CDNSSeedData("nlabs", "005.nerdlabs.dev"));
+        // DNS seeds: flapx00-flapx10.flapxcoin.com (no hardcoded IP seeds)
+        vSeeds.push_back(CDNSSeedData("flapx00", "flapx00.flapxcoin.com"));
+        vSeeds.push_back(CDNSSeedData("flapx01", "flapx01.flapxcoin.com"));
+        vSeeds.push_back(CDNSSeedData("flapx02", "flapx02.flapxcoin.com"));
+        vSeeds.push_back(CDNSSeedData("flapx03", "flapx03.flapxcoin.com"));
+        vSeeds.push_back(CDNSSeedData("flapx04", "flapx04.flapxcoin.com"));
+        vSeeds.push_back(CDNSSeedData("flapx05", "flapx05.flapxcoin.com"));
+        vSeeds.push_back(CDNSSeedData("flapx06", "flapx06.flapxcoin.com"));
+        vSeeds.push_back(CDNSSeedData("flapx07", "flapx07.flapxcoin.com"));
+        vSeeds.push_back(CDNSSeedData("flapx08", "flapx08.flapxcoin.com"));
+        vSeeds.push_back(CDNSSeedData("flapx09", "flapx09.flapxcoin.com"));
+        vSeeds.push_back(CDNSSeedData("flapx10", "flapx10.flapxcoin.com"));
 
 
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1, 75); //X
