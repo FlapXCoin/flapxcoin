@@ -156,10 +156,16 @@ public:
 
         genesis.nTime    = 1300000000;
         // genesis.nBits  = bnProofOfWorkLimit.GetCompact();
-        genesis.nNonce = 0;
+        // Mined so the genesis block meets its own target (nNonce = 0 did not,
+        // which made reading it back from disk fail the proof-of-work check).
+        // NOTE: this new testnet genesis block still needs verification on a
+        // live testnet. It was only checked locally on a single node (blocks
+        // mined on top of it and re-verified at startup); the matching testnet
+        // stake modifier checkpoint is in kernel.cpp.
+        genesis.nNonce = 522177;
         hashGenesisBlock = genesis.GetHash();
 	// genesis.print();
-        assert(hashGenesisBlock == uint256("0x9ff8786e790c41e6f44a926b8b2c70183eb655e7ef188a4630408164dd13bc6b"));
+        assert(hashGenesisBlock == uint256("0xcc0e6b7fc1e4fa77e38306fd870bd0813178041cf9c1cafb6146c7d7fb8de492"));
         assert(genesis.hashMerkleRoot == uint256("0x9e17be6aefbffc74cf4deab73f93bd050e696008fe28c56de80520a22b05fafb"));
 
         vFixedSeeds.clear();
