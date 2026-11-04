@@ -96,6 +96,7 @@ jobs:
           update: true
           install: >-
             make
+            git
             mingw-w64-x86_64-toolchain
             mingw-w64-x86_64-boost
             mingw-w64-x86_64-openssl
@@ -104,10 +105,24 @@ jobs:
             mingw-w64-x86_64-qrencode
             mingw-w64-x86_64-zlib
             mingw-w64-x86_64-qt5-static
+            mingw-w64-x86_64-cmake
 
       - name: Show library names
         run: |
           ls /mingw64/lib | grep -Ei 'boost_(system|thread|chrono)|db_cxx|miniupnpc|qrencode|libssl|libz\.' || true
+
+      # MSYS2 only ships qrencode as a DLL; build a static copy so the wallet
+      # stays a single self-contained .exe
+      - name: Build static libqrencode
+        run: |
+          T="$(cygpath -u "$RUNNER_TEMP")"
+          git clone --depth 1 --branch v4.1.1 https://github.com/fukuchi/libqrencode.git "$T/libqrencode"
+          cmake -S "$T/libqrencode" -B "$T/qrbuild" -G "MSYS Makefiles" \
+            -DBUILD_SHARED_LIBS=OFF -DWITH_TOOLS=NO -DWITH_TESTS=NO \
+            -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="$T/qrencode"
+          cmake --build "$T/qrbuild" -j"$(nproc)"
+          cmake --install "$T/qrbuild"
+          ls "$T/qrencode/lib"
 
       - name: Build LevelDB
         run: |
@@ -116,8 +131,10 @@ jobs:
 
       - name: Build flapx-qt.exe
         run: |
+          QR="$(cygpath -m "$RUNNER_TEMP/qrencode")"
           /mingw64/qt5-static/bin/qmake USE_SYSTEM_DEPS=1 USE_UPNP=1 USE_QRCODE=1 \
-            "BOOST_LIB_SUFFIX=-mt" flapx-qt.pro
+            NO_BOOST_SYSTEM_LIB=1 "BOOST_LIB_SUFFIX=-mt" \
+            "QRENCODE_INCLUDE_PATH=$QR/include" "QRENCODE_LIB_PATH=$QR/lib" flapx-qt.pro
           make -j"$(nproc)"
           strip release/flapx-qt.exe
 
