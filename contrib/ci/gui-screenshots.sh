@@ -57,6 +57,10 @@ for n in 1 2 3 4 5 6 7; do
     focus
     xdotool key "alt+$n"
     shot "$WID" "$(printf '%02d' "$n")-${names[$((n-1))]}"
+    if [ "$n" = 6 ]; then   # Links page: also its second tab (Block Explorers)
+        xdotool key ctrl+Tab
+        shot "$WID" "06b-links-explorer"
+    fi
 done
 
 # Windows opened from the menus. Args: title regex, file name, keys...
