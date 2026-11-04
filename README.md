@@ -50,6 +50,74 @@ FAIR-WEIGHT protocol replaces the idea of 'block splitting' to prevent very larg
    	
 Build notes.
 
+##################################################################################################
+Running the prebuilt binaries
+##################################################################################################
+
+flapxd (Linux daemon)
+Needs nothing extra: Boost, Berkeley DB, OpenSSL and miniupnpc are built in.
+Runs on Ubuntu 22.04+ / Debian 12+ (64-bit).
+
+flapx-qt (Linux GUI wallet)
+Boost, Berkeley DB, OpenSSL, miniupnpc and qrencode are built in; only Qt 5 is
+needed from the system. Most desktops already have it. If you get an error about
+libQt5Widgets, libQt5Gui or libQt5Core, install it:
+
+* Ubuntu 24.04+ / Debian 13: `sudo apt install libqt5widgets5t64`
+* Ubuntu 22.04 / Debian 12: `sudo apt install libqt5widgets5`
+
+Make it executable before the first run: `chmod +x flapx-qt flapxd`
+
+flapx-qt.exe (Windows GUI wallet)
+Needs nothing extra. Single self-contained file for 64-bit Windows.
+
+All binaries are built with UPnP on.
+
+Wallet note: these builds use Berkeley DB 5.3. Back up wallet.dat before
+opening it with them: once a 5.3 build has written to a wallet, older builds
+made with Berkeley DB 4.8 can no longer open it.
+
+##################################################################################################
+Building from source on Ubuntu / Debian
+##################################################################################################
+
+Requires Boost 1.66 or newer, OpenSSL 1.1 or 3, Berkeley DB 5.3 and miniupnpc 2.x,
+all of which come from the distribution's packages. Tested on Ubuntu 22.04 and 24.04.
+
+Daemon (flapxd)
+
+```
+sudo apt install build-essential libssl-dev libdb++-dev zlib1g-dev libminiupnpc-dev \
+    libboost-system-dev libboost-filesystem-dev libboost-program-options-dev \
+    libboost-thread-dev libboost-chrono-dev
+
+USE_UPNP=1 SKIP_DEPS=1 contrib/build-ubuntu.sh
+# or: make -C src -f makefile.unix USE_UPNP=1
+```
+
+GUI wallet (flapx-qt): the daemon packages above, plus
+
+```
+sudo apt install qtbase5-dev qttools5-dev-tools libqrencode-dev
+
+qmake USE_UPNP=1 USE_QRCODE=1 "CONFIG+=release" "CONFIG-=debug_and_release" flapx-qt.pro
+make
+```
+
+If qmake is missing or reports Qt 6, run Qt 5's directly: /usr/lib/qt5/bin/qmake
+
+USE_UPNP=1 turns UPnP on by default; USE_UPNP=0 builds it in but off,
+USE_UPNP=- leaves it out. More detail: doc/build-ubuntu.md
+
+The Windows wallet and the release binaries are built by GitHub Actions
+(.github/workflows/build.yml).
+
+##################################################################################################
+Legacy build (old upstream/ bundle) - NO LONGER WORKS with this code
+##################################################################################################
+Kept for reference only. The bundle uses Boost 1.55 and Berkeley DB 4.8;
+the code now needs Boost 1.66 or newer. Use the instructions above instead.
+
 Berkeley db 4.8 Deprecation 
 Users on Ubuntu 20+ and Debian 11+ respectively 
 must use Cmake to compile
