@@ -118,7 +118,7 @@ jobs:
           T="$(cygpath -u "$RUNNER_TEMP")"
           git clone --depth 1 --branch v4.1.1 https://github.com/fukuchi/libqrencode.git "$T/libqrencode"
           cmake -S "$T/libqrencode" -B "$T/qrbuild" -G "MSYS Makefiles" \
-            -DBUILD_SHARED_LIBS=OFF -DWITH_TOOLS=NO -DWITH_TESTS=NO \
+            -DBUILD_SHARED_LIBS=OFF -DWITH_TOOLS=NO -DWITH_TESTS=NO -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
             -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="$T/qrencode"
           cmake --build "$T/qrbuild" -j"$(nproc)"
           cmake --install "$T/qrbuild"
