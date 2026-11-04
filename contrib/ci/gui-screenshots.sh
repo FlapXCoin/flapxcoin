@@ -51,9 +51,9 @@ sleep 8 # let it finish loading
 focus() { xdotool windowfocus --sync "$WID" 2>/dev/null || true; }
 shot()  { sleep 2; import -window "$1" "$OUT/$2.png" && echo "saved $2.png"; }
 
-# Pages: Alt+1 .. Alt+7
-names=(overview send receive transactions addressbook links network)
-for n in 1 2 3 4 5 6 7; do
+# Pages: Alt+1 .. Alt+6
+names=(overview send receive transactions addressbook links)
+for n in 1 2 3 4 5 6; do
     focus
     xdotool key "alt+$n"
     shot "$WID" "$(printf '%02d' "$n")-${names[$((n-1))]}"

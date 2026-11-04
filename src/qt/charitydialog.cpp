@@ -19,7 +19,7 @@ StakeForCharityDialog::StakeForCharityDialog(QWidget *parent) :
 #if (QT_VERSION >= 0x040700)
     /* Do not move this to the XML file, Qt before 4.7 will choke on it */
     ui->charityPercentEdit->setPlaceholderText(tr("Enter % to Give (1-50)"));
-    ui->charityAddressEdit->setPlaceholderText(tr("Enter Charity Address"));
+    ui->charityAddressEdit->setPlaceholderText(tr("Enter the recipient address"));
     ui->charityMinEdit->setPlaceholderText(tr("Enter Min Amount (optional)"));
     ui->charityMaxEdit->setPlaceholderText(tr("Enter Max Amount (optional)"));
     ui->charityChangeAddressEdit->setPlaceholderText(tr("Enter Change Address (optional)"));
@@ -56,7 +56,7 @@ void StakeForCharityDialog::setModel(WalletModel *model)
         if (nMax > 0 && nMax != MAX_MONEY)
             ui->charityMaxEdit->setText(QString::number(nMax/COIN));
         ui->message->setStyleSheet("QLabel { color: green; }");
-        ui->message->setText(tr("Thank you for giving to\n") + strAddress.ToString().c_str() + tr("."));
+        ui->message->setText(tr("Multisend is on, sending to\n") + strAddress.ToString().c_str() + tr("."));
     }
 }
 
@@ -180,7 +180,7 @@ void StakeForCharityDialog::on_enableButton_clicked()
     if(!fGlobalStakeForCharity)
          fGlobalStakeForCharity = true;
     ui->message->setStyleSheet("QLabel { color: green; }");
-    ui->message->setText(tr("Thank you for giving to\n") + QString(address.ToString().c_str()) + tr("."));
+    ui->message->setText(tr("Multisend is on, sending to\n") + QString(address.ToString().c_str()) + tr("."));
     return;
 }
 
@@ -199,6 +199,6 @@ void StakeForCharityDialog::on_disableButton_clicked()
     ui->charityMinEdit->clear();
     ui->charityPercentEdit->clear();
     ui->message->setStyleSheet("QLabel { color: black; }");
-    ui->message->setText(tr("Stake for Charity is now off"));
+    ui->message->setText(tr("Multisend is now off"));
     return;
 }

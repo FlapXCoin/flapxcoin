@@ -310,7 +310,6 @@ HEADERS += src/qt/bitcoingui.h \
     src/netbase.h \
     src/clientversion.h \
     src/qt/shoppingpage.h \
-    src/qt/networkpage.h \
     src/threadsafety.h
 
 SOURCES += src/qt/bitcoin.cpp src/qt/bitcoingui.cpp \
@@ -396,7 +395,6 @@ SOURCES += src/qt/bitcoin.cpp src/qt/bitcoingui.cpp \
     src/zerocoin/SerialNumberSignatureOfKnowledge.cpp \
     src/zerocoin/SpendMetaData.cpp \
     src/zerocoin/ZeroTest.cpp \
-    src/qt/networkpage.cpp \
     src/qt/shoppingpage.cpp
 
 RESOURCES += \
@@ -418,8 +416,7 @@ FORMS += \
     src/qt/forms/shoppingpage.ui \
     src/qt/forms/charitydialog.ui \
     src/qt/forms/intro.ui \
-    src/qt/forms/calcdialog.ui \
-    src/qt/forms/networkpage.ui
+    src/qt/forms/calcdialog.ui
 
 contains(USE_QRCODE, 1) {
 HEADERS += src/qt/qrcodedialog.h

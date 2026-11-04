@@ -9,7 +9,6 @@
 #include "transactiontablemodel.h"
 #include "addressbookpage.h"
 #include "shoppingpage.h"
-#include "networkpage.h"
 #include "sendcoinsdialog.h"
 #include "signverifymessagedialog.h"
 #include "optionsdialog.h"
@@ -145,7 +144,6 @@ BitcoinGUI::BitcoinGUI(QWidget *parent):
 
     shoppingPage = new ShoppingPage();
 
-    networkPage = new NetworkPage();
 
     receiveCoinsPage = new AddressBookPage(AddressBookPage::ForEditing, AddressBookPage::ReceivingTab);
 
@@ -159,7 +157,6 @@ BitcoinGUI::BitcoinGUI(QWidget *parent):
     centralWidget->addWidget(transactionsPage);
     centralWidget->addWidget(addressBookPage);
     centralWidget->addWidget(shoppingPage);
-    centralWidget->addWidget(networkPage);
     centralWidget->addWidget(receiveCoinsPage);
     centralWidget->addWidget(sendCoinsPage);
     centralWidget->addWidget(stakeForCharityDialog);
@@ -237,6 +234,7 @@ BitcoinGUI::BitcoinGUI(QWidget *parent):
 
     // Clicking on stake for charity button in the Overview Page sends you to the S4C page
     connect(overviewPage, SIGNAL(stakeForCharitySignal()), this, SLOT(charityClicked()));
+    connect(charityAction, SIGNAL(triggered()), this, SLOT(charityClicked()));
     gotoOverviewPage();
 }
 
@@ -286,12 +284,10 @@ void BitcoinGUI::createActions()
     shoppingAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_6));
     tabGroup->addAction(shoppingAction);
 
-    networkAction = new QAction(QIcon(":/icons/res/icons/stakingTab.png"), tr("&Staking"), this);
-    networkAction->setCheckable(true);
-    networkAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_7));
-    tabGroup->addAction(networkAction);
-
-    charityAction = new QAction(this);
+    charityAction = new QAction(QIcon(":/icons/send"), tr("&Multisend..."), this);
+    charityAction->setToolTip(tr("Automatically send part of your stake rewards to another address"));
+    charityAction->setCheckable(true);
+    tabGroup->addAction(charityAction);
 
     calcAction = new QAction(QIcon(":/icons/bitcoin"), tr("&PIR Calculator"), this);
     calcAction->setToolTip(tr("Open PIR Calculator"));
@@ -308,8 +304,6 @@ void BitcoinGUI::createActions()
     connect(addressBookAction, SIGNAL(triggered()), this, SLOT(gotoAddressBookPage()));
     connect(shoppingAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
     connect(shoppingAction, SIGNAL(triggered()), this, SLOT(gotoShoppingPage()));
-    connect(networkAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
-    connect(networkAction, SIGNAL(triggered()), this, SLOT(gotoNetworkPage()));
     connect(calcAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
     connect(calcAction, SIGNAL(triggered()), this, SLOT(calcClicked()));
 
@@ -441,9 +435,6 @@ void BitcoinGUI::createToolBars()
     toolbar->addAction(historyAction);
     toolbar->addAction(addressBookAction);
     toolbar->addAction(shoppingAction);
-    toolbar->addAction(shoppingAction);
-    toolbar->addAction(networkAction);
-    toolbar->addAction(networkAction);
 
     QToolBar *toolbar2 = addToolBar(tr("Actions toolbar"));
     toolbar2->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
@@ -825,12 +816,6 @@ void BitcoinGUI::gotoShoppingPage()
 {
     shoppingAction->setChecked(true);
     centralWidget->setCurrentWidget(shoppingPage);
-}
-
-void BitcoinGUI::gotoNetworkPage()
-{
-    networkAction->setChecked(true);
-    centralWidget->setCurrentWidget(networkPage);
 }
 
 void BitcoinGUI::gotoReceiveCoinsPage()
