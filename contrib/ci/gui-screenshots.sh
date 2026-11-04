@@ -83,4 +83,14 @@ dialog 'Debug window'     12-debug      alt+h d
 dialog '^About FlapX'     13-about      alt+h a
 
 cleanup
+
+# Optionally print the screenshots into the log as base64, for reviewers who
+# can read the build log but can't download artifacts
+if [ "${PRINT_SCREENSHOTS_BASE64:-0}" = 1 ]; then
+    for f in "$OUT"/*.png; do
+        echo "=== BEGIN SCREENSHOT $(basename "$f") ==="
+        base64 -w 1000 "$f"
+        echo "=== END SCREENSHOT ==="
+    done
+fi
 exit 0
