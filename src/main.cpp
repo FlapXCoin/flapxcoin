@@ -2957,8 +2957,10 @@ FILE* AppendBlockFile(unsigned int& nFileRet)
             return NULL;
         if (fseek(file, 0, SEEK_END) != 0)
             return NULL;
-        // FAT32 file size max 4GB, fseek and ftell max 2GB, so we must stay under 2GB
-        if (ftell(file) < (long)(0x7F000000 - MAX_SIZE))
+        // Roll over to a new file once this one reaches MAX_BLOCKFILE_SIZE.
+        // A file can exceed it by at most one block (MAX_BLOCK_SIZE), which
+        // keeps every file far below the 2GB fseek/ftell limit.
+        if (ftell(file) < (long)MAX_BLOCKFILE_SIZE)
         {
             nFileRet = nCurrentBlockFile;
             return file;

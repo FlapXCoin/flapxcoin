@@ -40,6 +40,9 @@ static const unsigned int MAX_TX_COMMENT_LEN = 140;
 
 static const unsigned int MAX_BLOCK_SIZE = 1000000;
 static const unsigned int MAX_BLOCK_SIZE_GEN = MAX_BLOCK_SIZE/2;
+/** Start a new blkNNNN.dat file once the current one reaches this size (25 MiB).
+ *  Existing larger files keep working; only where new blocks go changes. */
+static const unsigned int MAX_BLOCKFILE_SIZE = 25 * 1024 * 1024;
 static const unsigned int DEFAULT_BLOCK_MAX_SIZE = 500000;
 static const unsigned int DEFAULT_BLOCK_PRIORITY_SIZE = 17000;
 static const unsigned int MAX_STANDARD_TX_SIZE = 100000;
