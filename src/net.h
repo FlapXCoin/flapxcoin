@@ -213,6 +213,7 @@ public:
     uint256 hashContinue;
     CBlockIndex* pindexLastGetBlocksBegin;
     uint256 hashLastGetBlocksEnd;
+    int64_t nLastGetBlocksTime; // when we last sent this peer a getblocks request
     int nStartingHeight;
     bool fStartSync;
 
@@ -263,6 +264,7 @@ public:
         hashContinue = 0;
         pindexLastGetBlocksBegin = 0;
         hashLastGetBlocksEnd = 0;
+        nLastGetBlocksTime = 0;
         nStartingHeight = -1;
         fStartSync = false;
         fGetAddr = false;

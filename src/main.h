@@ -59,6 +59,8 @@ static const unsigned int DEFAULT_MAX_ORPHAN_BLOCKS = 40;
 static const unsigned int MAX_INV_SZ = 50000;
 /** Default number of blocks announced per getblocks request (-blockbatchsize) */
 static const int DEFAULT_BLOCK_BATCH_SIZE = 1000;
+/** Seconds without a new block (while a peer is ahead of us) before sync asks again */
+static const int64_t SYNC_STALL_TIMEOUT = 60;
 static const int64_t MIN_TX_FEE = 1000000;
 static const int64_t MIN_RELAY_TX_FEE = MIN_TX_FEE;
 static const int64_t DUST_SOFT_LIMIT = 100000000;
