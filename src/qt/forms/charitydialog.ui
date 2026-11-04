@@ -14,7 +14,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Stake For Charity</string>
+   <string>Stake for Charity</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
    <property name="leftMargin">
@@ -125,7 +125,7 @@
             <string/>
            </property>
            <property name="placeholderText">
-            <string>Enter Address to Send to</string>
+            <string>Enter the address to send to</string>
            </property>
           </widget>
          </item>
@@ -152,7 +152,7 @@
          <item row="4" column="0">
           <widget class="QLabel" name="label_6">
            <property name="toolTip">
-            <string>The amount left over returned to you</string>
+            <string>The amount left over is returned to you</string>
            </property>
            <property name="text">
             <string>Change Address:</string>
@@ -195,7 +195,7 @@
             <string/>
            </property>
            <property name="statusTip">
-            <string>Check and turn on Stake For Charity</string>
+            <string>Check and turn on Stake for Charity</string>
            </property>
            <property name="text">
             <string>Enable</string>
@@ -205,7 +205,7 @@
          <item row="5" column="2">
           <widget class="QPushButton" name="disableButton">
            <property name="statusTip">
-            <string>Turn off Stake For Charity</string>
+            <string>Turn off Stake for Charity</string>
            </property>
            <property name="text">
             <string>Disable</string>

@@ -98,7 +98,7 @@ void StakeForCharityDialog::on_enableButton_clicked()
     if(model->getEncryptionStatus() == WalletModel::Locked)
     {
         ui->message->setStyleSheet("QLabel { color: black; }");
-        ui->message->setText(tr("Please unlock wallet before starting Mutisend."));
+        ui->message->setText(tr("Please unlock the wallet before starting Multisend."));
         return;
     }
 
@@ -120,7 +120,7 @@ void StakeForCharityDialog::on_enableButton_clicked()
     if (!fValidConversion || nCharityPercent > 50 || nCharityPercent <= 0)
     {
         ui->message->setStyleSheet("QLabel { color: red; }");
-        ui->message->setText(tr("Please Enter 1 - 50 for percent."));
+        ui->message->setText(tr("Please enter a percentage from 1 to 50."));
         ui->charityPercentEdit->setFocus();
         return;
     }
@@ -131,7 +131,7 @@ void StakeForCharityDialog::on_enableButton_clicked()
         if(!fValidConversion || nMinAmount <= MIN_TXOUT_AMOUNT || nMinAmount >= MAX_MONEY  )
         {
             ui->message->setStyleSheet("QLabel { color: red; }");
-            ui->message->setText(tr("Min Amount out of Range, please re-enter."));
+            ui->message->setText(tr("Min amount is out of range, please re-enter."));
             ui->charityMinEdit->setFocus();
             return;
         }
@@ -143,7 +143,7 @@ void StakeForCharityDialog::on_enableButton_clicked()
         if(!fValidConversion || nMaxAmount <= MIN_TXOUT_AMOUNT || nMaxAmount >= MAX_MONEY  )
         {
             ui->message->setStyleSheet("QLabel { color: red; }");
-            ui->message->setText(tr("Max Amount out of Range, please re-enter."));
+            ui->message->setText(tr("Max amount is out of range, please re-enter."));
             ui->charityMaxEdit->setFocus();
             return;
         }
@@ -152,7 +152,7 @@ void StakeForCharityDialog::on_enableButton_clicked()
     if (nMinAmount >= nMaxAmount)
     {
         ui->message->setStyleSheet("QLabel { color: red; }");
-        ui->message->setText(tr("Min Amount > Max Amount, please re-enter."));
+        ui->message->setText(tr("Min amount is larger than max amount, please re-enter."));
         ui->charityMinEdit->setFocus();
         return;
     }

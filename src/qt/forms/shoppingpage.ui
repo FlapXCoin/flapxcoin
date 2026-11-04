@@ -986,7 +986,7 @@
                             </font>
                            </property>
                            <property name="text">
-                            <string>Search-&gt;</string>
+                            <string>Search</string>
                            </property>
                            <property name="autoDefault">
                             <bool>true</bool>
