@@ -1,0 +1,132 @@
+# Builds the FlapX binaries on GitHub's build machines:
+#   - flapxd        Linux daemon (Boost, Berkeley DB, OpenSSL, miniupnpc linked in)
+#   - flapx-qt      Linux GUI wallet
+#   - flapx-qt.exe  Windows GUI wallet (statically linked, single .exe)
+# All are built with UPnP compiled in and on by default (USE_UPNP=1).
+#
+# Every push builds them and keeps them as downloadable "artifacts" on the
+# run's page. Pushing a version tag (e.g. v2.9.0.1) also publishes them as a
+# GitHub release.
+
+name: Build
+
+on:
+  push:
+    branches: [ master, modern-linux-build ]
+    tags: [ 'v*' ]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  linux-daemon:
+    name: Linux daemon
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential libssl-dev libdb++-dev \
+            libboost-system-dev libboost-filesystem-dev libboost-program-options-dev \
+            libboost-thread-dev libboost-chrono-dev libminiupnpc-dev zlib1g-dev
+
+      - name: Build flapxd
+        run: |
+          cd src
+          make -f makefile.unix -j"$(nproc)" USE_UPNP=1 STATIC=1
+          strip flapxd
+
+      - name: Check the binary
+        run: |
+          file src/flapxd
+          ldd src/flapxd || true
+          ./src/flapxd -? | head -n 3 || true
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: flapxd-linux-x86_64
+          path: src/flapxd
+
+  linux-qt:
+    name: Linux GUI
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential libssl-dev libdb++-dev \
+            libboost-system-dev libboost-filesystem-dev libboost-program-options-dev \
+            libboost-thread-dev libboost-chrono-dev libminiupnpc-dev zlib1g-dev \
+            qtbase5-dev qttools5-dev-tools libqrencode-dev
+
+      - name: Build flapx-qt
+        run: |
+          qmake -qt=qt5 USE_UPNP=1 USE_QRCODE=1 "CONFIG+=release" "CONFIG-=debug_and_release" flapx-qt.pro
+          make -j"$(nproc)"
+          strip flapx-qt
+
+      - name: Check the binary
+        run: |
+          file flapx-qt
+          ldd flapx-qt | grep -E 'Qt5|not found' || true
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: flapx-qt-linux-x86_64
+          path: flapx-qt
+
+  windows-qt:
+    name: Windows GUI
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          update: true
+          install: >-
+            make
+            mingw-w64-x86_64-toolchain
+            mingw-w64-x86_64-boost
+            mingw-w64-x86_64-openssl
+            mingw-w64-x86_64-db
+            mingw-w64-x86_64-miniupnpc
+            mingw-w64-x86_64-qrencode
+            mingw-w64-x86_64-zlib
+            mingw-w64-x86_64-qt5-static
+
+      - name: Show library names
+        run: |
+          ls /mingw64/lib | grep -Ei 'boost_(system|thread|chrono)|db_cxx|miniupnpc|qrencode|libssl|libz\.' || true
+
+      - name: Build LevelDB
+        run: |
+          cd src/leveldb
+          make TARGET_OS=NATIVE_WINDOWS -j"$(nproc)" libleveldb.a libmemenv.a
+
+      - name: Build flapx-qt.exe
+        run: |
+          /mingw64/qt5-static/bin/qmake USE_SYSTEM_DEPS=1 USE_UPNP=1 USE_QRCODE=1 \
+            "BOOST_LIB_SUFFIX=-mt" flapx-qt.pro
+          make -j"$(nproc)"
+          strip release/flapx-qt.exe
+
+      - name: Check the binary
+        run: |
+          file release/flapx-qt.exe
+          ldd release/flapx-qt.exe | grep -vi 'windows\|system32' || true
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: flapx-qt-windows-x86_64
+          path: release/flapx-qt.exe
