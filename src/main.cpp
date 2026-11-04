@@ -2921,10 +2921,59 @@ bool CheckDiskSpace(uint64_t nAdditionalBytes)
     return true;
 }
 
-static boost::filesystem::path BlockFilePath(unsigned int nFile)
+// Block files (blkNNNN.dat) live in their own "chain" subdirectory of the
+// data directory. ("blocks" can't be used: at startup init.cpp imports and then
+// deletes a "blocks" directory left over from the old Flappycoin PoW wallet.)
+boost::filesystem::path GetBlockFileDir()
 {
-    string strBlockFn = strprintf("blk%04u.dat", nFile);
-    return GetDataDir() / strBlockFn;
+    return GetDataDir() / "chain";
+}
+
+boost::filesystem::path BlockFilePath(unsigned int nFile)
+{
+    return GetBlockFileDir() / strprintf("blk%04u.dat", nFile);
+}
+
+bool MigrateBlockFiles(std::string& strError)
+{
+    // Create the chain directory, and move block files written by older
+    // versions straight into the data directory over to it. The block index
+    // records file numbers, not paths, so no reindex is needed.
+    boost::filesystem::path dir = GetBlockFileDir();
+    boost::system::error_code ec;
+    boost::filesystem::create_directories(dir, ec);
+    if (ec)
+    {
+        strError = strprintf("Unable to create %s: %s", dir.string().c_str(), ec.message().c_str());
+        return false;
+    }
+
+    unsigned int nMoved = 0;
+    for (unsigned int nFile = 1; ; nFile++)
+    {
+        boost::filesystem::path pathOld = GetDataDir() / strprintf("blk%04u.dat", nFile);
+        if (!boost::filesystem::exists(pathOld))
+            break;
+        boost::filesystem::path pathNew = BlockFilePath(nFile);
+        if (boost::filesystem::exists(pathNew))
+        {
+            // Never overwrite: two copies of the same file number means
+            // something unexpected happened, so leave it to the user.
+            strError = strprintf("Block file %s exists both in %s and in %s. Move one of them away before starting.",
+                                 pathOld.filename().string().c_str(), GetDataDir().string().c_str(), dir.string().c_str());
+            return false;
+        }
+        boost::filesystem::rename(pathOld, pathNew, ec);
+        if (ec)
+        {
+            strError = strprintf("Unable to move %s to %s: %s", pathOld.string().c_str(), dir.string().c_str(), ec.message().c_str());
+            return false;
+        }
+        nMoved++;
+    }
+    if (nMoved > 0)
+        printf("Moved %u block file(s) into %s\n", nMoved, dir.string().c_str());
+    return true;
 }
 
 FILE* OpenBlockFile(unsigned int nFile, unsigned int nBlockPos, const char* pszMode)

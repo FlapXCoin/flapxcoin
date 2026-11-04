@@ -23,6 +23,8 @@
 
 #include <list>
 
+#include <boost/filesystem/path.hpp>
+
 class CWallet;
 class CBlock;
 class CBlockIndex;
@@ -190,6 +192,10 @@ void PushGetBlocks(CNode* pnode, CBlockIndex* pindexBegin, uint256 hashEnd);
 bool ProcessBlock(CNode* pfrom, CBlock* pblock);
 bool CheckDiskSpace(uint64_t nAdditionalBytes=0);
 FILE* OpenBlockFile(unsigned int nFile, unsigned int nBlockPos, const char* pszMode="rb");
+boost::filesystem::path GetBlockFileDir();
+boost::filesystem::path BlockFilePath(unsigned int nFile);
+/** Create the block file directory and move block files from older versions into it */
+bool MigrateBlockFiles(std::string& strError);
 FILE* AppendBlockFile(unsigned int& nFileRet);
 bool LoadBlockIndex(bool fAllowNew=true);
 void PrintBlockTree();
@@ -701,7 +707,7 @@ public:
  * in the block is a special one that creates a new coin owned by the creator
  * of the block.
  *
- * Blocks are appended to blk0001.dat files on disk.  Their location on disk
+ * Blocks are appended to chain/blk0001.dat files on disk.  Their location on disk
  * is indexed by CBlockIndex objects in memory.
  */
 class CBlock

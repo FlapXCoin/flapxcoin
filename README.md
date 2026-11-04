@@ -73,6 +73,12 @@ Needs nothing extra. Single self-contained file for 64-bit Windows.
 
 All binaries are built with UPnP on.
 
+Block files: the blockchain is stored in a "chain" folder inside the data
+directory, in files of about 25 MB (chain/blk0001.dat, chain/blk0002.dat, ...).
+On first start, block files from older versions are moved into it
+automatically; no resync is needed. To go back to an older version, move the
+blk*.dat files from chain/ back into the data directory first.
+
 Wallet note: these builds use Berkeley DB 5.3. Back up wallet.dat before
 opening it with them: once a 5.3 build has written to a wallet, older builds
 made with Berkeley DB 4.8 can no longer open it.
