@@ -4315,6 +4315,26 @@ bool SendMessages(CNode* pto, bool fSendTrickle)
         //
         vector<CInv> vGetData;
         int64_t nNow = GetTime() * 1000000;
+
+        // mapAlreadyAskedFor entries are only erased when the requested item
+        // arrives, so requests that are never answered stayed forever and the
+        // map grew slowly for as long as the node ran. Every 10 minutes, drop
+        // entries last requested more than 15 minutes ago; if the item is
+        // announced again it is simply requested afresh.
+        static int64_t nLastAskedForPrune = 0;
+        if (nNow - nLastAskedForPrune > 10 * 60 * 1000000LL)
+        {
+            nLastAskedForPrune = nNow;
+            const int64_t nCutoff = nNow - 15 * 60 * 1000000LL;
+            for (map<CInv, int64_t>::iterator it = mapAlreadyAskedFor.begin(); it != mapAlreadyAskedFor.end(); )
+            {
+                if (it->second < nCutoff)
+                    mapAlreadyAskedFor.erase(it++);
+                else
+                    ++it;
+            }
+        }
+
         CTxDB txdb("r");
         while (!pto->mapAskFor.empty() && (*pto->mapAskFor.begin()).first <= nNow)
         {
