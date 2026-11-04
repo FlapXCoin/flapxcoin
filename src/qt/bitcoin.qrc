@@ -43,73 +43,32 @@
         <file alias="overview">res/icons/overview.png</file>
         <file>res/icons/services.png</file>
         <file>res/icons/stakingTab.png</file>
-        <file>res/images/art/blurb.png</file>
         <file>res/images/art/btct.png</file>
         <file>res/images/art/ccflapx.png</file>
-        <file>res/images/art/ccnet.png</file>
         <file>res/images/art/discord2.png</file>
-        <file>res/images/art/fb.png</file>
-        <file>res/images/art/fb1.png</file>
-        <file>res/images/art/fbb.png</file>
-        <file>res/images/art/fbs.png</file>
-        <file>res/images/art/fbt.png</file>
-        <file>res/images/art/flaplogo.png</file>
-        <file>res/images/art/flapxblue.png</file>
         <file>res/images/art/flapxexplorer.png</file>
-        <file>res/images/art/flapxexplorer100.png</file>
         <file>res/images/art/flapxspace.png</file>
-        <file>res/images/art/flying-blurb.png</file>
         <file>res/images/art/home.png</file>
         <file>res/images/art/links.png</file>
-        <file>res/images/art/logo1.png</file>
-        <file>res/images/art/n1.png</file>
-        <file>res/images/art/nerdlabs100.png</file>
-        <file>res/images/art/nerdlabs128.png</file>
-        <file>res/images/art/networkpage.png</file>
-        <file>res/images/art/p1.png</file>
-        <file>res/images/art/p2.png</file>
-        <file>res/images/art/p3.png</file>
         <file>res/images/art/panic.png</file>
         <file>res/images/art/pool.png</file>
-        <file>res/images/art/b1.png</file>
         <file>res/icons/staking_on.png</file>
     </qresource>
     <qresource prefix="/images">
         <file alias="about">res/images/about.png</file>
         <file alias="splash">res/images/splash.png</file>
-        <file>res/images/art/nerdlabs128.png</file>
         <file>res/images/art/flapxexplorer.png</file>
-        <file>res/images/art/flapxexplorer100.png</file>
-        <file>res/images/art/nerdlabs100.png</file>
-        <file>res/images/art/ccnet.png</file>
         <file>res/images/art/ccflapx.png</file>
         <file>res/images/art/discord2.png</file>
-        <file>res/images/art/networkpage.png</file>
         <file>res/images/art/btct.png</file>
-        <file>res/images/art/fb1.png</file>
         <file>res/images/art/home.png</file>
         <file>res/images/art/links.png</file>
         <file>res/images/art/panic.png</file>
-        <file>res/images/art/blurb.png</file>
-        <file>res/images/art/fb.png</file>
-        <file>res/images/art/fbb.png</file>
-        <file>res/images/art/fbt.png</file>
-        <file>res/images/art/flapxblue.png</file>
         <file>res/images/art/flapxspace.png</file>
-        <file>res/images/art/flying-blurb.png</file>
-        <file>res/images/art/logo1.png</file>
-        <file>res/images/art/p1.png</file>
-        <file>res/images/art/p2.png</file>
-        <file>res/images/art/p3.png</file>
-        <file>res/images/art/fbs.png</file>
-        <file>res/images/art/flaplogo.png</file>
         <file>res/images/art/pool.png</file>
-        <file>res/images/art/b1.png</file>
-        <file>res/images/art/n1.png</file>
     </qresource>
     <qresource prefix="/movies">
         <file alias="update_spinner">res/movies/update_spinner.mng</file>
-        <file>res/movies/staking.mng</file>
     </qresource>
     <qresource prefix="/translations"/>
     <qresource prefix="/toolTip"/>
@@ -117,36 +76,14 @@
     <qresource prefix="/qt/themes"/>
     <qresource prefix="/qt/art">
         <file>res/images/art/ccflapx.png</file>
-        <file>res/images/art/ccnet.png</file>
         <file>res/images/art/discord2.png</file>
         <file>res/images/art/flapxexplorer.png</file>
-        <file>res/images/art/flapxexplorer100.png</file>
-        <file>res/images/art/nerdlabs100.png</file>
-        <file>res/images/art/nerdlabs128.png</file>
-        <file>res/images/art/networkpage.png</file>
         <file>res/images/art/btct.png</file>
-        <file>res/images/art/fb1.png</file>
         <file>res/images/art/home.png</file>
         <file>res/images/art/links.png</file>
         <file>res/images/art/panic.png</file>
-        <file>res/images/art/blurb.png</file>
-        <file>res/images/art/fb.png</file>
-        <file>res/images/art/fbb.png</file>
-        <file>res/images/art/fbt.png</file>
-        <file>res/images/art/flapxblue.png</file>
         <file>res/images/art/flapxspace.png</file>
-        <file>res/images/art/flying-blurb.png</file>
-        <file>res/images/art/logo1.png</file>
-        <file>res/images/art/p1.png</file>
-        <file>res/images/art/p2.png</file>
-        <file>res/images/art/p3.png</file>
-        <file>res/images/art/fbs.png</file>
-        <file>res/images/art/flaplogo.png</file>
         <file>res/images/art/pool.png</file>
-        <file>res/images/art/b1.png</file>
-        <file>res/images/art/n1.png</file>
-        <file>res/images/art/flapxred.png</file>
         <file>res/images/art/flapxyellow.png</file>
-        <file>res/images/art/pipe.png</file>
     </qresource>
 </RCC>
