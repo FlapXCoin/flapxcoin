@@ -213,7 +213,8 @@ BitcoinGUI::BitcoinGUI(QWidget *parent):
     statusBar()->addWidget(progressBarLabel);
     statusBar()->addWidget(progressBar);
     statusBar()->addPermanentWidget(frameBlocks);
-    syncIconMovie = new QMovie(":/movies/update_spinner", "mng", this);
+    // The spinner is a GIF (despite the .mng file name), so let Qt detect the format
+    syncIconMovie = new QMovie(":/movies/update_spinner", QByteArray(), this);
 
     // Clicking on a transaction on the overview page simply sends you to transaction history page
     connect(overviewPage, SIGNAL(transactionClicked(QModelIndex)), this, SLOT(gotoHistoryPage()));
@@ -629,6 +630,7 @@ void BitcoinGUI::setNumBlocks(int count)
     if(secs < 90*60)
     {
         tooltip = tr("Up to date") + QString(".<br>") + tooltip;
+        syncIconMovie->stop();
         labelBlocksIcon->setPixmap(QIcon(":/icons/synced").pixmap(STATUSBAR_ICONSIZE, STATUSBAR_ICONSIZE));
 
         overviewPage->showOutOfSyncWarning(false);
@@ -672,8 +674,10 @@ void BitcoinGUI::setNumBlocks(int count)
         progressBar->setVisible(true);
 
         tooltip = tr("Catching up...") + QString("<br>") + tooltip;
-        labelBlocksIcon->setMovie(syncIconMovie);
-        if(count != prevBlocks)
+        // Attach and start the spinner once, not on every block-count update
+        if (labelBlocksIcon->movie() != syncIconMovie)
+            labelBlocksIcon->setMovie(syncIconMovie);
+        if (syncIconMovie->state() != QMovie::Running)
             syncIconMovie->start();
         prevBlocks = count;
 
