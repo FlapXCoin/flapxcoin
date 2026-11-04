@@ -67,14 +67,19 @@ jobs:
 
       - name: Build flapx-qt
         run: |
-          qmake -qt=qt5 USE_UPNP=1 USE_QRCODE=1 "CONFIG+=release" "CONFIG-=debug_and_release" flapx-qt.pro
+          # RELEASE=1 links Boost, Berkeley DB, OpenSSL, miniupnpc, qrencode and
+          # zlib statically, so only Qt 5 and the C/C++ runtime come from the system
+          qmake -qt=qt5 RELEASE=1 USE_UPNP=1 USE_QRCODE=1 "CONFIG+=release" "CONFIG-=debug_and_release" flapx-qt.pro
           make -j"$(nproc)"
           strip flapx-qt
 
       - name: Check the binary
         run: |
           file flapx-qt
-          ldd flapx-qt | grep -E 'Qt5|not found' || true
+          ldd flapx-qt
+          if ldd flapx-qt | grep -Ei 'boost|libdb|libssl|libcrypto|miniupnpc|qrencode'; then
+            echo "flapx-qt should not need the shared libraries listed above"; exit 1
+          fi
 
       - uses: actions/upload-artifact@v4
         with:
