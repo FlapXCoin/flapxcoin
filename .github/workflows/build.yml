@@ -100,16 +100,27 @@ jobs:
             mingw-w64-x86_64-toolchain
             mingw-w64-x86_64-boost
             mingw-w64-x86_64-openssl
-            mingw-w64-x86_64-db
             mingw-w64-x86_64-miniupnpc
-            mingw-w64-x86_64-qrencode
             mingw-w64-x86_64-zlib
             mingw-w64-x86_64-qt5-static
             mingw-w64-x86_64-cmake
 
-      - name: Show library names
+      # Berkeley DB 5.3 (Sleepycat license), the same version the Linux builds
+      # use. MSYS2 only ships 6.x, which is AGPL-licensed and a DLL.
+      - name: Build static Berkeley DB 5.3.28
         run: |
-          ls /mingw64/lib | grep -Ei 'boost_(system|thread|chrono)|db_cxx|miniupnpc|qrencode|libssl|libz\.' || true
+          T="$(cygpath -u "$RUNNER_TEMP")"
+          git clone --depth 1 --branch v5.3.28 https://github.com/berkeleydb/libdb.git "$T/bdb"
+          cd "$T/bdb"
+          # Rename a function that clashes with a GCC built-in
+          sed -i 's/__atomic_compare_exchange/__atomic_compare_exchange_db/g' src/dbinc/atomic.h
+          cd build_unix
+          ../dist/configure --host=x86_64-w64-mingw32 --build=x86_64-w64-mingw32 \
+            --enable-mingw --enable-cxx --disable-shared --disable-replication \
+            --prefix="$T/bdb-install"
+          make -j"$(nproc)" libdb.a libdb_cxx.a
+          make install_lib install_include
+          ls "$T/bdb-install/lib" "$T/bdb-install/include"
 
       # MSYS2 only ships qrencode as a DLL; build a static copy so the wallet
       # stays a single self-contained .exe
@@ -132,16 +143,23 @@ jobs:
       - name: Build flapx-qt.exe
         run: |
           QR="$(cygpath -m "$RUNNER_TEMP/qrencode")"
+          BDB="$(cygpath -m "$RUNNER_TEMP/bdb-install")"
           /mingw64/qt5-static/bin/qmake USE_SYSTEM_DEPS=1 USE_UPNP=1 USE_QRCODE=1 \
             NO_BOOST_SYSTEM_LIB=1 "BOOST_LIB_SUFFIX=-mt" \
+            "BDB_INCLUDE_PATH=$BDB/include" "BDB_LIB_PATH=$BDB/lib" \
             "QRENCODE_INCLUDE_PATH=$QR/include" "QRENCODE_LIB_PATH=$QR/lib" flapx-qt.pro
           make -j"$(nproc)"
           strip release/flapx-qt.exe
 
-      - name: Check the binary
+      # The .exe must run on its own: fail if it needs any DLL that isn't
+      # part of Windows itself
+      - name: Check the binary is self-contained
         run: |
           file release/flapx-qt.exe
-          ldd release/flapx-qt.exe | grep -vi 'windows\|system32' || true
+          ldd release/flapx-qt.exe
+          if ldd release/flapx-qt.exe | grep '=>' | grep -vi '/c/windows/'; then
+            echo "flapx-qt.exe depends on non-system DLLs (listed above)"; exit 1
+          fi
 
       - uses: actions/upload-artifact@v4
         with:
