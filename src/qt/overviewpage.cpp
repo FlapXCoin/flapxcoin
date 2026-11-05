@@ -203,8 +203,19 @@ void OverviewPage::setNumTransactions(int count)
 void OverviewPage::updateMyWeight()
 {
     uint64_t nMinWeight = 0, nMaxWeight = 0, nWeight = 0;
-    if (nLastCoinStakeSearchInterval && pwalletMain && !IsInitialBlockDownload()) //flapx GetStakeWeight requires mutex lock on wallet which tends to freeze initial block downloads
+    // Skipped while catching up (newest block over an hour old): GetStakeWeight
+    // reads every coin's block from disk and would slow the block download
+    if (nLastCoinStakeSearchInterval && pwalletMain && pindexBest && pindexBest->GetBlockTime() > GetTime() - 60 * 60)
+    {
+        // Skip this refresh if the core is busy rather than freezing the window
+        TRY_LOCK(cs_main, lockMain);
+        if (!lockMain)
+            return;
+        TRY_LOCK(pwalletMain->cs_wallet, lockWallet);
+        if (!lockWallet)
+            return;
         pwalletMain->GetStakeWeight(*pwalletMain, nMinWeight, nMaxWeight, nWeight);
+    }
 
     if (nLastCoinStakeSearchInterval && nWeight)
     {
