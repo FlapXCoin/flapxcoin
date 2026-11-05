@@ -1352,10 +1352,36 @@ bool OpenNetworkConnection(const CAddress& addrConnect, CSemaphoreGrant *grantOu
     return true;
 }
 
-// for now, use a very simple selection metric: the node from which we received
-// most recently
+// Client version a peer announced in its sub-version, e.g. "/FlapX-Starhopper:2.9.0.3/"
+// gives 20900 (major*10000 + minor*100 + revision); 0 if it can't be read
+static int PeerClientVersion(const CNode *pnode) {
+    const std::string& s = pnode->strSubVer;
+    size_t pos = s.rfind(':');
+    if (pos == std::string::npos)
+        return 0;
+    int nMajor = 0, nMinor = 0, nRevision = 0;
+    if (sscanf(s.c_str() + pos + 1, "%d.%d.%d", &nMajor, &nMinor, &nRevision) < 2)
+        return 0;
+    return nMajor * 10000 + nMinor * 100 + nRevision;
+}
+
+// Peers running 2.9 or newer send 500 blocks per request instead of 50 (2.3.x),
+// so prefer them; among equals, the one we heard from most recently
 static int64_t NodeSyncScore(const CNode *pnode) {
-    return pnode->nLastRecv;
+    int64_t nScore = pnode->nLastRecv;
+    if (PeerClientVersion(pnode) >= 20900)
+        nScore += (int64_t)1 << 40;   // outranks any difference in nLastRecv
+    return nScore;
+}
+
+bool IsSyncNode(const CNode* pnode) {
+    return pnode == pnodeSync;
+}
+
+void ReleaseSyncNode(CNode* pnode, int64_t nSeconds) {
+    pnode->nSyncAvoidUntil = GetTime() + nSeconds;
+    if (pnode == pnodeSync)
+        pnodeSync = NULL;   // ThreadMessageHandler picks a new one
 }
 
 void static StartSync(const vector<CNode*> &vNodes) {
@@ -1367,7 +1393,11 @@ void static StartSync(const vector<CNode*> &vNodes) {
     if (fReindex)
         return;
 
-    // Iterate over all nodes
+    // Iterate over all nodes. Peers we recently gave up on (see ReleaseSyncNode)
+    // are only used if there's no one else.
+    int64_t nNow = GetTime();
+    CNode *pnodeFallback = NULL;
+    int64_t nFallbackScore = 0;
     BOOST_FOREACH(CNode* pnode, vNodes) {
         // check preconditions for allowing a sync
         if (!pnode->fClient && !pnode->fOneShot &&
@@ -1376,14 +1406,24 @@ void static StartSync(const vector<CNode*> &vNodes) {
             (pnode->nVersion < NOBLKS_VERSION_START || pnode->nVersion >= NOBLKS_VERSION_END)) {
             // if ok, compare node's score with the best so far
             int64_t nScore = NodeSyncScore(pnode);
+            if (pnode->nSyncAvoidUntil > nNow) {
+                if (pnodeFallback == NULL || nScore > nFallbackScore) {
+                    pnodeFallback = pnode;
+                    nFallbackScore = nScore;
+                }
+                continue;
+            }
             if (pnodeNewSync == NULL || nScore > nBestScore) {
                 pnodeNewSync = pnode;
                 nBestScore = nScore;
             }
         }
     }
+    if (pnodeNewSync == NULL)
+        pnodeNewSync = pnodeFallback;
     // if a new sync candidate was found, start sync!
     if (pnodeNewSync) {
+        printf("sync: downloading from %s (%s)\n", pnodeNewSync->addrName.c_str(), pnodeNewSync->strSubVer.c_str());
         pnodeNewSync->fStartSync = true;
         pnodeSync = pnodeNewSync;
     }

@@ -61,6 +61,8 @@ static const unsigned int MAX_INV_SZ = 50000;
 static const int DEFAULT_BLOCK_BATCH_SIZE = 500;
 /** Seconds without a new block (while a peer is ahead of us) before sync asks again */
 static const int64_t SYNC_STALL_TIMEOUT = 60;
+/** Stall watchdog firings in a row (at the same height) before switching to another sync peer */
+static const int SYNC_STALLS_BEFORE_SWITCH = 2;
 static const int64_t MIN_TX_FEE = 1000000;
 static const int64_t MIN_RELAY_TX_FEE = MIN_TX_FEE;
 static const int64_t DUST_SOFT_LIMIT = 100000000;

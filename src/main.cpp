@@ -4259,6 +4259,10 @@ bool SendMessages(CNode* pto, bool fSendTrickle)
         // Start block sync
         if (pto->fStartSync && !fReindex) {
             pto->fStartSync = false;
+            // A new sync peer always gets the request, even if we asked it the
+            // same thing before
+            pto->pindexLastGetBlocksBegin = NULL;
+            pto->hashLastGetBlocksEnd = 0;
             PushGetBlocks(pto, pindexBest, uint256(0));
         }
 
@@ -4274,11 +4278,27 @@ bool SendMessages(CNode* pto, bool fSendTrickle)
             if (nNow - nTimeBestReceived > SYNC_STALL_TIMEOUT &&
                 nNow - pto->nLastGetBlocksTime > SYNC_STALL_TIMEOUT)
             {
-                printf("sync stalled at height %d (peer %s reported %d), asking again\n",
-                       nBestHeight, pto->addrName.c_str(), pto->nStartingHeight);
-                pto->pindexLastGetBlocksBegin = NULL;
-                pto->hashLastGetBlocksEnd = 0;
-                PushGetBlocks(pto, pindexBest, uint256(0));
+                // Count firings in a row without progress
+                pto->nSyncStalls = (pto->nSyncStallHeight == nBestHeight) ? pto->nSyncStalls + 1 : 1;
+                pto->nSyncStallHeight = nBestHeight;
+
+                if (IsSyncNode(pto) && pto->nSyncStalls >= SYNC_STALLS_BEFORE_SWITCH)
+                {
+                    // Still stuck after asking again: download from another peer
+                    // instead, and leave this one alone for 10 minutes
+                    printf("sync stalled at height %d with %s %d times, switching peer\n",
+                           nBestHeight, pto->addrName.c_str(), pto->nSyncStalls);
+                    pto->nSyncStalls = 0;
+                    ReleaseSyncNode(pto, 10 * 60);
+                }
+                else
+                {
+                    printf("sync stalled at height %d (peer %s reported %d), asking again\n",
+                           nBestHeight, pto->addrName.c_str(), pto->nStartingHeight);
+                    pto->pindexLastGetBlocksBegin = NULL;
+                    pto->hashLastGetBlocksEnd = 0;
+                    PushGetBlocks(pto, pindexBest, uint256(0));
+                }
             }
         }
 
