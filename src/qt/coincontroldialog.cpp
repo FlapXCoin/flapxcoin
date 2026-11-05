@@ -610,7 +610,7 @@ void CoinControlDialog::updateView()
             itemWalletAddress->setCheckState(COLUMN_CHECKBOX,Qt::Unchecked);
             
             for (int i = 0; i < ui->treeWidget->columnCount(); i++)
-                itemWalletAddress->setBackground(i, QColor(248, 247, 246));
+                itemWalletAddress->setBackground(i, ui->treeWidget->palette().color(QPalette::AlternateBase));
             
             // label
             itemWalletAddress->setText(COLUMN_LABEL, sWalletLabel);

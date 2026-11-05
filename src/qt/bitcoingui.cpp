@@ -323,6 +323,11 @@ void BitcoinGUI::createActions()
     aboutQtAction = new QAction(QIcon(":/trolltech/qmessagebox/images/qtlogo-64.png"), tr("About &Qt"), this);
     aboutQtAction->setToolTip(tr("Show information about Qt"));
     aboutQtAction->setMenuRole(QAction::AboutQtRole);
+    darkModeAction = new QAction(tr("&Dark mode"), this);
+    darkModeAction->setStatusTip(tr("Switch between the dark and the normal look"));
+    darkModeAction->setCheckable(true);
+    darkModeAction->setChecked(GUIUtil::isDarkMode());
+    connect(darkModeAction, SIGNAL(toggled(bool)), this, SLOT(toggleDarkMode(bool)));
     optionsAction = new QAction(QIcon(":/icons/options"), tr("&Options..."), this);
     optionsAction->setToolTip(tr("Modify configuration options for FlapX"));
     optionsAction->setMenuRole(QAction::PreferencesRole);
@@ -406,6 +411,7 @@ void BitcoinGUI::createMenuBar()
     settings->addAction(lockWalletAction);
 	settings->addAction(charityAction);
     settings->addSeparator();
+    settings->addAction(darkModeAction);
     settings->addAction(optionsAction);
     settings->addSeparator();
     settings->addAction(calcAction);
@@ -1094,6 +1100,18 @@ void BitcoinGUI::updateStakingIcon()
         else
             labelStakingIcon->setToolTip(tr("Not staking"));
     }
+}
+
+void BitcoinGUI::toggleDarkMode(bool fDark)
+{
+    GUIUtil::applyDarkMode(fDark);
+    QSettings().setValue("fDarkMode", fDark);
+    // A wallet theme (Themes menu) goes on top of the base look again
+    if (!selectedTheme.isEmpty() && selectedTheme != "Default")
+        changeTheme(selectedTheme);
+    // Refresh the Network box so its colours match
+    if (overviewPage)
+        overviewPage->updateStatistics();
 }
 
 void BitcoinGUI::animateStakingIcon()

@@ -105,6 +105,7 @@ private:
     QAction *openRPCConsoleAction;
     QAction *charityAction;
     QAction *calcAction;
+    QAction *darkModeAction;
 
     QSystemTrayIcon *trayIcon;
     Notificator *notificator;
@@ -216,6 +217,8 @@ private slots:
 
     void updateWeight();
     void updateStakingIcon();
+    /** Switch dark mode on or off and remember the choice */
+    void toggleDarkMode(bool fDark);
     /** Draws the next frame of the staking animation */
     void animateStakingIcon();
 

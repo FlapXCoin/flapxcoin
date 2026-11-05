@@ -434,7 +434,7 @@ void OverviewPage::updateStatistics()
 
     if(nHeight > heightPrevious)
     {
-        ui->heightBox->setText("<b><font color=\"green\">" + height + "</font></b>");
+        ui->heightBox->setText("<b><font color=\"" + GUIUtil::positiveColor() + "\">" + height + "</font></b>");
     } 
     else 
     {
@@ -443,7 +443,7 @@ void OverviewPage::updateStatistics()
 
     if(nSubsidy < rewardPrevious)
     {
-        ui->rewardBox->setText("<b><font color=\"red\">" + subsidy + "</font></b>");
+        ui->rewardBox->setText("<b><font color=\"" + GUIUtil::negativeColor() + "\">" + subsidy + "</font></b>");
     } 
     else 
     {
@@ -452,11 +452,11 @@ void OverviewPage::updateStatistics()
 
     if(pHardness > hardnessPrevious)
     {
-        ui->diffBox->setText("<b><font color=\"green\">" + hardness + "</font></b>");
+        ui->diffBox->setText("<b><font color=\"" + GUIUtil::positiveColor() + "\">" + hardness + "</font></b>");
     } 
     else if(pHardness < hardnessPrevious) 
     {
-        ui->diffBox->setText("<b><font color=\"red\">" + hardness + "</font></b>");
+        ui->diffBox->setText("<b><font color=\"" + GUIUtil::negativeColor() + "\">" + hardness + "</font></b>");
     } 
     else 
     {
@@ -465,11 +465,11 @@ void OverviewPage::updateStatistics()
 
     if(pHardness2 > hardnessPrevious2)
     {
-        ui->diffBox2->setText("<b><font color=\"green\">" + hardness2 + "</font></b>");
+        ui->diffBox2->setText("<b><font color=\"" + GUIUtil::positiveColor() + "\">" + hardness2 + "</font></b>");
     }
     else if(pHardness2 < hardnessPrevious2)
     {
-        ui->diffBox2->setText("<b><font color=\"red\">" + hardness2 + "</font></b>");
+        ui->diffBox2->setText("<b><font color=\"" + GUIUtil::negativeColor() + "\">" + hardness2 + "</font></b>");
     }
     else
     {
@@ -478,11 +478,11 @@ void OverviewPage::updateStatistics()
 
     if(pPawrate2 > netPawratePrevious)
     {
-        ui->pawrateBox->setText("<b><font color=\"green\">" + pawrate + " MH/s</font></b>");
+        ui->pawrateBox->setText("<b><font color=\"" + GUIUtil::positiveColor() + "\">" + pawrate + " MH/s</font></b>");
     } 
     else if(pPawrate2 < netPawratePrevious) 
     {
-        ui->pawrateBox->setText("<b><font color=\"red\">" + pawrate + " MH/s</font></b>");
+        ui->pawrateBox->setText("<b><font color=\"" + GUIUtil::negativeColor() + "\">" + pawrate + " MH/s</font></b>");
     } 
     else 
     {
@@ -491,7 +491,7 @@ void OverviewPage::updateStatistics()
 
     if(Qlpawrate != pawratePrevious)
     {
-        ui->localBox->setText("<b><font color=\"green\">" + Qlpawrate + "</font></b>");
+        ui->localBox->setText("<b><font color=\"" + GUIUtil::positiveColor() + "\">" + Qlpawrate + "</font></b>");
     } 
     else 
     {
@@ -500,11 +500,11 @@ void OverviewPage::updateStatistics()
 
     if(peers > connectionPrevious)
     {
-        ui->connectionBox->setText("<b><font color=\"green\">" + QPeers + "</font></b>");
+        ui->connectionBox->setText("<b><font color=\"" + GUIUtil::positiveColor() + "\">" + QPeers + "</font></b>");
     } 
     else if(peers < connectionPrevious) 
     {
-        ui->connectionBox->setText("<b><font color=\"red\">" + QPeers + "</font></b>");
+        ui->connectionBox->setText("<b><font color=\"" + GUIUtil::negativeColor() + "\">" + QPeers + "</font></b>");
     } 
     else 
     {
