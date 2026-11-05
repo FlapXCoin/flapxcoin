@@ -51,20 +51,26 @@ double GetPoWMHashPS()
     int nPoWInterval = 72;
     int64_t nTargetSpacingWorkMin = 30, nTargetSpacingWork = 30;
 
-    CBlockIndex* pindex = pindexGenesisBlock;
-    CBlockIndex* pindexPrevWork = pindexGenesisBlock;
-
-    while (pindex)
-    {
+    // The spacing below is a moving average in which each older block counts
+    // 71/73 as much as the next one, so blocks more than a few hundred PoW
+    // blocks back no longer affect the result. Start from the last 1000 PoW
+    // blocks instead of from genesis: same answer, without walking the whole
+    // chain on every call.
+    const int nPoWBlocksUsed = 1000;
+    std::vector<CBlockIndex*> vPoW;
+    vPoW.reserve(nPoWBlocksUsed);
+    for (CBlockIndex* pindex = pindexBest; pindex && (int)vPoW.size() < nPoWBlocksUsed; pindex = pindex->pprev)
         if (pindex->IsProofOfWork())
-        {
-            int64_t nActualSpacingWork = pindex->GetBlockTime() - pindexPrevWork->GetBlockTime();
-            nTargetSpacingWork = ((nPoWInterval - 1) * nTargetSpacingWork + nActualSpacingWork + nActualSpacingWork) / (nPoWInterval + 1);
-            nTargetSpacingWork = max(nTargetSpacingWork, nTargetSpacingWorkMin);
-            pindexPrevWork = pindex;
-        }
+            vPoW.push_back(pindex);
 
-        pindex = pindex->pnext;
+    CBlockIndex* pindexPrevWork = vPoW.empty() ? pindexGenesisBlock : vPoW.back();
+    for (int i = (int)vPoW.size() - 1; i >= 0; i--)
+    {
+        CBlockIndex* pindex = vPoW[i];
+        int64_t nActualSpacingWork = pindex->GetBlockTime() - pindexPrevWork->GetBlockTime();
+        nTargetSpacingWork = ((nPoWInterval - 1) * nTargetSpacingWork + nActualSpacingWork + nActualSpacingWork) / (nPoWInterval + 1);
+        nTargetSpacingWork = max(nTargetSpacingWork, nTargetSpacingWorkMin);
+        pindexPrevWork = pindex;
     }
 
     return GetDifficulty() * 4294.967296 / nTargetSpacingWork;
