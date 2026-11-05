@@ -256,8 +256,11 @@ void OverviewPage::setClientModel(ClientModel *model)
 {
     // this->model = model;
     this->clientModel = model;
+    // The Network box reads block count, nodes etc. from the client model
+    this->modelStatistics = model;
     if(model)
     {
+        updateStatistics();
         // Show warning if this is a prerelease version
         connect(model, SIGNAL(alertsChanged(QString)), this, SLOT(updateAlerts(QString)));
         updateAlerts(model->getStatusBarWarnings());
