@@ -14,6 +14,7 @@
 #include "ui_interface.h"
 #include "qtipcserver.h"
 
+#include <QSettings>
 #include <QApplication>
 #include <QMessageBox>
 #include <QTextCodec>
@@ -153,8 +154,10 @@ int main(int argc, char *argv[])
     else
         app.setApplicationName("FlapX-Qt");
 
-    // All GUI styling: native look plus FlapX touches
+    // All GUI styling: native look plus FlapX touches, optionally dark
     app.setStyleSheet(GUIUtil::flapxStyleSheet());
+    if (QSettings().value("fDarkMode", false).toBool())
+        GUIUtil::applyDarkMode(true);
 
     // ... then GUI settings:
     OptionsModel optionsModel;

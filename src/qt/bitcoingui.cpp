@@ -56,12 +56,12 @@
 #include <QProgressBar>
 #include <QStackedWidget>
 #include <QDateTime>
-#include <QMovie>
 #include <QFile>
 #include <QTextStream>
 #include <QFileDialog>
 #include <QDesktopServices>
 #include <QTimer>
+#include <QPainter>
 #include <QDragEnterEvent>
 #if QT_VERSION < 0x050000
 #include <QUrl>
@@ -188,6 +188,12 @@ BitcoinGUI::BitcoinGUI(QWidget *parent):
     frameBlocksLayout->addWidget(labelBlocksIcon);
     frameBlocksLayout->addStretch();
 
+    // Staking animation: only runs while the wallet is staking
+    nStakingAnimFrame = 0;
+    stakingAnimTimer = new QTimer(this);
+    stakingAnimTimer->setInterval(150);
+    connect(stakingAnimTimer, SIGNAL(timeout()), this, SLOT(animateStakingIcon()));
+
     if (GetBoolArg("-staking", true))
     {
         QTimer *timerStakingIcon = new QTimer(labelStakingIcon);
@@ -208,8 +214,6 @@ BitcoinGUI::BitcoinGUI(QWidget *parent):
     statusBar()->addWidget(progressBarLabel);
     statusBar()->addWidget(progressBar);
     statusBar()->addPermanentWidget(frameBlocks);
-    // The spinner is a GIF (despite the .mng file name), so let Qt detect the format
-    syncIconMovie = new QMovie(":/movies/update_spinner", QByteArray(), this);
 
     // Clicking on a transaction on the overview page simply sends you to transaction history page
     connect(overviewPage, SIGNAL(transactionClicked(QModelIndex)), this, SLOT(gotoHistoryPage()));
@@ -319,6 +323,11 @@ void BitcoinGUI::createActions()
     aboutQtAction = new QAction(QIcon(":/trolltech/qmessagebox/images/qtlogo-64.png"), tr("About &Qt"), this);
     aboutQtAction->setToolTip(tr("Show information about Qt"));
     aboutQtAction->setMenuRole(QAction::AboutQtRole);
+    darkModeAction = new QAction(tr("&Dark mode"), this);
+    darkModeAction->setStatusTip(tr("Switch between the dark and the normal look"));
+    darkModeAction->setCheckable(true);
+    darkModeAction->setChecked(GUIUtil::isDarkMode());
+    connect(darkModeAction, SIGNAL(toggled(bool)), this, SLOT(toggleDarkMode(bool)));
     optionsAction = new QAction(QIcon(":/icons/options"), tr("&Options..."), this);
     optionsAction->setToolTip(tr("Modify configuration options for FlapX"));
     optionsAction->setMenuRole(QAction::PreferencesRole);
@@ -402,6 +411,7 @@ void BitcoinGUI::createMenuBar()
     settings->addAction(lockWalletAction);
 	settings->addAction(charityAction);
     settings->addSeparator();
+    settings->addAction(darkModeAction);
     settings->addAction(optionsAction);
     settings->addSeparator();
     settings->addAction(calcAction);
@@ -615,12 +625,11 @@ void BitcoinGUI::setNumBlocks(int count)
     int secs = lastBlockDate.secsTo(currentDate);
     tooltip = tr("Processed %1 blocks of transaction history.").arg(count);
 
-    // Set icon state: spinning if catching up, tick otherwise
+    // Set icon state: red bird while catching up, green once up to date
     if(secs < 90*60)
     {
         tooltip = tr("Up to date") + QString(".<br>") + tooltip;
-        syncIconMovie->stop();
-        labelBlocksIcon->setPixmap(QIcon(":/icons/synced").pixmap(STATUSBAR_ICONSIZE, STATUSBAR_ICONSIZE));
+        labelBlocksIcon->setPixmap(QIcon(":/icons/sync_green").pixmap(STATUSBAR_ICONSIZE, STATUSBAR_ICONSIZE));
 
         overviewPage->showOutOfSyncWarning(false);
 
@@ -663,11 +672,7 @@ void BitcoinGUI::setNumBlocks(int count)
         progressBar->setVisible(true);
 
         tooltip = tr("Catching up...") + QString("<br>") + tooltip;
-        // Attach and start the spinner once, not on every block-count update
-        if (labelBlocksIcon->movie() != syncIconMovie)
-            labelBlocksIcon->setMovie(syncIconMovie);
-        if (syncIconMovie->state() != QMovie::Running)
-            syncIconMovie->start();
+        labelBlocksIcon->setPixmap(QIcon(":/icons/sync_red").pixmap(STATUSBAR_ICONSIZE, STATUSBAR_ICONSIZE));
         prevBlocks = count;
 
         overviewPage->showOutOfSyncWarning(true);
@@ -1033,11 +1038,26 @@ void BitcoinGUI::updateWeight()
 
 void BitcoinGUI::updateStakingIcon()
 {
-    updateWeight();
+    // While the wallet is catching up (newest block over an hour old) it can't
+    // stake, so skip working out the stake weight: it reads every coin's block
+    // from disk and would compete with the block download
+    bool fSyncing = !pindexBest || pindexBest->GetBlockTime() < GetTime() - 60 * 60;
+    uint64_t nNetworkWeight = 0;
+    if (fSyncing)
+        nWeight = 0;
+    else
+    {
+        // Skip this refresh if the core is busy rather than freezing the window
+        TRY_LOCK(cs_main, lockMain);
+        if (!lockMain)
+            return;
+        updateWeight();
+        if (nLastCoinStakeSearchInterval && nWeight)
+            nNetworkWeight = GetPoSKernelPS();
+    }
 
     if (nLastCoinStakeSearchInterval && nWeight)
     {
-        uint64_t nNetworkWeight = GetPoSKernelPS();
         unsigned nEstimateTime = nTargetSpacing * 2 * nNetworkWeight / nWeight;
 
         QString text;
@@ -1057,24 +1077,57 @@ void BitcoinGUI::updateStakingIcon()
         {
             text = tr("%n day(s)", "", nEstimateTime/(60*60*24));
         }
-        labelStakingIcon->setPixmap(QIcon(":/icons/res/icons/staking_on.png").pixmap(STATUSBAR_ICONSIZE,STATUSBAR_ICONSIZE));
+        if (!stakingAnimTimer->isActive())
+        {
+            animateStakingIcon();
+            stakingAnimTimer->start();
+        }
         labelStakingIcon->setToolTip(tr("Staking.<br>Your weight: %1<br>Network weight: %2<br>Expected time to earn reward: %3").arg(nWeight).arg(nNetworkWeight).arg(text));
 
     }
     else
     {
-            labelStakingIcon->setPixmap(QIcon(":/icons/res/icons/staking_off.png").pixmap(STATUSBAR_ICONSIZE,STATUSBAR_ICONSIZE));
+        stakingAnimTimer->stop();
+        labelStakingIcon->setPixmap(QIcon(":/icons/res/icons/staking_off.png").pixmap(STATUSBAR_ICONSIZE,STATUSBAR_ICONSIZE));
         if (pwalletMain && pwalletMain->IsLocked())
             labelStakingIcon->setToolTip(tr("Not staking because wallet is locked"));
         else if (vNodes.empty())
             labelStakingIcon->setToolTip(tr("Not staking because wallet is offline"));
-        else if (IsInitialBlockDownload())
+        else if (fSyncing)
             labelStakingIcon->setToolTip(tr("Not staking because wallet is syncing"));
         else if (!nWeight)
             labelStakingIcon->setToolTip(tr("Not staking because you don't have mature coins"));
         else
             labelStakingIcon->setToolTip(tr("Not staking"));
     }
+}
+
+void BitcoinGUI::toggleDarkMode(bool fDark)
+{
+    GUIUtil::applyDarkMode(fDark);
+    QSettings().setValue("fDarkMode", fDark);
+    // A wallet theme (Themes menu) goes on top of the base look again
+    if (!selectedTheme.isEmpty() && selectedTheme != "Default")
+        changeTheme(selectedTheme);
+    // Refresh the Network box so its colours match
+    if (overviewPage)
+        overviewPage->updateStatistics();
+}
+
+void BitcoinGUI::animateStakingIcon()
+{
+    // The staking bird bobs gently up and down (8 frames, 1.2 s per cycle)
+    static const int bob[8] = { 0, -1, -2, -1, 0, 1, 2, 1 };
+    QPixmap bird = QIcon(":/icons/res/icons/staking_on.png").pixmap(STATUSBAR_ICONSIZE, STATUSBAR_ICONSIZE);
+
+    QPixmap frame(STATUSBAR_ICONSIZE, STATUSBAR_ICONSIZE);
+    frame.fill(Qt::transparent);
+    QPainter painter(&frame);
+    painter.drawPixmap(0, bob[nStakingAnimFrame], bird);
+    painter.end();
+    labelStakingIcon->setPixmap(frame);
+
+    nStakingAnimFrame = (nStakingAnimFrame + 1) % 8;
 }
 
 void BitcoinGUI::detectShutdown()

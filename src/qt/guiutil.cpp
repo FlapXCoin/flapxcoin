@@ -18,6 +18,9 @@
 #include <QFileDialog>
 #include <QDesktopServices>
 #include <QThread>
+#include <QPalette>
+#include <QStyle>
+#include <QStyleFactory>
 
 #include <boost/filesystem.hpp>
 #include <boost/filesystem/fstream.hpp>
@@ -454,6 +457,8 @@ void HelpMessageBox::showOrPrint()
 #endif
 }
 
+static bool fDarkModeOn = false;
+
 QString flapxStyleSheet()
 {
     // FlapX orange, from the logo
@@ -461,7 +466,7 @@ QString flapxStyleSheet()
     return QString(
         // Sync progress bar
         "QProgressBar {"
-        "  border: 1px solid #a0a0a0; border-radius: 4px;"
+        "  border: 1px solid %2; border-radius: 4px;"
         "  background-color: palette(base); color: palette(text);"
         "  text-align: center; }"
         "QProgressBar::chunk { background-color: %1; border-radius: 3px; }"
@@ -469,7 +474,78 @@ QString flapxStyleSheet()
         "QToolBar QToolButton:checked {"
         "  background-color: rgba(255, 170, 0, 60);"
         "  border: 1px solid %1; border-radius: 4px; }"
-    ).arg(accent);
+    ).arg(accent).arg(fDarkModeOn ? "#5a5a5a" : "#a0a0a0");
+}
+
+void applyDarkMode(bool fDark)
+{
+    // Remember the system look the first time, so light mode can go back to it
+    static QString strSystemStyle;
+    static QPalette systemPalette;
+    static bool fSaved = false;
+    if (!fSaved)
+    {
+        strSystemStyle = QApplication::style()->objectName();
+        systemPalette = QApplication::palette();
+        fSaved = true;
+    }
+
+    fDarkModeOn = fDark;
+    if (fDark)
+    {
+        if (QStyle *style = QStyleFactory::create("Fusion"))
+            QApplication::setStyle(style);
+        QPalette p;
+        const QColor window(45, 45, 48), base(30, 30, 32), text(225, 225, 225);
+        const QColor disabled(127, 127, 127), orange(255, 170, 0);
+        p.setColor(QPalette::Window, window);
+        p.setColor(QPalette::WindowText, text);
+        p.setColor(QPalette::Base, base);
+        p.setColor(QPalette::AlternateBase, window);
+        p.setColor(QPalette::ToolTipBase, base);
+        p.setColor(QPalette::ToolTipText, text);
+        p.setColor(QPalette::Text, text);
+        p.setColor(QPalette::Button, window);
+        p.setColor(QPalette::ButtonText, text);
+        p.setColor(QPalette::BrightText, Qt::red);
+        p.setColor(QPalette::Link, orange);
+        p.setColor(QPalette::LinkVisited, QColor(230, 150, 0));
+        p.setColor(QPalette::Highlight, QColor(200, 130, 0));
+        p.setColor(QPalette::HighlightedText, Qt::black);
+        p.setColor(QPalette::Light, QColor(70, 70, 74));
+        p.setColor(QPalette::Midlight, QColor(60, 60, 64));
+        p.setColor(QPalette::Mid, QColor(40, 40, 42));
+        p.setColor(QPalette::Dark, QColor(25, 25, 27));
+        p.setColor(QPalette::Shadow, Qt::black);
+        p.setColor(QPalette::Disabled, QPalette::WindowText, disabled);
+        p.setColor(QPalette::Disabled, QPalette::Text, disabled);
+        p.setColor(QPalette::Disabled, QPalette::ButtonText, disabled);
+        p.setColor(QPalette::Disabled, QPalette::Highlight, QColor(80, 80, 80));
+        QApplication::setPalette(p);
+    }
+    else
+    {
+        if (QStyle *style = QStyleFactory::create(strSystemStyle))
+            QApplication::setStyle(style);
+        QApplication::setPalette(systemPalette);
+    }
+    // The style sheet's colours depend on the mode
+    qApp->setStyleSheet(flapxStyleSheet());
+}
+
+bool isDarkMode()
+{
+    return fDarkModeOn;
+}
+
+QString positiveColor()
+{
+    return fDarkModeOn ? "#5cd65c" : "green";
+}
+
+QString negativeColor()
+{
+    return fDarkModeOn ? "#ff6b6b" : "red";
 }
 
 } // namespace GUIUtil

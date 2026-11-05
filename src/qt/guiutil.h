@@ -119,6 +119,13 @@ namespace GUIUtil
         All GUI styling lives here instead of in individual widgets. */
     QString flapxStyleSheet();
 
+    /** Dark mode: Qt's Fusion style with a dark palette (saved as "fDarkMode") */
+    void applyDarkMode(bool fDark);
+    bool isDarkMode();
+    /** Text colours for gains/losses that read well in light and dark mode */
+    QString positiveColor();
+    QString negativeColor();
+
 } // namespace GUIUtil
 
 #endif // GUIUTIL_H

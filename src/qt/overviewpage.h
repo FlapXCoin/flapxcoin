@@ -64,6 +64,7 @@ public slots:
     void setStatistics(ClientModel *modelStatistics);
     void lockWalletToggle();
     void updateStatistics();
+    void showSyncing();
     void updatePrevious(int, int, int, double, double, double, double, QString, int, int);
 
 signals:

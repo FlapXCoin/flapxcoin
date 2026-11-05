@@ -1,4 +1,5 @@
 #include "charitydialog.h"
+#include "guiutil.h"
 #include "ui_charitydialog.h"
 
 #include "walletmodel.h"
@@ -55,7 +56,7 @@ void StakeForCharityDialog::setModel(WalletModel *model)
             ui->charityMinEdit->setText(QString::number(nMin/COIN));
         if (nMax > 0 && nMax != MAX_MONEY)
             ui->charityMaxEdit->setText(QString::number(nMax/COIN));
-        ui->message->setStyleSheet("QLabel { color: green; }");
+        ui->message->setStyleSheet("QLabel { color: " + GUIUtil::positiveColor() + "; }");
         ui->message->setText(tr("Multisend is on, sending to\n") + strAddress.ToString().c_str() + tr("."));
     }
 }
@@ -97,7 +98,7 @@ void StakeForCharityDialog::on_enableButton_clicked()
 {
     if(model->getEncryptionStatus() == WalletModel::Locked)
     {
-        ui->message->setStyleSheet("QLabel { color: black; }");
+        ui->message->setStyleSheet("");
         ui->message->setText(tr("Please unlock the wallet before starting Multisend."));
         return;
     }
@@ -110,7 +111,7 @@ void StakeForCharityDialog::on_enableButton_clicked()
     CBitcoinAddress address = ui->charityAddressEdit->text().toStdString();
     if (!address.IsValid())
     {
-        ui->message->setStyleSheet("QLabel { color: red; }");
+        ui->message->setStyleSheet("QLabel { color: " + GUIUtil::negativeColor() + "; }");
         ui->message->setText(tr("The entered address:\n") + ui->charityAddressEdit->text() + tr(" is invalid.\nPlease check the address and try again."));
         ui->charityAddressEdit->setFocus();
         return;
@@ -119,7 +120,7 @@ void StakeForCharityDialog::on_enableButton_clicked()
     int nCharityPercent = ui->charityPercentEdit->text().toInt(&fValidConversion, 10);
     if (!fValidConversion || nCharityPercent > 50 || nCharityPercent <= 0)
     {
-        ui->message->setStyleSheet("QLabel { color: red; }");
+        ui->message->setStyleSheet("QLabel { color: " + GUIUtil::negativeColor() + "; }");
         ui->message->setText(tr("Please enter a percentage from 1 to 50."));
         ui->charityPercentEdit->setFocus();
         return;
@@ -130,7 +131,7 @@ void StakeForCharityDialog::on_enableButton_clicked()
         nMinAmount = ui->charityMinEdit->text().toDouble(&fValidConversion) * COIN;
         if(!fValidConversion || nMinAmount <= MIN_TXOUT_AMOUNT || nMinAmount >= MAX_MONEY  )
         {
-            ui->message->setStyleSheet("QLabel { color: red; }");
+            ui->message->setStyleSheet("QLabel { color: " + GUIUtil::negativeColor() + "; }");
             ui->message->setText(tr("Min amount is out of range, please re-enter."));
             ui->charityMinEdit->setFocus();
             return;
@@ -142,7 +143,7 @@ void StakeForCharityDialog::on_enableButton_clicked()
         nMaxAmount = ui->charityMaxEdit->text().toDouble(&fValidConversion) * COIN;
         if(!fValidConversion || nMaxAmount <= MIN_TXOUT_AMOUNT || nMaxAmount >= MAX_MONEY  )
         {
-            ui->message->setStyleSheet("QLabel { color: red; }");
+            ui->message->setStyleSheet("QLabel { color: " + GUIUtil::negativeColor() + "; }");
             ui->message->setText(tr("Max amount is out of range, please re-enter."));
             ui->charityMaxEdit->setFocus();
             return;
@@ -151,7 +152,7 @@ void StakeForCharityDialog::on_enableButton_clicked()
 
     if (nMinAmount >= nMaxAmount)
     {
-        ui->message->setStyleSheet("QLabel { color: red; }");
+        ui->message->setStyleSheet("QLabel { color: " + GUIUtil::negativeColor() + "; }");
         ui->message->setText(tr("Min amount is larger than max amount, please re-enter."));
         ui->charityMinEdit->setFocus();
         return;
@@ -162,14 +163,14 @@ void StakeForCharityDialog::on_enableButton_clicked()
         changeAddress = ui->charityChangeAddressEdit->text().toStdString();
         if (!changeAddress.IsValid())
         {
-            ui->message->setStyleSheet("QLabel { color: red; }");
+            ui->message->setStyleSheet("QLabel { color: " + GUIUtil::negativeColor() + "; }");
             ui->message->setText(tr("The entered change address:\n") + ui->charityChangeAddressEdit->text() + tr(" is invalid.\nPlease check the address and try again."));
             ui->charityChangeAddressEdit->setFocus();
             return;
         }
         else if (!model->isMine(changeAddress))
         {
-           ui->message->setStyleSheet("QLabel { color: red; }");
+           ui->message->setStyleSheet("QLabel { color: " + GUIUtil::negativeColor() + "; }");
            ui->message->setText(tr("The entered change address:\n") + ui->charityChangeAddressEdit->text() + tr(" is not owned.\nPlease check the address and try again."));
            ui->charityChangeAddressEdit->setFocus();
            return;
@@ -179,7 +180,7 @@ void StakeForCharityDialog::on_enableButton_clicked()
     model->setStakeForCharity(true, nCharityPercent, address, changeAddress, nMinAmount, nMaxAmount);
     if(!fGlobalStakeForCharity)
          fGlobalStakeForCharity = true;
-    ui->message->setStyleSheet("QLabel { color: green; }");
+    ui->message->setStyleSheet("QLabel { color: " + GUIUtil::positiveColor() + "; }");
     ui->message->setText(tr("Multisend is on, sending to\n") + QString(address.ToString().c_str()) + tr("."));
     return;
 }
@@ -198,7 +199,7 @@ void StakeForCharityDialog::on_disableButton_clicked()
     ui->charityMaxEdit->clear();
     ui->charityMinEdit->clear();
     ui->charityPercentEdit->clear();
-    ui->message->setStyleSheet("QLabel { color: black; }");
+    ui->message->setStyleSheet("");
     ui->message->setText(tr("Multisend is now off"));
     return;
 }

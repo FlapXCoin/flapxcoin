@@ -1,6 +1,7 @@
 #include "intro.h"
 #include "ui_intro.h"
 #include "util.h"
+#include "guiutil.h"
 
 #include <QFileDialog>
 #include <QSettings>
@@ -185,7 +186,7 @@ void Intro::setStatus(int status, const QString &message, quint64 bytesAvailable
         break;
     case FreespaceChecker::ST_ERROR:
         ui->errorMessage->setText(tr("Error") + ": " + message);
-        ui->errorMessage->setStyleSheet("QLabel { color: #800000 }");
+        ui->errorMessage->setStyleSheet(GUIUtil::isDarkMode() ? "QLabel { color: #ff6b6b }" : "QLabel { color: #800000 }");
         break;
     }
     /* Indicate number of bytes available */
@@ -197,7 +198,7 @@ void Intro::setStatus(int status, const QString &message, quint64 bytesAvailable
         if(bytesAvailable < BLOCK_CHAIN_SIZE)
         {
             freeString += " " + tr("(of %1GB needed)").arg(BLOCK_CHAIN_SIZE/GB_BYTES);
-            ui->freeSpace->setStyleSheet("QLabel { color: #800000 }");
+            ui->freeSpace->setStyleSheet(GUIUtil::isDarkMode() ? "QLabel { color: #ff6b6b }" : "QLabel { color: #800000 }");
         } else {
             ui->freeSpace->setStyleSheet("");
         }

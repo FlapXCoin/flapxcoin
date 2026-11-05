@@ -2679,6 +2679,7 @@ void PushGetBlocks(CNode* pnode, CBlockIndex* pindexBegin, uint256 hashEnd)
         return;
     pnode->pindexLastGetBlocksBegin = pindexBegin;
     pnode->hashLastGetBlocksEnd = hashEnd;
+    pnode->nLastGetBlocksTime = GetTime();
 
     pnode->PushMessage("getblocks", CBlockLocator(pindexBegin), hashEnd);
 }
@@ -4258,7 +4259,47 @@ bool SendMessages(CNode* pto, bool fSendTrickle)
         // Start block sync
         if (pto->fStartSync && !fReindex) {
             pto->fStartSync = false;
+            // A new sync peer always gets the request, even if we asked it the
+            // same thing before
+            pto->pindexLastGetBlocksBegin = NULL;
+            pto->hashLastGetBlocksEnd = 0;
             PushGetBlocks(pto, pindexBest, uint256(0));
+        }
+
+        // Sync stall watchdog. If we're still catching up (or this peer said it
+        // was ahead of us), we already asked it for blocks, and no new block has
+        // arrived for SYNC_STALL_TIMEOUT seconds, the answer was probably lost.
+        // PushGetBlocks drops a request identical to the last one, so clear that
+        // memory and ask again.
+        if (!fReindex && pto->pindexLastGetBlocksBegin != NULL &&
+            (pto->nStartingHeight > nBestHeight || IsInitialBlockDownload()))
+        {
+            int64_t nNow = GetTime();
+            if (nNow - nTimeBestReceived > SYNC_STALL_TIMEOUT &&
+                nNow - pto->nLastGetBlocksTime > SYNC_STALL_TIMEOUT)
+            {
+                // Count firings in a row without progress
+                pto->nSyncStalls = (pto->nSyncStallHeight == nBestHeight) ? pto->nSyncStalls + 1 : 1;
+                pto->nSyncStallHeight = nBestHeight;
+
+                if (IsSyncNode(pto) && pto->nSyncStalls >= SYNC_STALLS_BEFORE_SWITCH)
+                {
+                    // Still stuck after asking again: download from another peer
+                    // instead, and leave this one alone for 10 minutes
+                    printf("sync stalled at height %d with %s %d times, switching peer\n",
+                           nBestHeight, pto->addrName.c_str(), pto->nSyncStalls);
+                    pto->nSyncStalls = 0;
+                    ReleaseSyncNode(pto, 10 * 60);
+                }
+                else
+                {
+                    printf("sync stalled at height %d (peer %s reported %d), asking again\n",
+                           nBestHeight, pto->addrName.c_str(), pto->nStartingHeight);
+                    pto->pindexLastGetBlocksBegin = NULL;
+                    pto->hashLastGetBlocksEnd = 0;
+                    PushGetBlocks(pto, pindexBest, uint256(0));
+                }
+            }
         }
 
         // Resend wallet transactions that haven't gotten in a block yet

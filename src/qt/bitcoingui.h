@@ -21,6 +21,7 @@ class StakeForCharityDialog;
 
 QT_BEGIN_NAMESPACE
 class QLabel;
+class QTimer;
 class QLineEdit;
 class QTableView;
 class QAbstractItemModel;
@@ -104,12 +105,15 @@ private:
     QAction *openRPCConsoleAction;
     QAction *charityAction;
     QAction *calcAction;
+    QAction *darkModeAction;
 
     QSystemTrayIcon *trayIcon;
     Notificator *notificator;
     TransactionView *transactionView;
     RPCConsole *rpcConsole;
-    QMovie *syncIconMovie;
+    /** Bobs the staking icon up and down while the wallet is staking */
+    QTimer *stakingAnimTimer;
+    int nStakingAnimFrame;
     /** Keep track of previous number of blocks, to detect progress */
     int prevBlocks;
 
@@ -213,6 +217,10 @@ private slots:
 
     void updateWeight();
     void updateStakingIcon();
+    /** Switch dark mode on or off and remember the choice */
+    void toggleDarkMode(bool fDark);
+    /** Draws the next frame of the staking animation */
+    void animateStakingIcon();
 
     /** called by a timer to check if fRequestShutdown has been set **/
     void detectShutdown();

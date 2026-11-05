@@ -116,6 +116,7 @@ OverviewPage::OverviewPage(QWidget *parent) :
     ui(new Ui::OverviewPage),
     clientModel(0),
     walletModel(0),
+    modelStatistics(0),
     currentBalance(-1),
     currentStake(0),
     currentUnconfirmedBalance(-1),
@@ -202,8 +203,19 @@ void OverviewPage::setNumTransactions(int count)
 void OverviewPage::updateMyWeight()
 {
     uint64_t nMinWeight = 0, nMaxWeight = 0, nWeight = 0;
-    if (nLastCoinStakeSearchInterval && pwalletMain && !IsInitialBlockDownload()) //flapx GetStakeWeight requires mutex lock on wallet which tends to freeze initial block downloads
+    // Skipped while catching up (newest block over an hour old): GetStakeWeight
+    // reads every coin's block from disk and would slow the block download
+    if (nLastCoinStakeSearchInterval && pwalletMain && pindexBest && pindexBest->GetBlockTime() > GetTime() - 60 * 60)
+    {
+        // Skip this refresh if the core is busy rather than freezing the window
+        TRY_LOCK(cs_main, lockMain);
+        if (!lockMain)
+            return;
+        TRY_LOCK(pwalletMain->cs_wallet, lockWallet);
+        if (!lockWallet)
+            return;
         pwalletMain->GetStakeWeight(*pwalletMain, nMinWeight, nMaxWeight, nWeight);
+    }
 
     if (nLastCoinStakeSearchInterval && nWeight)
     {
@@ -255,8 +267,11 @@ void OverviewPage::setClientModel(ClientModel *model)
 {
     // this->model = model;
     this->clientModel = model;
+    // The Network box reads block count, nodes etc. from the client model
+    this->modelStatistics = model;
     if(model)
     {
+        updateStatistics();
         // Show warning if this is a prerelease version
         connect(model, SIGNAL(alertsChanged(QString)), this, SLOT(updateAlerts(QString)));
         updateAlerts(model->getStatusBarWarnings());
@@ -360,17 +375,50 @@ void OverviewPage::lockWalletToggle()
     }
 }
 
+// While the wallet is catching up only the block count and node count are
+// shown; everything else reads "Wallet syncing..."
+void OverviewPage::showSyncing()
+{
+    const QString syncing = "<i>" + tr("Wallet syncing...") + "</i>";
+    ui->heightBox->setText(QString::number(nBestHeight));
+    ui->rewardBox->setText(syncing);
+    ui->volumeBox->setText(syncing);
+    ui->diffBox->setText(syncing);
+    ui->diffBox2->setText(syncing);
+    ui->pawrateBox->setText(syncing);
+    ui->localBox->setText(syncing);
+    if (modelStatistics)
+        ui->connectionBox->setText(QString::number(modelStatistics->getNumConnections()));
+}
+
 void OverviewPage::updateStatistics()
 {
+    if (!modelStatistics || !pindexBest)
+        return;
+
+    // Until the wallet has caught up (newest block less than an hour old), only
+    // show that it's syncing: working out these figures on every refresh slows
+    // the wallet down while it's downloading blocks
+    if (pindexBest->GetBlockTime() < GetTime() - 60 * 60)
+    {
+        showSyncing();
+        return;
+    }
+
+    // Skip this refresh if the core is busy, rather than freezing the window
+    // while waiting for it (the timer tries again in 30 seconds)
+    TRY_LOCK(cs_main, lockMain);
+    if (!lockMain)
+        return;
+
     double pHardness = GetDifficulty();
     double pHardness2 = GetDifficulty(GetLastBlockIndex(pindexBest, true));
     int pPawrate = GetPoWMHashPS();
     double pPawrate2 = 0.000;
     int nHeight = pindexBest->nHeight;
     double nSubsidy = double (GetProofOfWorkReward(nHeight, 0, pindexBest->GetBlockHash())/ double (COIN));
-    uint64_t nMinWeight = 0, nMaxWeight = 0, nWeight = 0;
-    pwalletMain->GetStakeWeight(*pwalletMain, nMinWeight, nMaxWeight, nWeight);
-    uint64_t nNetworkWeight = GetPoSKernelPS();
+    // Stake weight isn't shown in this box (the staking label has its own refresh)
+    uint64_t nMinWeight = 0, nNetworkWeight = 0;
     int64_t volume = ((pindexBest->nMoneySupply)/100000000);
     int peers = this->modelStatistics->getNumConnections();
     pPawrate2 = (double)pPawrate;
@@ -386,7 +434,7 @@ void OverviewPage::updateStatistics()
 
     if(nHeight > heightPrevious)
     {
-        ui->heightBox->setText("<b><font color=\"green\">" + height + "</font></b>");
+        ui->heightBox->setText("<b><font color=\"" + GUIUtil::positiveColor() + "\">" + height + "</font></b>");
     } 
     else 
     {
@@ -395,7 +443,7 @@ void OverviewPage::updateStatistics()
 
     if(nSubsidy < rewardPrevious)
     {
-        ui->rewardBox->setText("<b><font color=\"red\">" + subsidy + "</font></b>");
+        ui->rewardBox->setText("<b><font color=\"" + GUIUtil::negativeColor() + "\">" + subsidy + "</font></b>");
     } 
     else 
     {
@@ -404,11 +452,11 @@ void OverviewPage::updateStatistics()
 
     if(pHardness > hardnessPrevious)
     {
-        ui->diffBox->setText("<b><font color=\"green\">" + hardness + "</font></b>");
+        ui->diffBox->setText("<b><font color=\"" + GUIUtil::positiveColor() + "\">" + hardness + "</font></b>");
     } 
     else if(pHardness < hardnessPrevious) 
     {
-        ui->diffBox->setText("<b><font color=\"red\">" + hardness + "</font></b>");
+        ui->diffBox->setText("<b><font color=\"" + GUIUtil::negativeColor() + "\">" + hardness + "</font></b>");
     } 
     else 
     {
@@ -417,11 +465,11 @@ void OverviewPage::updateStatistics()
 
     if(pHardness2 > hardnessPrevious2)
     {
-        ui->diffBox2->setText("<b><font color=\"green\">" + hardness2 + "</font></b>");
+        ui->diffBox2->setText("<b><font color=\"" + GUIUtil::positiveColor() + "\">" + hardness2 + "</font></b>");
     }
     else if(pHardness2 < hardnessPrevious2)
     {
-        ui->diffBox2->setText("<b><font color=\"red\">" + hardness2 + "</font></b>");
+        ui->diffBox2->setText("<b><font color=\"" + GUIUtil::negativeColor() + "\">" + hardness2 + "</font></b>");
     }
     else
     {
@@ -430,11 +478,11 @@ void OverviewPage::updateStatistics()
 
     if(pPawrate2 > netPawratePrevious)
     {
-        ui->pawrateBox->setText("<b><font color=\"green\">" + pawrate + " MH/s</font></b>");
+        ui->pawrateBox->setText("<b><font color=\"" + GUIUtil::positiveColor() + "\">" + pawrate + " MH/s</font></b>");
     } 
     else if(pPawrate2 < netPawratePrevious) 
     {
-        ui->pawrateBox->setText("<b><font color=\"red\">" + pawrate + " MH/s</font></b>");
+        ui->pawrateBox->setText("<b><font color=\"" + GUIUtil::negativeColor() + "\">" + pawrate + " MH/s</font></b>");
     } 
     else 
     {
@@ -443,7 +491,7 @@ void OverviewPage::updateStatistics()
 
     if(Qlpawrate != pawratePrevious)
     {
-        ui->localBox->setText("<b><font color=\"green\">" + Qlpawrate + "</font></b>");
+        ui->localBox->setText("<b><font color=\"" + GUIUtil::positiveColor() + "\">" + Qlpawrate + "</font></b>");
     } 
     else 
     {
@@ -452,11 +500,11 @@ void OverviewPage::updateStatistics()
 
     if(peers > connectionPrevious)
     {
-        ui->connectionBox->setText("<b><font color=\"green\">" + QPeers + "</font></b>");
+        ui->connectionBox->setText("<b><font color=\"" + GUIUtil::positiveColor() + "\">" + QPeers + "</font></b>");
     } 
     else if(peers < connectionPrevious) 
     {
-        ui->connectionBox->setText("<b><font color=\"red\">" + QPeers + "</font></b>");
+        ui->connectionBox->setText("<b><font color=\"" + GUIUtil::negativeColor() + "\">" + QPeers + "</font></b>");
     } 
     else 
     {
@@ -495,8 +543,8 @@ void OverviewPage::updatePrevious(int nHeight, int nMinWeight, int nNetworkWeigh
 
 void OverviewPage::setStatistics(ClientModel *modelStatistics)
 {
-    updateStatistics();
     this->modelStatistics = modelStatistics;
+    updateStatistics();
 
 }
 
