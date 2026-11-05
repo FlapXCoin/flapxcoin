@@ -5,7 +5,7 @@
 # All are built with UPnP compiled in and on by default (USE_UPNP=1).
 #
 # Every push builds them and keeps them as downloadable "artifacts" on the
-# run's page. Pushing a version tag (e.g. v2.9.0.2) also publishes them as a
+# run's page. Pushing a version tag (e.g. v2.9.0.3) also publishes them as a
 # GitHub release.
 
 name: Build
