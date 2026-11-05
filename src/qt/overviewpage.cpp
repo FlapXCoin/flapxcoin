@@ -116,6 +116,7 @@ OverviewPage::OverviewPage(QWidget *parent) :
     ui(new Ui::OverviewPage),
     clientModel(0),
     walletModel(0),
+    modelStatistics(0),
     currentBalance(-1),
     currentStake(0),
     currentUnconfirmedBalance(-1),
@@ -360,17 +361,50 @@ void OverviewPage::lockWalletToggle()
     }
 }
 
+// While the wallet is catching up only the block count and node count are
+// shown; everything else reads "Wallet syncing..."
+void OverviewPage::showSyncing()
+{
+    const QString syncing = "<i>" + tr("Wallet syncing...") + "</i>";
+    ui->heightBox->setText(QString::number(nBestHeight));
+    ui->rewardBox->setText(syncing);
+    ui->volumeBox->setText(syncing);
+    ui->diffBox->setText(syncing);
+    ui->diffBox2->setText(syncing);
+    ui->pawrateBox->setText(syncing);
+    ui->localBox->setText(syncing);
+    if (modelStatistics)
+        ui->connectionBox->setText(QString::number(modelStatistics->getNumConnections()));
+}
+
 void OverviewPage::updateStatistics()
 {
+    if (!modelStatistics || !pindexBest)
+        return;
+
+    // Until the wallet has caught up (newest block less than an hour old), only
+    // show that it's syncing: working out these figures on every refresh slows
+    // the wallet down while it's downloading blocks
+    if (pindexBest->GetBlockTime() < GetTime() - 60 * 60)
+    {
+        showSyncing();
+        return;
+    }
+
+    // Skip this refresh if the core is busy, rather than freezing the window
+    // while waiting for it (the timer tries again in 30 seconds)
+    TRY_LOCK(cs_main, lockMain);
+    if (!lockMain)
+        return;
+
     double pHardness = GetDifficulty();
     double pHardness2 = GetDifficulty(GetLastBlockIndex(pindexBest, true));
     int pPawrate = GetPoWMHashPS();
     double pPawrate2 = 0.000;
     int nHeight = pindexBest->nHeight;
     double nSubsidy = double (GetProofOfWorkReward(nHeight, 0, pindexBest->GetBlockHash())/ double (COIN));
-    uint64_t nMinWeight = 0, nMaxWeight = 0, nWeight = 0;
-    pwalletMain->GetStakeWeight(*pwalletMain, nMinWeight, nMaxWeight, nWeight);
-    uint64_t nNetworkWeight = GetPoSKernelPS();
+    // Stake weight isn't shown in this box (the staking label has its own refresh)
+    uint64_t nMinWeight = 0, nNetworkWeight = 0;
     int64_t volume = ((pindexBest->nMoneySupply)/100000000);
     int peers = this->modelStatistics->getNumConnections();
     pPawrate2 = (double)pPawrate;
@@ -495,8 +529,8 @@ void OverviewPage::updatePrevious(int nHeight, int nMinWeight, int nNetworkWeigh
 
 void OverviewPage::setStatistics(ClientModel *modelStatistics)
 {
-    updateStatistics();
     this->modelStatistics = modelStatistics;
+    updateStatistics();
 
 }
 
