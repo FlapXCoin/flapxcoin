@@ -24,6 +24,9 @@
 #include <QFile>
 #include <QMap>
 #include <QMapIterator>
+#include <QPainter>
+#include <QPixmap>
+#include <QBrush>
 
 #include <boost/filesystem.hpp>
 #include <boost/filesystem/fstream.hpp>
@@ -460,6 +463,41 @@ void HelpMessageBox::showOrPrint()
 #endif
 }
 
+// The FlapX starfield, drawn in code (no image): the same stars as the block explorer's
+// stylesheet, on a 420x420 tile that repeats across the window background.
+static QPixmap flapxStarfieldTile(const QColor &space)
+{
+    struct Star { double x, y, size; int r, g, b; double alpha; };
+    static const Star stars[] = {
+        { 0.12, 0.18, 1.0, 255, 255, 255, 0.60 },
+        { 0.68, 0.09, 1.0, 255, 255, 255, 0.50 },
+        { 0.85, 0.42, 1.5,  42, 216, 234, 0.66 },
+        { 0.33, 0.64, 1.0, 255, 255, 255, 0.44 },
+        { 0.52, 0.88, 1.0, 255, 255, 255, 0.39 },
+        { 0.07, 0.79, 1.5,  34, 240, 122, 0.55 },
+    };
+    const int tile = 420;
+
+    QPixmap pixmap(tile, tile);
+    pixmap.fill(space);
+
+    QPainter painter(&pixmap);
+    painter.setRenderHint(QPainter::Antialiasing, true);
+    painter.setPen(Qt::NoPen);
+    for (unsigned int i = 0; i < sizeof(stars) / sizeof(stars[0]); i++)
+    {
+        const Star &star = stars[i];
+        QColor color(star.r, star.g, star.b);
+        color.setAlphaF(star.alpha);
+        painter.setBrush(color);
+        const double radius = star.size / 2.0 + 0.25;
+        painter.drawEllipse(QPointF(star.x * tile, star.y * tile), radius, radius);
+    }
+    painter.end();
+
+    return pixmap;
+}
+
 void applyFlapXPalette()
 {
     // Fusion draws every widget from the palette, so the whole wallet takes the FlapX colours
@@ -472,6 +510,9 @@ void applyFlapXPalette()
 
     QPalette p;
     p.setColor(QPalette::Window, space);
+    // window backgrounds carry the starfield; panels and inputs stay solid
+    p.setBrush(QPalette::Active, QPalette::Window, QBrush(flapxStarfieldTile(space)));
+    p.setBrush(QPalette::Inactive, QPalette::Window, QBrush(flapxStarfieldTile(space)));
     p.setColor(QPalette::WindowText, text);
     p.setColor(QPalette::Base, space2);
     p.setColor(QPalette::AlternateBase, panel);

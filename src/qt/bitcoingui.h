@@ -29,6 +29,7 @@ class QModelIndex;
 class QProgressBar;
 class QStackedWidget;
 class QActionGroup;
+class QPaintEvent;
 class QUrl;
 QT_END_NAMESPACE
 
@@ -58,6 +59,8 @@ protected:
     void closeEvent(QCloseEvent *event);
     void dragEnterEvent(QDragEnterEvent *event);
     void dropEvent(QDropEvent *event);
+    /** Soft navy glow at the top of the window, over the starfield (matches the explorer) */
+    void paintEvent(QPaintEvent *event);
 
 private:
     ClientModel *clientModel;

@@ -25,8 +25,8 @@
 
 /* ---------- window, menus ---------- */
 
+/* The window background (navy + starfield) comes from the palette, so it isn't set here */
 QMainWindow, QDialog {
-    background-color: @space;
     color: @text;
 }
 
@@ -446,10 +446,6 @@ QSplitter::handle {
 }
 
 /* ---------- message boxes ---------- */
-
-QMessageBox {
-    background-color: @space;
-}
 
 QMessageBox QLabel {
     color: @text;
