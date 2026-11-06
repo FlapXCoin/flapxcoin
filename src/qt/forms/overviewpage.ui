@@ -8,7 +8,6 @@
    <item>
     <widget class="QLabel" name="labelAlerts">
      <property name="visible"><bool>false</bool></property>
-     <property name="styleSheet"><string notr="true">background-color: qlineargradient(x1: 0, y1: 0, x2: 1, y2: 0, stop:0 #F0D0A0, stop:1 #F8D488); color:#000000;</string></property>
      <property name="wordWrap"><bool>true</bool></property>
      <property name="margin"><number>3</number></property>
     </widget>
@@ -21,9 +20,9 @@
         <layout class="QHBoxLayout" name="headerLayout">
          <item>
           <widget class="QLabel" name="label_18">
-           <property name="minimumSize"><size><width>32</width><height>32</height></size></property>
-           <property name="maximumSize"><size><width>32</width><height>32</height></size></property>
-           <property name="pixmap"><pixmap resource="../bitcoin.qrc">:/qt/art/res/images/art/flapxyellow.png</pixmap></property>
+           <property name="minimumSize"><size><width>44</width><height>44</height></size></property>
+           <property name="maximumSize"><size><width>44</width><height>44</height></size></property>
+           <property name="pixmap"><pixmap resource="../bitcoin.qrc">:/icons/bitcoin</pixmap></property>
            <property name="scaledContents"><bool>true</bool></property>
           </widget>
          </item>

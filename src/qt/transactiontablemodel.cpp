@@ -466,7 +466,7 @@ QVariant TransactionTableModel::txStatusDecoration(const TransactionRecord *wtx)
     {
     case TransactionStatus::OpenUntilBlock:
     case TransactionStatus::OpenUntilDate:
-        return QColor(64,64,255);
+        return QColor(42,216,234);
     case TransactionStatus::Offline:
         return QColor(192,192,192);
     case TransactionStatus::Unconfirmed:
@@ -566,6 +566,10 @@ QVariant TransactionTableModel::data(const QModelIndex &index, int role) const
         if(index.column() == Amount && (rec->credit+rec->debit) < 0)
         {
             return COLOR_NEGATIVE;
+        }
+        if(index.column() == Amount && (rec->credit+rec->debit) > 0)
+        {
+            return COLOR_POSITIVE;
         }
         if(index.column() == ToAddress)
         {

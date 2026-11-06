@@ -5,6 +5,7 @@
 #include "monitoreddatamapper.h"
 #include "netbase.h"
 #include "optionsmodel.h"
+#include "guiutil.h"
 
 #include <QDir>
 #include <QIntValidator>
@@ -238,7 +239,7 @@ void OptionsDialog::handleProxyIpValid(QValidatedLineEdit *object, bool fState)
     {
         disableSaveButtons();
         object->setValid(fProxyIpValid);
-        ui->statusLabel->setStyleSheet("QLabel { color: red; }");
+        ui->statusLabel->setStyleSheet("QLabel { color: " + GUIUtil::negativeColor() + "; }");
         ui->statusLabel->setText(tr("The supplied proxy address is invalid."));
     }
 }

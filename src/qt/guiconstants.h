@@ -11,14 +11,17 @@ static const int MAX_PASSPHRASE_SIZE = 1024;
 static const int STATUSBAR_ICONSIZE = 24;
 
 /* Invalid field background style */
-#define STYLE_INVALID "background:#FF8080"
+#define STYLE_INVALID "background:#3a1622; border:1px solid #ff6b81; color:#ffffff;"
 
-/* Transaction list -- unconfirmed transaction */
-#define COLOR_UNCONFIRMED QColor(128, 128, 128)
-/* Transaction list -- negative amount */
-#define COLOR_NEGATIVE QColor(255, 0, 0)
-/* Transaction list -- bare address (without label) */
-#define COLOR_BAREADDRESS QColor(140, 140, 140)
+/* Transaction list colours (FlapXCoin theme) */
+/* Transaction list -- unconfirmed transaction (muted) */
+#define COLOR_UNCONFIRMED QColor(138, 155, 184)
+/* Transaction list -- negative amount (silver) */
+#define COLOR_NEGATIVE QColor(201, 212, 227)
+/* Transaction list -- positive amount (mint) */
+#define COLOR_POSITIVE QColor(34, 240, 122)
+/* Transaction list -- bare address (without label) (muted) */
+#define COLOR_BAREADDRESS QColor(138, 155, 184)
 
 /* Tooltips longer than this (in characters) are converted into rich text,
    so that they can be word-wrapped.

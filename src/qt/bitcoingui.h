@@ -105,7 +105,6 @@ private:
     QAction *openRPCConsoleAction;
     QAction *charityAction;
     QAction *calcAction;
-    QAction *darkModeAction;
 
     QSystemTrayIcon *trayIcon;
     Notificator *notificator;
@@ -126,10 +125,11 @@ private:
 
     /* Themes support */
     QString selectedTheme;
+    // FlapXCoin (built in) first, then any folders found in the themes directory
     QStringList themesList;
-    // Path to directory where all themes are (usable for some common images?...)
+    // Directory holding extra themes, one folder per theme with a styles.qss (empty if none)
     QString themesDir;
-    QAction *customActions[100];
+    QActionGroup *themeActionGroup;
     /* /Themes support */
 
     /** Create the main UI actions. */
@@ -217,8 +217,6 @@ private slots:
 
     void updateWeight();
     void updateStakingIcon();
-    /** Switch dark mode on or off and remember the choice */
-    void toggleDarkMode(bool fDark);
     /** Draws the next frame of the staking animation */
     void animateStakingIcon();
 
@@ -227,10 +225,11 @@ private slots:
 
     void charityClicked(QString addr = "");
 
-    /** Load external QSS stylesheet */
+    /** Themes: FlapXCoin is built in and the default; more can be added in a themes folder */
     void changeTheme(QString theme);
     void loadTheme(QString theme);
     void listThemes(QStringList& themes);
+    void themeActionTriggered(QAction *action);
     void keyPressEvent(QKeyEvent * e);
 };
 

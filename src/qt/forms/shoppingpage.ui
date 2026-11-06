@@ -113,9 +113,6 @@
       <bool>false</bool>
      </property>
      <widget class="QWidget" name="flapxcoin">
-      <property name="styleSheet">
-       <string notr="true">background-image:url(:/images/res/images/art/flapxspace.png);</string>
-      </property>
       <attribute name="icon">
        <iconset resource="../bitcoin.qrc">
         <normaloff>:/qt/art/res/images/art/ccflapx.png</normaloff>:/qt/art/res/images/art/ccflapx.png</iconset>

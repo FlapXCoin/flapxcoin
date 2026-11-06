@@ -186,7 +186,7 @@ void Intro::setStatus(int status, const QString &message, quint64 bytesAvailable
         break;
     case FreespaceChecker::ST_ERROR:
         ui->errorMessage->setText(tr("Error") + ": " + message);
-        ui->errorMessage->setStyleSheet(GUIUtil::isDarkMode() ? "QLabel { color: #ff6b6b }" : "QLabel { color: #800000 }");
+        ui->errorMessage->setStyleSheet("QLabel { color: " + GUIUtil::negativeColor() + "; }");
         break;
     }
     /* Indicate number of bytes available */
@@ -198,7 +198,7 @@ void Intro::setStatus(int status, const QString &message, quint64 bytesAvailable
         if(bytesAvailable < BLOCK_CHAIN_SIZE)
         {
             freeString += " " + tr("(of %1GB needed)").arg(BLOCK_CHAIN_SIZE/GB_BYTES);
-            ui->freeSpace->setStyleSheet(GUIUtil::isDarkMode() ? "QLabel { color: #ff6b6b }" : "QLabel { color: #800000 }");
+            ui->freeSpace->setStyleSheet("QLabel { color: " + GUIUtil::negativeColor() + "; }");
         } else {
             ui->freeSpace->setStyleSheet("");
         }
