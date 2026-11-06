@@ -384,13 +384,16 @@ QStatusBar QLabel {
     color: @muted;
 }
 
+/* Sync bar: dark bold text, readable on both the gradient and the steel track */
 QProgressBar {
-    background-color: @space2;
-    color: @text;
+    background-color: @steel;
+    color: #000000;
     border: 1px solid @border;
-    border-radius: 5px;
+    border-radius: 6px;
     text-align: center;
-    max-height: 14px;
+    font-weight: bold;
+    min-height: 20px;
+    min-width: 260px;
 }
 
 QProgressBar::chunk {

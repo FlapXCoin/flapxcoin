@@ -9,6 +9,7 @@
 #include "transactiontablemodel.h"
 #include "addressbookpage.h"
 #include "shoppingpage.h"
+#include "explorerpage.h"
 #include "sendcoinsdialog.h"
 #include "signverifymessagedialog.h"
 #include "optionsdialog.h"
@@ -101,7 +102,7 @@ BitcoinGUI::BitcoinGUI(QWidget *parent):
 {
 
     // Wide enough for every toolbar page button to be visible
-    resize(960, 640);
+    resize(1120, 680);
     setWindowTitle(tr("FlapX-Starhopper") + " - " + QString("%1.%2.%3.%4")
                    .arg(CLIENT_VERSION_MAJOR).arg(CLIENT_VERSION_MINOR)
                    .arg(CLIENT_VERSION_REVISION).arg(CLIENT_VERSION_BUILD)
@@ -152,6 +153,8 @@ BitcoinGUI::BitcoinGUI(QWidget *parent):
 
     shoppingPage = new ShoppingPage();
 
+    explorerPage = new ExplorerPage(this);
+
 
     receiveCoinsPage = new AddressBookPage(AddressBookPage::ForEditing, AddressBookPage::ReceivingTab);
 
@@ -165,6 +168,7 @@ BitcoinGUI::BitcoinGUI(QWidget *parent):
     centralWidget->addWidget(transactionsPage);
     centralWidget->addWidget(addressBookPage);
     centralWidget->addWidget(shoppingPage);
+    centralWidget->addWidget(explorerPage);
     centralWidget->addWidget(receiveCoinsPage);
     centralWidget->addWidget(sendCoinsPage);
     centralWidget->addWidget(stakeForCharityDialog);
@@ -296,6 +300,12 @@ void BitcoinGUI::createActions()
     shoppingAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_6));
     tabGroup->addAction(shoppingAction);
 
+    explorerAction = new QAction(QIcon(":/icons/res/icons/stakingTab.png"), tr("&Explorer"), this);
+    explorerAction->setToolTip(tr("Look up blocks with the built-in block explorer"));
+    explorerAction->setCheckable(true);
+    explorerAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_7));
+    tabGroup->addAction(explorerAction);
+
     charityAction = new QAction(QIcon(":/icons/send"), tr("&Multisend..."), this);
     charityAction->setToolTip(tr("Automatically send part of your stake rewards to another address"));
     charityAction->setCheckable(true);
@@ -316,6 +326,8 @@ void BitcoinGUI::createActions()
     connect(addressBookAction, SIGNAL(triggered()), this, SLOT(gotoAddressBookPage()));
     connect(shoppingAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
     connect(shoppingAction, SIGNAL(triggered()), this, SLOT(gotoShoppingPage()));
+    connect(explorerAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
+    connect(explorerAction, SIGNAL(triggered()), this, SLOT(gotoExplorerPage()));
     connect(calcAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
     connect(calcAction, SIGNAL(triggered()), this, SLOT(calcClicked()));
 
@@ -438,6 +450,7 @@ void BitcoinGUI::createToolBars()
     toolbar->addAction(historyAction);
     toolbar->addAction(addressBookAction);
     toolbar->addAction(shoppingAction);
+    toolbar->addAction(explorerAction);
 
     QToolBar *toolbar2 = addToolBar(tr("Actions toolbar"));
     toolbar2->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
@@ -814,6 +827,15 @@ void BitcoinGUI::gotoShoppingPage()
 {
     shoppingAction->setChecked(true);
     centralWidget->setCurrentWidget(shoppingPage);
+}
+
+void BitcoinGUI::gotoExplorerPage()
+{
+    explorerAction->setChecked(true);
+    centralWidget->setCurrentWidget(explorerPage);
+
+    exportAction->setEnabled(false);
+    disconnect(exportAction, SIGNAL(triggered()), 0, 0);
 }
 
 void BitcoinGUI::gotoReceiveCoinsPage()

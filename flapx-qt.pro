@@ -310,6 +310,7 @@ HEADERS += src/qt/bitcoingui.h \
     src/netbase.h \
     src/clientversion.h \
     src/qt/shoppingpage.h \
+    src/qt/explorerpage.h \
     src/threadsafety.h
 
 SOURCES += src/qt/bitcoin.cpp src/qt/bitcoingui.cpp \
@@ -395,7 +396,8 @@ SOURCES += src/qt/bitcoin.cpp src/qt/bitcoingui.cpp \
     src/zerocoin/SerialNumberSignatureOfKnowledge.cpp \
     src/zerocoin/SpendMetaData.cpp \
     src/zerocoin/ZeroTest.cpp \
-    src/qt/shoppingpage.cpp
+    src/qt/shoppingpage.cpp \
+    src/qt/explorerpage.cpp
 
 RESOURCES += \
     src/qt/bitcoin.qrc
@@ -414,6 +416,7 @@ FORMS += \
     src/qt/forms/rpcconsole.ui \
     src/qt/forms/optionsdialog.ui \
     src/qt/forms/shoppingpage.ui \
+    src/qt/forms/explorerpage.ui \
     src/qt/forms/charitydialog.ui \
     src/qt/forms/intro.ui \
     src/qt/forms/calcdialog.ui

@@ -13,6 +13,7 @@ class TransactionView;
 class OverviewPage;
 class AddressBookPage;
 class ShoppingPage;
+class ExplorerPage;
 class SendCoinsDialog;
 class SignVerifyMessageDialog;
 class Notificator;
@@ -72,6 +73,7 @@ private:
     QWidget *transactionsPage;
     AddressBookPage *addressBookPage;
     ShoppingPage *shoppingPage;
+    ExplorerPage *explorerPage;
     AddressBookPage *receiveCoinsPage;
     SendCoinsDialog *sendCoinsPage;
     SignVerifyMessageDialog *signVerifyMessageDialog;
@@ -91,6 +93,7 @@ private:
     QAction *sendCoinsAction;
     QAction *addressBookAction;
     QAction *shoppingAction;
+    QAction *explorerAction;
     QAction *signMessageAction;
     QAction *verifyMessageAction;
     QAction *aboutAction;
@@ -177,6 +180,8 @@ private slots:
     void gotoAddressBookPage();
     /** Switch to shopping page */
     void gotoShoppingPage();
+    /** Switch to the built-in block explorer page */
+    void gotoExplorerPage();
     /** Switch to receive coins page */
     void gotoReceiveCoinsPage();
     /** Switch to send coins page */
