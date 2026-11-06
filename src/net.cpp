@@ -84,7 +84,37 @@ void AddOneShot(string strDest)
 
 unsigned short GetListenPort()
 {
-    return (unsigned short)(GetArg("-port", Params().GetDefaultPort()));
+    // -altport: listen on the second peer port (for a second wallet behind the
+    // same internet connection). An explicit -port always wins.
+    int nPort = GetBoolArg("-altport", false) ? Params().GetAltPort() : Params().GetDefaultPort();
+    return (unsigned short)(GetArg("-port", nPort));
+}
+
+// The two ports wallets expect peers on: the default and the second peer port
+static bool IsStandardPeerPort(unsigned short nPort)
+{
+    return nPort == Params().GetDefaultPort() || nPort == Params().GetAltPort();
+}
+
+// Outgoing connections are limited to one per network group (/16 for IPv4)
+// for each of the two peer ports, so two wallets behind the same internet
+// connection (one on each port) can both be reached
+static std::vector<unsigned char> OutboundGroupKey(const CAddress& addr)
+{
+    std::vector<unsigned char> key = addr.GetGroup();
+    key.push_back(addr.GetPort() == Params().GetAltPort() ? 1 : 0);
+    return key;
+}
+
+// Number of connections (either direction) with this IP address
+static int CountNodesWithIP(const CNetAddr& ip)
+{
+    LOCK(cs_vNodes);
+    int nCount = 0;
+    BOOST_FOREACH(CNode* pnode, vNodes)
+        if ((CNetAddr)pnode->addr == ip)
+            nCount++;
+    return nCount;
 }
 
 // find 'best' local address for a particular peer
@@ -1198,7 +1228,8 @@ void ThreadOpenConnections()
         //
         CAddress addrConnect;
 
-        // Only connect out to one peer per network group (/16 for IPv4).
+        // Only connect out to one peer per network group (/16 for IPv4) and
+        // peer port (see OutboundGroupKey).
         // Do this here so we don't have to critsect vNodes inside mapAddresses critsect.
         int nOutbound = 0;
         set<vector<unsigned char> > setConnected;
@@ -1206,7 +1237,7 @@ void ThreadOpenConnections()
             LOCK(cs_vNodes);
             BOOST_FOREACH(CNode* pnode, vNodes) {
                 if (!pnode->fInbound) {
-                    setConnected.insert(pnode->addr.GetGroup());
+                    setConnected.insert(OutboundGroupKey(pnode->addr));
                     nOutbound++;
                 }
             }
@@ -1221,7 +1252,7 @@ void ThreadOpenConnections()
             CAddress addr = addrman.Select();
 
             // if we selected an invalid address, restart
-            if (!addr.IsValid() || setConnected.count(addr.GetGroup()) || IsLocal(addr))
+            if (!addr.IsValid() || setConnected.count(OutboundGroupKey(addr)) || IsLocal(addr))
                 break;
 
             nTries++;
@@ -1235,8 +1266,8 @@ void ThreadOpenConnections()
             if (nANow - addr.nLastTry < 600 && nTries < 30)
                 continue;
 
-            // do not allow non-default ports, unless after 50 invalid addresses selected already
-            if (addr.GetPort() != Params().GetDefaultPort() && nTries < 50)
+            // do not allow non-standard ports, unless after 50 invalid addresses selected already
+            if (!IsStandardPeerPort(addr.GetPort()) && nTries < 50)
                 continue;
 
             addrConnect = addr;
@@ -1331,10 +1362,17 @@ bool OpenNetworkConnection(const CAddress& addrConnect, CSemaphoreGrant *grantOu
     //
     boost::this_thread::interruption_point();
     if (!strDest)
+    {
+        // At most two connections with one IP address, and a second only to a
+        // standard peer port: two wallets behind the same internet connection
+        // (one on each port) can both be reached
+        int nSameIP = CountNodesWithIP(addrConnect);
         if (IsLocal(addrConnect) ||
-            FindNode((CNetAddr)addrConnect) || CNode::IsBanned(addrConnect) ||
+            FindNode((CService)addrConnect) || CNode::IsBanned(addrConnect) ||
+            nSameIP >= 2 || (nSameIP == 1 && !IsStandardPeerPort(addrConnect.GetPort())) ||
             FindNode(addrConnect.ToStringIPPort().c_str()))
             return false;
+    }
     if (strDest && FindNode(strDest))
         return false;
 

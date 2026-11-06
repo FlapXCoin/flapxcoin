@@ -56,6 +56,9 @@ public:
     const MessageStartChars& MessageStart() const { return pchMessageStart; }
     const std::vector<unsigned char>& AlertKey() const { return vAlertPubKey; }
     int GetDefaultPort() const { return nDefaultPort; }
+    /** Second peer port, for a second wallet behind the same internet connection.
+     *  Treated like the default port when choosing peers. */
+    int GetAltPort() const { return nAltPort; }
     const CBigNum& ProofOfWorkLimit() const { return bnProofOfWorkLimit; }
     int SubsidyHalvingInterval() const { return nSubsidyHalvingInterval; }
     virtual const CBlock& GenesisBlock() const = 0;
@@ -75,6 +78,7 @@ protected:
     // Raw pub key bytes for the broadcast alert signing key.
     std::vector<unsigned char> vAlertPubKey;
     int nDefaultPort;
+    int nAltPort;
     int nRPCPort;
     CBigNum bnProofOfWorkLimit;
     int nSubsidyHalvingInterval;

@@ -21,6 +21,7 @@ OptionsDialog::OptionsDialog(QWidget *parent) :
     mapper(0),
     fRestartWarningDisplayed_Proxy(false),
     fRestartWarningDisplayed_Lang(false),
+    fRestartWarningDisplayed_Port(false),
     fProxyIpValid(true)
 {
     ui->setupUi(this);
@@ -43,6 +44,7 @@ OptionsDialog::OptionsDialog(QWidget *parent) :
     connect(ui->connectSocks, SIGNAL(toggled(bool)), ui->proxyPort, SLOT(setEnabled(bool)));
     connect(ui->connectSocks, SIGNAL(toggled(bool)), ui->socksVersion, SLOT(setEnabled(bool)));
     connect(ui->connectSocks, SIGNAL(clicked(bool)), this, SLOT(showRestartWarning_Proxy()));
+    connect(ui->useAltPort, SIGNAL(clicked(bool)), this, SLOT(showRestartWarning_Port()));
 
     ui->proxyIp->installEventFilter(this);
 
@@ -134,6 +136,7 @@ void OptionsDialog::setMapper()
 
     /* Network */
     mapper->addMapping(ui->mapPortUpnp, OptionsModel::MapPortUPnP);
+    mapper->addMapping(ui->useAltPort, OptionsModel::UseAltPort);
 
     mapper->addMapping(ui->connectSocks, OptionsModel::ProxyUse);
     mapper->addMapping(ui->proxyIp, OptionsModel::ProxyIP);
@@ -204,6 +207,15 @@ void OptionsDialog::showRestartWarning_Proxy()
     {
         QMessageBox::warning(this, tr("Warning"), tr("This setting will take effect after restarting FlapX."), QMessageBox::Ok);
         fRestartWarningDisplayed_Proxy = true;
+    }
+}
+
+void OptionsDialog::showRestartWarning_Port()
+{
+    if(!fRestartWarningDisplayed_Port)
+    {
+        QMessageBox::warning(this, tr("Warning"), tr("This setting will take effect after restarting FlapX."), QMessageBox::Ok);
+        fRestartWarningDisplayed_Port = true;
     }
 }
 

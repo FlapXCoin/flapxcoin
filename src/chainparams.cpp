@@ -55,6 +55,7 @@ public:
         pchMessageStart[3] = 0xdb;
         vAlertPubKey = ParseHex("04ef014b36647e8433a2cedf76f1d6ea0bc5914ba936fadceda90d7472da3cf442469d3a1ab5ee416e7428726761dd3188bda3d0ae163db491f8ca0bdad92a0506");
         nDefaultPort = 60042;
+        nAltPort = 60242;
         nRPCPort = 60142;
         bnProofOfWorkLimit = CBigNum(~uint256(0) >> 20);
 
@@ -152,6 +153,7 @@ public:
         bnProofOfWorkLimit = CBigNum(~uint256(0) >> 16);
         vAlertPubKey = ParseHex("0471dc165db490094d35cde15b1f5d755fa6ad6f2b5ed0f340e3f17f57389c3c2af113a8cbcc885bde73305a553b5640c83021128008ddf882e856336269080496");
         nDefaultPort = 60043;
+        nAltPort = 60243;
         nRPCPort = 60143;
         strDataDir = "testnet";
 
@@ -203,6 +205,7 @@ public:
         genesis.nNonce = 2;
         hashGenesisBlock = genesis.GetHash();
         nDefaultPort = 18444;
+        nAltPort = 18445;
         strDataDir = "regtest";
         // assert(hashGenesisBlock == uint256("0x523dda6d336047722cbaf1c5dce622298af791bac21b33bf6e2d5048b2a13e3d"));
 

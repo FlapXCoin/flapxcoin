@@ -54,6 +54,8 @@ void OptionsModel::Init()
     // command-line options to override the GUI settings:
     if (settings.contains("fUseUPnP"))
         SoftSetBoolArg("-upnp", settings.value("fUseUPnP").toBool());
+    if (settings.value("fUseAltPort", false).toBool())
+        SoftSetBoolArg("-altport", true);
     if (settings.contains("addrProxy") && settings.value("fUseProxy").toBool())
         SoftSetArg("-proxy", settings.value("addrProxy").toString().toStdString());
     if (settings.contains("nSocksVersion") && settings.value("fUseProxy").toBool())
@@ -142,6 +144,8 @@ QVariant OptionsModel::data(const QModelIndex & index, int role) const
             return QVariant(fMinimizeToTray);
         case MapPortUPnP:
             return settings.value("fUseUPnP", GetBoolArg("-upnp", true));
+        case UseAltPort:
+            return settings.value("fUseAltPort", false);
         case MinimizeOnClose:
             return QVariant(fMinimizeOnClose);
         case ProxyUse:
@@ -204,6 +208,10 @@ bool OptionsModel::setData(const QModelIndex & index, const QVariant & value, in
             // MapPort();
             settings.setValue("fUseUPnP", value.toBool());
             MapPort(value.toBool());
+            break;
+        case UseAltPort:
+            // Takes effect at the next start (the port is opened at startup)
+            settings.setValue("fUseAltPort", value.toBool());
             break;
         case MinimizeOnClose:
             fMinimizeOnClose = value.toBool();

@@ -19,6 +19,7 @@ FlapX (FLAPX) - Litecoin / PeerCoin Hybrid POW/POSV hybrid with Personal Investm
 
 
 The default ports: mainnet peer 60042 and RPC 60142; testnet peer 60043 and RPC 60143
+Second peer port (for a second wallet on the same network): mainnet 60242, testnet 60243
 
 POW Details.
 
@@ -78,6 +79,22 @@ directory, in files of about 25 MB (chain/blk0001.dat, chain/blk0002.dat, ...).
 On first start, block files from older versions are moved into it
 automatically; no resync is needed. To go back to an older version, move the
 blk*.dat files from chain/ back into the data directory first.
+
+Running two wallets on the same home network
+Your router can send incoming connections on a port to only one computer, so two
+wallets behind the same internet connection can't both use port 60042. From
+2.9.0.4 there is a second peer port, 60242, that wallets treat just like 60042:
+
+* First wallet (e.g. the one that stakes 24/7): leave it as it is, on port 60042.
+* Second wallet: GUI: Settings > Options > Network > "Use the second peer port
+  (60242)", then restart. flapxd: add altport=1 to flapx.conf.
+* On the router, forward TCP 60042 to the first computer and TCP 60242 to the
+  second (or leave UPnP on in both wallets).
+
+Other 2.9.0.4+ wallets will then connect to both: they allow up to two
+connections to the same internet address, one on each of the two ports. Older
+wallets connect to the 60242 one less readily. (Two wallets on the same computer
+also need separate data directories: -datadir.)
 
 Wallet note: these builds use Berkeley DB 5.3. Back up wallet.dat before
 opening it with them: once a 5.3 build has written to a wallet, older builds
