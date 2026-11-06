@@ -735,6 +735,11 @@ public:
     // memory only
     mutable std::vector<uint256> vMerkleTree;
 
+    // memory only: last scrypt result and the block hash it belongs to (see GetPoWHash)
+    mutable uint256 hashPoWCacheKey;
+    mutable uint256 hashPoWCache;
+    mutable bool fPoWCached;
+
     // Denial-of-service detection:
     mutable int nDoS;
     bool DoS(int nDoSIn, bool fIn) const { nDoS += nDoSIn; return fIn; }
@@ -783,6 +788,7 @@ public:
         vtx.clear();
         vchBlockSig.clear();
         vMerkleTree.clear();
+        fPoWCached = false;
         nDoS = 0;
     }
 
@@ -798,8 +804,22 @@ public:
 
     uint256 GetPoWHash() const
     {
+        // scrypt is slow and a new block is checked several times (CheckBlock in
+        // ProcessBlock, AcceptBlock, CheckBlock again in ConnectBlock), each time
+        // over the same 80 header bytes. GetHash() covers exactly those 80 bytes
+        // (nVersion..nNonce), so if it still matches, the header is unchanged and
+        // the saved scrypt result is the right one. Any header change (e.g. a new
+        // nonce while mining) changes GetHash() and scrypt runs again.
+        const uint256 hashHeader = GetHash();
+        if (fPoWCached && hashPoWCacheKey == hashHeader)
+            return hashPoWCache;
+
         uint256 thash;
         scrypt_1024_1_1_256(BEGIN(nVersion), BEGIN(thash));
+
+        hashPoWCacheKey = hashHeader;
+        hashPoWCache = thash;
+        fPoWCached = true;
         return thash;
     }
 
