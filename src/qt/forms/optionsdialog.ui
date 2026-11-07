@@ -163,6 +163,16 @@
         </widget>
        </item>
        <item>
+        <widget class="QCheckBox" name="useAltPort">
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Turn this on for a second wallet on the same home network, so both wallets can get connections. This wallet then uses peer port 60242 instead of 60042.&lt;/p&gt;&lt;p&gt;Forward port 60242 on your router to this computer, or leave UPnP on. Takes effect after restarting FlapX.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+         <property name="text">
+          <string>Use the &amp;second peer port (60242)</string>
+         </property>
+        </widget>
+       </item>
+       <item>
         <widget class="QCheckBox" name="connectSocks">
          <property name="toolTip">
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Connect to the FlapX network through a SOCKS proxy (e.g. when connecting through Tor).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>

@@ -206,15 +206,15 @@ RPCConsole::RPCConsole(QWidget *parent) :
     // set OpenSSL version label
 
     ui->openSSLVersion->setText(SSLeay_version(SSLEAY_VERSION));
-    ui->openSSLVersion->setStyleSheet("selection-background-color: rgb(255, 170, 0, 145); selection-color: white;");
-    ui->startupTime->setStyleSheet("selection-background-color: rgb(255, 170, 0, 145); selection-color: white;");
-    ui->clientName->setStyleSheet("selection-background-color: rgb(255, 170, 0, 145); selection-color: white;");
-    ui->clientVersion->setStyleSheet("selection-background-color: rgb(255, 170, 0, 145); selection-color: white;");
-    ui->buildDate->setStyleSheet("selection-background-color: rgb(255, 170, 0, 145); selection-color: white;");
-    ui->numberOfBlocks->setStyleSheet("selection-background-color: rgb(255, 170, 0, 145); selection-color: white;");
-    ui->numberOfConnections->setStyleSheet("selection-background-color: rgb(255, 170, 0, 145); selection-color: white;");
-    // ui->totalBlocks->setStyleSheet("selection-background-color: rgb(255, 170, 0, 145); selection-color: white;");
-    ui->lastBlockTime->setStyleSheet("selection-background-color: rgb(255, 170, 0, 145); selection-color: white;");
+    ui->openSSLVersion->setStyleSheet("selection-background-color: rgba(42, 216, 234, 90); selection-color: white;");
+    ui->startupTime->setStyleSheet("selection-background-color: rgba(42, 216, 234, 90); selection-color: white;");
+    ui->clientName->setStyleSheet("selection-background-color: rgba(42, 216, 234, 90); selection-color: white;");
+    ui->clientVersion->setStyleSheet("selection-background-color: rgba(42, 216, 234, 90); selection-color: white;");
+    ui->buildDate->setStyleSheet("selection-background-color: rgba(42, 216, 234, 90); selection-color: white;");
+    ui->numberOfBlocks->setStyleSheet("selection-background-color: rgba(42, 216, 234, 90); selection-color: white;");
+    ui->numberOfConnections->setStyleSheet("selection-background-color: rgba(42, 216, 234, 90); selection-color: white;");
+    // ui->totalBlocks->setStyleSheet("selection-background-color: rgba(42, 216, 234, 90); selection-color: white;");
+    ui->lastBlockTime->setStyleSheet("selection-background-color: rgba(42, 216, 234, 90); selection-color: white;");
 
     startExecutor();
 
@@ -316,10 +316,10 @@ void RPCConsole::clear()
     }
 
     // Set default style sheet
-    const QString teal = GUIUtil::isDarkMode() ? "#5fd7d7" : "#006060";
+    const QString teal = "#2ad8ea"; // FlapX cyan
     ui->messagesWidget->document()->setDefaultStyleSheet(
                 "table { }"
-                "td.time { color: #808080; padding-top: 3px; } "
+                "td.time { color: #8a9bb8; padding-top: 3px; } "
                 "td.message { font-family: Monospace; font-size: 12px; } "
                 "td.cmd-request { color: " + teal + "; } "
                 "td.cmd-error { color: " + GUIUtil::negativeColor() + "; } "

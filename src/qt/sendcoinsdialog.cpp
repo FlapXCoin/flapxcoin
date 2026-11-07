@@ -460,12 +460,12 @@ void SendCoinsDialog::coinControlChangeEdited(const QString & text)
         CoinControlDialog::coinControl->destChange = CBitcoinAddress(text.toStdString()).Get();
 
         // label for the change address
-        ui->labelCoinControlChangeLabel->setStyleSheet("QLabel{color:black;}");
+        ui->labelCoinControlChangeLabel->setStyleSheet("");
         if (text.isEmpty())
             ui->labelCoinControlChangeLabel->setText("");
         else if (!CBitcoinAddress(text.toStdString()).IsValid())
         {
-            ui->labelCoinControlChangeLabel->setStyleSheet("QLabel{color:red;}");
+            ui->labelCoinControlChangeLabel->setStyleSheet("QLabel{color:" + GUIUtil::negativeColor() + ";}");
             ui->labelCoinControlChangeLabel->setText(tr("WARNING: Invalid FlapX address"));
         }
         else
@@ -482,7 +482,7 @@ void SendCoinsDialog::coinControlChangeEdited(const QString & text)
                     ui->labelCoinControlChangeLabel->setText(tr("(no label)"));
                 else
                 {
-                    ui->labelCoinControlChangeLabel->setStyleSheet("QLabel{color:red;}");
+                    ui->labelCoinControlChangeLabel->setStyleSheet("QLabel{color:" + GUIUtil::negativeColor() + ";}");
                     ui->labelCoinControlChangeLabel->setText(tr("WARNING: unknown change address"));
                 }
             }

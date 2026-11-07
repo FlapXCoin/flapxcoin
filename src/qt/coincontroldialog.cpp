@@ -7,6 +7,7 @@
 #include "addresstablemodel.h"
 #include "optionsmodel.h"
 #include "coincontrol.h"
+#include "guiutil.h"
 
 #include <QApplication>
 #include <QCheckBox>
@@ -553,10 +554,10 @@ void CoinControlDialog::updateLabels(WalletModel *model, QDialog* dialog)
     l8->setText(BitcoinUnits::formatWithUnit(nDisplayUnit, nChange));        // Change
     
     // turn labels "red"
-    l5->setStyleSheet((nBytes >= 10000) ? "color:red;" : "");               // Bytes >= 10000
-    l6->setStyleSheet((dPriority <= 576000) ? "color:red;" : "");         // Priority < "medium"
-    l7->setStyleSheet((fLowOutput) ? "color:red;" : "");                    // Low Output = "yes"
-    l8->setStyleSheet((nChange > 0 && nChange < CENT) ? "color:red;" : ""); // Change < 0.01BTC
+    l5->setStyleSheet((nBytes >= 10000) ? "color:" + GUIUtil::negativeColor() + ";" : QString(""));               // Bytes >= 10000
+    l6->setStyleSheet((dPriority <= 576000) ? "color:" + GUIUtil::negativeColor() + ";" : QString(""));         // Priority < "medium"
+    l7->setStyleSheet((fLowOutput) ? "color:" + GUIUtil::negativeColor() + ";" : QString(""));                    // Low Output = "yes"
+    l8->setStyleSheet((nChange > 0 && nChange < CENT) ? "color:" + GUIUtil::negativeColor() + ";" : QString("")); // Change < 0.01BTC
         
     // tool tips
     l5->setToolTip(tr("This label turns red, if the transaction size is bigger than 10000 bytes.\n\n This means a fee of at least %1 per kb is required.\n\n Can vary +/- 1 Byte per input.").arg(BitcoinUnits::formatWithUnit(nDisplayUnit, CENT)));

@@ -48,7 +48,6 @@
         <file>res/images/art/ccflapx.png</file>
         <file>res/images/art/discord2.png</file>
         <file>res/images/art/flapxexplorer.png</file>
-        <file>res/images/art/flapxspace.png</file>
         <file>res/images/art/home.png</file>
         <file>res/images/art/links.png</file>
         <file>res/images/art/panic.png</file>
@@ -65,13 +64,14 @@
         <file>res/images/art/home.png</file>
         <file>res/images/art/links.png</file>
         <file>res/images/art/panic.png</file>
-        <file>res/images/art/flapxspace.png</file>
         <file>res/images/art/pool.png</file>
     </qresource>
     <qresource prefix="/translations"/>
     <qresource prefix="/toolTip"/>
     <qresource prefix="/"/>
-    <qresource prefix="/qt/themes"/>
+    <qresource prefix="/themes">
+        <file alias="flapxcoin.qss">res/flapxcoin.qss</file>
+    </qresource>
     <qresource prefix="/qt/art">
         <file>res/images/art/ccflapx.png</file>
         <file>res/images/art/discord2.png</file>
@@ -80,7 +80,6 @@
         <file>res/images/art/home.png</file>
         <file>res/images/art/links.png</file>
         <file>res/images/art/panic.png</file>
-        <file>res/images/art/flapxspace.png</file>
         <file>res/images/art/pool.png</file>
         <file>res/images/art/flapxyellow.png</file>
     </qresource>

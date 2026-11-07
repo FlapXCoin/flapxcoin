@@ -1452,7 +1452,9 @@ static unsigned int GetNextWorkRequiredV2(const CBlockIndex* pindexLast, bool fP
     // giving 1 minute overall average block target time.
     int64_t retargetTimespan = nTargetSpacing;
 
-    printf(" nActualTimespan = %" PRId64 " before bounds\n", nActualTimespan);
+    // logged once per PoW block, so only when difficulty debugging is on
+    if (fDebug && GetBoolArg("-printdigishield"))
+        printf(" nActualTimespan = %" PRId64 " before bounds\n", nActualTimespan);
     nActualTimespan = max(nActualTimespan, nMinActualTimespan);
     nActualTimespan = min(nActualTimespan, nMaxActualTimespan);
 
@@ -2342,7 +2344,9 @@ bool CTransaction::GetCoinAge(CTxDB& txdb, unsigned int nTxTime, uint64_t& nCoin
     nCoinAge = 0;
     nCoinValue = 0;
 
-    printf("GetCoinAge::%s\n", ToString().c_str());
+    // logged once per proof-of-stake block, so only when coin age debugging is on
+    if (fDebug && GetBoolArg("-printcoinage"))
+        printf("GetCoinAge::%s\n", ToString().c_str());
 
     if (IsCoinBase())
         return true;

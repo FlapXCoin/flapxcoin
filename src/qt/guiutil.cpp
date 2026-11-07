@@ -21,6 +21,12 @@
 #include <QPalette>
 #include <QStyle>
 #include <QStyleFactory>
+#include <QFile>
+#include <QMap>
+#include <QMapIterator>
+#include <QPainter>
+#include <QPixmap>
+#include <QBrush>
 
 #include <boost/filesystem.hpp>
 #include <boost/filesystem/fstream.hpp>
@@ -457,95 +463,135 @@ void HelpMessageBox::showOrPrint()
 #endif
 }
 
-static bool fDarkModeOn = false;
+// The FlapX starfield, drawn in code (no image): the same stars as the block explorer's
+// stylesheet, on a 420x420 tile that repeats across the window background.
+static QPixmap flapxStarfieldTile(const QColor &space)
+{
+    struct Star { double x, y, size; int r, g, b; double alpha; };
+    static const Star stars[] = {
+        { 0.12, 0.18, 1.0, 255, 255, 255, 0.90 },
+        { 0.68, 0.09, 1.0, 255, 255, 255, 0.80 },
+        { 0.85, 0.42, 1.5, 200, 246, 251, 0.90 },   // pale cyan
+        { 0.33, 0.64, 1.0, 255, 255, 255, 0.75 },
+        { 0.52, 0.88, 1.0, 255, 255, 255, 0.70 },
+        { 0.07, 0.79, 1.5, 200, 251, 222, 0.85 },   // pale mint
+    };
+    const int tile = 420;
+
+    QPixmap pixmap(tile, tile);
+    pixmap.fill(space);
+
+    QPainter painter(&pixmap);
+    painter.setRenderHint(QPainter::Antialiasing, true);
+    painter.setPen(Qt::NoPen);
+    for (unsigned int i = 0; i < sizeof(stars) / sizeof(stars[0]); i++)
+    {
+        const Star &star = stars[i];
+        QColor color(star.r, star.g, star.b);
+        color.setAlphaF(star.alpha);
+        painter.setBrush(color);
+        const double radius = star.size / 2.0 + 0.25;
+        painter.drawEllipse(QPointF(star.x * tile, star.y * tile), radius, radius);
+    }
+    painter.end();
+
+    return pixmap;
+}
+
+void applyFlapXPalette()
+{
+    // Fusion draws every widget from the palette, so the whole wallet takes the FlapX colours
+    if (QStyle *style = QStyleFactory::create("Fusion"))
+        QApplication::setStyle(style);
+
+    const QColor space(11, 18, 32), space2(17, 26, 46), panel(21, 32, 58), border(36, 52, 90);
+    const QColor text(230, 237, 247), cyan(42, 216, 234), mint(34, 240, 122);
+    const QColor disabled(91, 106, 134);
+
+    QPalette p;
+    p.setColor(QPalette::Window, space);
+    // window backgrounds carry the starfield; panels and inputs stay solid
+    p.setBrush(QPalette::Active, QPalette::Window, QBrush(flapxStarfieldTile(space)));
+    p.setBrush(QPalette::Inactive, QPalette::Window, QBrush(flapxStarfieldTile(space)));
+    p.setColor(QPalette::WindowText, text);
+    p.setColor(QPalette::Base, space2);
+    p.setColor(QPalette::AlternateBase, panel);
+    p.setColor(QPalette::ToolTipBase, space2);
+    p.setColor(QPalette::ToolTipText, text);
+    p.setColor(QPalette::Text, text);
+    p.setColor(QPalette::Button, panel);
+    p.setColor(QPalette::ButtonText, text);
+    p.setColor(QPalette::BrightText, QColor(255, 107, 129));
+    p.setColor(QPalette::Link, cyan);
+    p.setColor(QPalette::LinkVisited, mint);
+    p.setColor(QPalette::Highlight, QColor(31, 111, 128));
+    p.setColor(QPalette::HighlightedText, Qt::white);
+    p.setColor(QPalette::Light, QColor(44, 62, 104));
+    p.setColor(QPalette::Midlight, border);
+    p.setColor(QPalette::Mid, QColor(27, 40, 72));
+    p.setColor(QPalette::Dark, QColor(7, 12, 23));
+    p.setColor(QPalette::Shadow, Qt::black);
+    p.setColor(QPalette::Disabled, QPalette::WindowText, disabled);
+    p.setColor(QPalette::Disabled, QPalette::Text, disabled);
+    p.setColor(QPalette::Disabled, QPalette::ButtonText, disabled);
+    p.setColor(QPalette::Disabled, QPalette::Highlight, border);
+    QApplication::setPalette(p);
+}
+
+QString loadStyleSheet(const QString &path, const QString &themeDir)
+{
+    QFile qss(path);
+    if (!qss.open(QFile::ReadOnly))
+        return QString();
+
+    QString styleSheet = QString::fromUtf8(qss.readAll());
+    qss.close();
+
+    // Variables are declared between "/** [VARS]" and "[/VARS] */", one "@name = value" per line
+    QMap<QString, QString> variables;
+    bool readingVariables = false;
+    foreach (const QString &rawLine, styleSheet.split('\n'))
+    {
+        const QString line = rawLine.trimmed();
+        if (line == "/** [VARS]") {
+            readingVariables = true;
+            continue;
+        }
+        if (line == "[/VARS] */")
+            break;
+        if (readingVariables && line.length() > 3 && line.contains('=')) {
+            const int eq = line.indexOf('=');
+            variables[line.left(eq).trimmed()] = line.mid(eq + 1).trimmed();
+        }
+    }
+
+    // $theme-dir lets a theme point at its own files, e.g. url($theme-dir/image.png)
+    styleSheet.replace("$theme-dir", themeDir);
+
+    // Longest names first (reverse map order), so @space2 is replaced before @space
+    QMapIterator<QString, QString> variable(variables);
+    variable.toBack();
+    while (variable.hasPrevious()) {
+        variable.previous();
+        styleSheet.replace(variable.key(), variable.value());
+    }
+
+    return styleSheet;
+}
 
 QString flapxStyleSheet()
 {
-    // FlapX orange, from the logo
-    const QString accent = "#ffaa00";
-    return QString(
-        // Sync progress bar
-        "QProgressBar {"
-        "  border: 1px solid %2; border-radius: 4px;"
-        "  background-color: palette(base); color: palette(text);"
-        "  text-align: center; }"
-        "QProgressBar::chunk { background-color: %1; border-radius: 3px; }"
-        // Highlight the selected page in the toolbar
-        "QToolBar QToolButton:checked {"
-        "  background-color: rgba(255, 170, 0, 60);"
-        "  border: 1px solid %1; border-radius: 4px; }"
-    ).arg(accent).arg(fDarkModeOn ? "#5a5a5a" : "#a0a0a0");
-}
-
-void applyDarkMode(bool fDark)
-{
-    // Remember the system look the first time, so light mode can go back to it
-    static QString strSystemStyle;
-    static QPalette systemPalette;
-    static bool fSaved = false;
-    if (!fSaved)
-    {
-        strSystemStyle = QApplication::style()->objectName();
-        systemPalette = QApplication::palette();
-        fSaved = true;
-    }
-
-    fDarkModeOn = fDark;
-    if (fDark)
-    {
-        if (QStyle *style = QStyleFactory::create("Fusion"))
-            QApplication::setStyle(style);
-        QPalette p;
-        const QColor window(45, 45, 48), base(30, 30, 32), text(225, 225, 225);
-        const QColor disabled(127, 127, 127), orange(255, 170, 0);
-        p.setColor(QPalette::Window, window);
-        p.setColor(QPalette::WindowText, text);
-        p.setColor(QPalette::Base, base);
-        p.setColor(QPalette::AlternateBase, window);
-        p.setColor(QPalette::ToolTipBase, base);
-        p.setColor(QPalette::ToolTipText, text);
-        p.setColor(QPalette::Text, text);
-        p.setColor(QPalette::Button, window);
-        p.setColor(QPalette::ButtonText, text);
-        p.setColor(QPalette::BrightText, Qt::red);
-        p.setColor(QPalette::Link, orange);
-        p.setColor(QPalette::LinkVisited, QColor(230, 150, 0));
-        p.setColor(QPalette::Highlight, QColor(200, 130, 0));
-        p.setColor(QPalette::HighlightedText, Qt::black);
-        p.setColor(QPalette::Light, QColor(70, 70, 74));
-        p.setColor(QPalette::Midlight, QColor(60, 60, 64));
-        p.setColor(QPalette::Mid, QColor(40, 40, 42));
-        p.setColor(QPalette::Dark, QColor(25, 25, 27));
-        p.setColor(QPalette::Shadow, Qt::black);
-        p.setColor(QPalette::Disabled, QPalette::WindowText, disabled);
-        p.setColor(QPalette::Disabled, QPalette::Text, disabled);
-        p.setColor(QPalette::Disabled, QPalette::ButtonText, disabled);
-        p.setColor(QPalette::Disabled, QPalette::Highlight, QColor(80, 80, 80));
-        QApplication::setPalette(p);
-    }
-    else
-    {
-        if (QStyle *style = QStyleFactory::create(strSystemStyle))
-            QApplication::setStyle(style);
-        QApplication::setPalette(systemPalette);
-    }
-    // The style sheet's colours depend on the mode
-    qApp->setStyleSheet(flapxStyleSheet());
-}
-
-bool isDarkMode()
-{
-    return fDarkModeOn;
+    return loadStyleSheet(":/themes/flapxcoin.qss", ":/themes");
 }
 
 QString positiveColor()
 {
-    return fDarkModeOn ? "#5cd65c" : "green";
+    return "#22f07a";
 }
 
 QString negativeColor()
 {
-    return fDarkModeOn ? "#ff6b6b" : "red";
+    return "#ff6b81";
 }
 
 } // namespace GUIUtil

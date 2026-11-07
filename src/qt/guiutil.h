@@ -115,14 +115,18 @@ namespace GUIUtil
         QString uiOptions;
     };
 
-    /** The application-wide style sheet: the native look plus a few FlapX touches.
-        All GUI styling lives here instead of in individual widgets. */
+    /** FlapX colours for every widget: Qt's Fusion style with the FlapX navy palette.
+        Applied once at startup; themes (Themes menu) only change the style sheet on top. */
+    void applyFlapXPalette();
+
+    /** Read a theme style sheet and fill in its [VARS] variables and $theme-dir.
+        Returns an empty string if the file can't be read. */
+    QString loadStyleSheet(const QString &path, const QString &themeDir);
+
+    /** The built-in FlapXCoin theme (res/flapxcoin.qss), the wallet's default look */
     QString flapxStyleSheet();
 
-    /** Dark mode: Qt's Fusion style with a dark palette (saved as "fDarkMode") */
-    void applyDarkMode(bool fDark);
-    bool isDarkMode();
-    /** Text colours for gains/losses that read well in light and dark mode */
+    /** Text colours for gains/losses in the FlapX palette */
     QString positiveColor();
     QString negativeColor();
 

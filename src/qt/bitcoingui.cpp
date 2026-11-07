@@ -9,6 +9,7 @@
 #include "transactiontablemodel.h"
 #include "addressbookpage.h"
 #include "shoppingpage.h"
+#include "explorerpage.h"
 #include "sendcoinsdialog.h"
 #include "signverifymessagedialog.h"
 #include "optionsdialog.h"
@@ -33,6 +34,7 @@
 #include "bitcoinrpc.h"
 #include "allocators.h"
 #include "init.h"
+#include "util.h"
 
 #ifdef Q_OS_MAC
 #include "macdockiconhandler.h"
@@ -70,9 +72,14 @@
 #include <QMimeData>
 #include <QSignalMapper>
 #include <QActionGroup>
+#include <QDir>
+#include <QSettings>
+#include <QPaintEvent>
+#include <QRadialGradient>
 #include <QString>
 
 #include <iostream>
+#include <cmath>
 
 extern CWallet* pwalletMain;
 extern int64_t nLastCoinStakeSearchInterval;
@@ -95,7 +102,7 @@ BitcoinGUI::BitcoinGUI(QWidget *parent):
 {
 
     // Wide enough for every toolbar page button to be visible
-    resize(960, 640);
+    resize(1120, 680);
     setWindowTitle(tr("FlapX-Starhopper") + " - " + QString("%1.%2.%3.%4")
                    .arg(CLIENT_VERSION_MAJOR).arg(CLIENT_VERSION_MINOR)
                    .arg(CLIENT_VERSION_REVISION).arg(CLIENT_VERSION_BUILD)
@@ -111,7 +118,8 @@ BitcoinGUI::BitcoinGUI(QWidget *parent):
     setAcceptDrops(true);
 
     /* zeewolf: Hot swappable wallet themes */
-    // Discover themes
+    // Discover themes and apply the saved one (FlapXCoin by default)
+    themeActionGroup = 0;
     listThemes(themesList);
     /* /zeewolf: Hot swappable wallet themes */
 
@@ -145,6 +153,8 @@ BitcoinGUI::BitcoinGUI(QWidget *parent):
 
     shoppingPage = new ShoppingPage();
 
+    explorerPage = new ExplorerPage(this);
+
 
     receiveCoinsPage = new AddressBookPage(AddressBookPage::ForEditing, AddressBookPage::ReceivingTab);
 
@@ -158,6 +168,7 @@ BitcoinGUI::BitcoinGUI(QWidget *parent):
     centralWidget->addWidget(transactionsPage);
     centralWidget->addWidget(addressBookPage);
     centralWidget->addWidget(shoppingPage);
+    centralWidget->addWidget(explorerPage);
     centralWidget->addWidget(receiveCoinsPage);
     centralWidget->addWidget(sendCoinsPage);
     centralWidget->addWidget(stakeForCharityDialog);
@@ -289,6 +300,12 @@ void BitcoinGUI::createActions()
     shoppingAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_6));
     tabGroup->addAction(shoppingAction);
 
+    explorerAction = new QAction(QIcon(":/icons/res/icons/stakingTab.png"), tr("&Explorer"), this);
+    explorerAction->setToolTip(tr("Look up blocks with the built-in block explorer"));
+    explorerAction->setCheckable(true);
+    explorerAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_7));
+    tabGroup->addAction(explorerAction);
+
     charityAction = new QAction(QIcon(":/icons/send"), tr("&Multisend..."), this);
     charityAction->setToolTip(tr("Automatically send part of your stake rewards to another address"));
     charityAction->setCheckable(true);
@@ -309,6 +326,8 @@ void BitcoinGUI::createActions()
     connect(addressBookAction, SIGNAL(triggered()), this, SLOT(gotoAddressBookPage()));
     connect(shoppingAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
     connect(shoppingAction, SIGNAL(triggered()), this, SLOT(gotoShoppingPage()));
+    connect(explorerAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
+    connect(explorerAction, SIGNAL(triggered()), this, SLOT(gotoExplorerPage()));
     connect(calcAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
     connect(calcAction, SIGNAL(triggered()), this, SLOT(calcClicked()));
 
@@ -323,11 +342,6 @@ void BitcoinGUI::createActions()
     aboutQtAction = new QAction(QIcon(":/trolltech/qmessagebox/images/qtlogo-64.png"), tr("About &Qt"), this);
     aboutQtAction->setToolTip(tr("Show information about Qt"));
     aboutQtAction->setMenuRole(QAction::AboutQtRole);
-    darkModeAction = new QAction(tr("&Dark mode"), this);
-    darkModeAction->setStatusTip(tr("Switch between the dark and the normal look"));
-    darkModeAction->setCheckable(true);
-    darkModeAction->setChecked(GUIUtil::isDarkMode());
-    connect(darkModeAction, SIGNAL(toggled(bool)), this, SLOT(toggleDarkMode(bool)));
     optionsAction = new QAction(QIcon(":/icons/options"), tr("&Options..."), this);
     optionsAction->setToolTip(tr("Modify configuration options for FlapX"));
     optionsAction->setMenuRole(QAction::PreferencesRole);
@@ -365,22 +379,18 @@ void BitcoinGUI::createActions()
     connect(signMessageAction,       SIGNAL(triggered()), this, SLOT(gotoSignMessageTab()));
     connect(verifyMessageAction,     SIGNAL(triggered()), this, SLOT(gotoVerifyMessageTab()));
     /* zeewolf: Hot swappable wallet themes */
-    if (themesList.count()>0)
+    // One checkable entry per theme; the active one is ticked
+    themeActionGroup = new QActionGroup(this);
+    themeActionGroup->setExclusive(true);
+    foreach (const QString &theme, themesList)
     {
-        QSignalMapper* signalMapper = new QSignalMapper (this) ;
-
-        // Add custom themes (themes directory)
-        for( int i=0; i < themesList.count(); i++ )
-        {
-            QString theme=themesList[i];
-            customActions[i] = new QAction(QIcon(":/icons/options"), theme, this);
-            customActions[i]->setToolTip(QString("Switch to " + theme + " theme"));
-            customActions[i]->setStatusTip(QString("Switch to " + theme + " theme"));
-            signalMapper->setMapping(customActions[i], theme);
-            connect(customActions[i], SIGNAL(triggered()), signalMapper, SLOT (map()));
-        }
-        connect(signalMapper, SIGNAL(mapped(QString)), this, SLOT(changeTheme(QString)));
+        QAction *themeAction = new QAction(theme, themeActionGroup);
+        themeAction->setCheckable(true);
+        themeAction->setData(theme);
+        themeAction->setChecked(theme == selectedTheme);
+        themeAction->setStatusTip(tr("Switch to the %1 theme").arg(theme));
     }
+    connect(themeActionGroup, SIGNAL(triggered(QAction*)), this, SLOT(themeActionTriggered(QAction*)));
     /* /zeewolf: Hot swappable wallet themes */
 
 }
@@ -411,19 +421,13 @@ void BitcoinGUI::createMenuBar()
     settings->addAction(lockWalletAction);
 	settings->addAction(charityAction);
     settings->addSeparator();
-    settings->addAction(darkModeAction);
     settings->addAction(optionsAction);
     settings->addSeparator();
     settings->addAction(calcAction);
     
     /* zeewolf: Hot swappable wallet themes */
-    if (themesList.count()>0)
-    {
-        QMenu *themes = appMenuBar->addMenu(tr("T&hemes"));
-        for (int i = 0; i < themesList.count(); i++) {
-            themes->addAction(customActions[i]);
-        }
-    }
+    QMenu *themes = appMenuBar->addMenu(tr("T&hemes"));
+    themes->addActions(themeActionGroup->actions());
     /* /zeewolf: Hot swappable wallet themes */
 
     QMenu *help = appMenuBar->addMenu(tr("&Help"));
@@ -446,6 +450,7 @@ void BitcoinGUI::createToolBars()
     toolbar->addAction(historyAction);
     toolbar->addAction(addressBookAction);
     toolbar->addAction(shoppingAction);
+    toolbar->addAction(explorerAction);
 
     QToolBar *toolbar2 = addToolBar(tr("Actions toolbar"));
     toolbar2->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
@@ -824,6 +829,15 @@ void BitcoinGUI::gotoShoppingPage()
     centralWidget->setCurrentWidget(shoppingPage);
 }
 
+void BitcoinGUI::gotoExplorerPage()
+{
+    explorerAction->setChecked(true);
+    centralWidget->setCurrentWidget(explorerPage);
+
+    exportAction->setEnabled(false);
+    disconnect(exportAction, SIGNAL(triggered()), 0, 0);
+}
+
 void BitcoinGUI::gotoReceiveCoinsPage()
 {
     receiveCoinsAction->setChecked(true);
@@ -1102,16 +1116,24 @@ void BitcoinGUI::updateStakingIcon()
     }
 }
 
-void BitcoinGUI::toggleDarkMode(bool fDark)
+void BitcoinGUI::paintEvent(QPaintEvent *event)
 {
-    GUIUtil::applyDarkMode(fDark);
-    QSettings().setValue("fDarkMode", fDark);
-    // A wallet theme (Themes menu) goes on top of the base look again
-    if (!selectedTheme.isEmpty() && selectedTheme != "Default")
-        changeTheme(selectedTheme);
-    // Refresh the Network box so its colours match
-    if (overviewPage)
-        overviewPage->updateStatistics();
+    QMainWindow::paintEvent(event);
+
+    // Same as the explorer's background: a navy glow centred above the top edge
+    // (ellipse at 50% -20%), fading into the background 60% of the way to the far corner.
+    // "Lighten" only brightens, so the starfield under it stays visible.
+    const QRectF area = rect();
+    const QPointF centre(area.width() / 2.0, -0.2 * area.height());
+    const double farCorner = std::sqrt(std::pow(area.width() / 2.0, 2) + std::pow(1.2 * area.height(), 2));
+
+    QRadialGradient glow(centre, 0.6 * farCorner);
+    glow.setColorAt(0.0, QColor(24, 40, 74));
+    glow.setColorAt(1.0, QColor(11, 18, 32));
+
+    QPainter painter(this);
+    painter.setCompositionMode(QPainter::CompositionMode_Lighten);
+    painter.fillRect(event->rect(), glow);
 }
 
 void BitcoinGUI::animateStakingIcon()
@@ -1155,119 +1177,93 @@ void BitcoinGUI::calcClicked()
 }
 
 /* zeewolf: Hot swappable wallet themes */
+// Name of the built-in default theme (res/flapxcoin.qss, compiled into the wallet)
+static const QString FLAPXCOIN_THEME = "FlapXCoin";
+
+void BitcoinGUI::themeActionTriggered(QAction *action)
+{
+    changeTheme(action->data().toString());
+}
+
 void BitcoinGUI::changeTheme(QString theme)
 {
-    // load Default theme first (if present) to apply default styles
-    loadTheme("Default");
-
-    if (theme != "Default") {
-        loadTheme(theme);
-    }
+    loadTheme(theme);
 }
 
 void BitcoinGUI::loadTheme(QString theme)
 {
-    // template variables : key => value
-    QMap<QString, QString> variables;
+    QString styleSheet;
 
-    // path to selected theme dir - for simpler use, just use $theme-dir in qss : url($theme-dir/image.png)
-    QString themeDir = themesDir + "/" + theme;
-
-    // if theme selected
-    if (theme != "") {
-        QFile qss(themeDir + "/styles.qss");
-        // open qss
-        if (qss.open(QFile::ReadOnly))
-        {
-            // read stylesheet
-            QString styleSheet = QString(qss.readAll());
-            QTextStream in(&qss);
-            // rewind
-            in.seek(0);
-            bool readingVariables = false;
-
-            // seek for variables
-            while(!in.atEnd()) {
-                QString line = in.readLine();
-                // variables starts here
-                if (line == "/** [VARS]") {
-                    readingVariables = true;
-                }
-                // variables end here
-                if (line == "[/VARS] */") {
-                    break;
-                }
-                // if we're reading variables - store them in a map
-                if (readingVariables == true) {
-                    // skip empty lines
-                    if (line.length()>3 && line.contains('=')) {
-                        QStringList fields = line.split("=");
-                        QString var = fields.at(0).trimmed();
-                        QString value = fields.at(1).trimmed();
-                        variables[var] = value;
-                    }
-                }
-            }
-
-            // replace path to themes dir
-            styleSheet.replace("$theme-dir", themeDir);
-            styleSheet.replace("$themes-dir", themesDir);
-
-            QMapIterator<QString, QString> variable(variables);
-            variable.toBack();
-            // iterate backwards to prevent overwriting variables
-            while (variable.hasPrevious()) {
-                variable.previous();
-                // replace variables
-                styleSheet.replace(variable.key(), variable.value());
-            }
-
-            qss.close();
-        }
-    } else {
-        // If no theme name is given, go back to the standard FlapX style
-        qApp->setStyleSheet(GUIUtil::flapxStyleSheet());
+    // Extra themes live in <themes dir>/<name>/styles.qss and may use $theme-dir for their own files
+    if (theme != FLAPXCOIN_THEME && !themesDir.isEmpty())
+    {
+        QString themeDir = themesDir + "/" + theme;
+        styleSheet = GUIUtil::loadStyleSheet(themeDir + "/styles.qss", themeDir);
     }
 
-    // set selected theme and store it in registry
+    // FlapXCoin, or a theme that is missing or unreadable: use the built-in look
+    if (styleSheet.isEmpty())
+    {
+        theme = FLAPXCOIN_THEME;
+        styleSheet = GUIUtil::flapxStyleSheet();
+    }
+
+    qApp->setStyleSheet(styleSheet);
+
+    // remember the choice and tick it in the Themes menu
     selectedTheme = theme;
     QSettings settings;
     settings.setValue("Template", selectedTheme);
+
+    if (themeActionGroup)
+    {
+        foreach (QAction *action, themeActionGroup->actions())
+            action->setChecked(action->data().toString() == selectedTheme);
+    }
 }
 
 void BitcoinGUI::listThemes(QStringList& themes)
 {
-    QDir currentDir(qApp->applicationDirPath());
-    // try app dir
-    if (currentDir.cd("themes")) {
-    // got it! (win package)
-    } else if (currentDir.cd("src/qt/res/themes")) {
-        // got it
-    } else if (currentDir.cd("../src/qt/res/themes")) {
-        // got it
-    } else {
-        // themes not found :(
-        return;
-    }
-    themesDir = currentDir.path();
-    currentDir.setFilter(QDir::Dirs);
-    QStringList entries = currentDir.entryList();
-    for( QStringList::ConstIterator entry=entries.begin(); entry!=entries.end(); ++entry )
+    // The built-in theme is always available and always first
+    themes.clear();
+    themes.append(FLAPXCOIN_THEME);
+
+    // Extra themes: a "themes" folder in the data directory, next to the wallet,
+    // or in the source tree when running a development build
+    QStringList searchDirs;
+    searchDirs << QString::fromStdString((GetDataDir(false) / "themes").string())
+               << qApp->applicationDirPath() + "/themes"
+               << qApp->applicationDirPath() + "/src/qt/res/themes"
+               << qApp->applicationDirPath() + "/../src/qt/res/themes";
+
+    themesDir.clear();
+    foreach (const QString &dirPath, searchDirs)
     {
-        QString themeName=*entry;
-        if(themeName != tr(".") && themeName != tr(".."))
+        QDir dir(dirPath);
+        if (dir.exists())
         {
-            themes.append(themeName);
+            themesDir = dir.absolutePath();
+            break;
         }
     }
 
-    // get selected theme from registry (if any)
+    if (!themesDir.isEmpty())
+    {
+        QDir dir(themesDir);
+        foreach (const QString &entry, dir.entryList(QDir::Dirs | QDir::NoDotAndDotDot, QDir::Name))
+        {
+            // a theme folder needs a styles.qss, and can't reuse the built-in name
+            if (entry.compare(FLAPXCOIN_THEME, Qt::CaseInsensitive) != 0 && QFile::exists(dir.filePath(entry + "/styles.qss")))
+                themes.append(entry);
+        }
+    }
+
+    // Saved theme from settings; old "Default" and unknown names fall back to FlapXCoin
     QSettings settings;
     selectedTheme = settings.value("Template").toString();
-    // or use default theme - Default
-    if (selectedTheme=="") {
-        selectedTheme = "Default";
-    }
+    if (!themes.contains(selectedTheme))
+        selectedTheme = FLAPXCOIN_THEME;
+
     // load it!
     loadTheme(selectedTheme);
 }

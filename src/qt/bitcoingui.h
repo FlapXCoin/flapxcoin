@@ -13,6 +13,7 @@ class TransactionView;
 class OverviewPage;
 class AddressBookPage;
 class ShoppingPage;
+class ExplorerPage;
 class SendCoinsDialog;
 class SignVerifyMessageDialog;
 class Notificator;
@@ -29,6 +30,7 @@ class QModelIndex;
 class QProgressBar;
 class QStackedWidget;
 class QActionGroup;
+class QPaintEvent;
 class QUrl;
 QT_END_NAMESPACE
 
@@ -58,6 +60,8 @@ protected:
     void closeEvent(QCloseEvent *event);
     void dragEnterEvent(QDragEnterEvent *event);
     void dropEvent(QDropEvent *event);
+    /** Soft navy glow at the top of the window, over the starfield (matches the explorer) */
+    void paintEvent(QPaintEvent *event);
 
 private:
     ClientModel *clientModel;
@@ -69,6 +73,7 @@ private:
     QWidget *transactionsPage;
     AddressBookPage *addressBookPage;
     ShoppingPage *shoppingPage;
+    ExplorerPage *explorerPage;
     AddressBookPage *receiveCoinsPage;
     SendCoinsDialog *sendCoinsPage;
     SignVerifyMessageDialog *signVerifyMessageDialog;
@@ -88,6 +93,7 @@ private:
     QAction *sendCoinsAction;
     QAction *addressBookAction;
     QAction *shoppingAction;
+    QAction *explorerAction;
     QAction *signMessageAction;
     QAction *verifyMessageAction;
     QAction *aboutAction;
@@ -105,7 +111,6 @@ private:
     QAction *openRPCConsoleAction;
     QAction *charityAction;
     QAction *calcAction;
-    QAction *darkModeAction;
 
     QSystemTrayIcon *trayIcon;
     Notificator *notificator;
@@ -126,10 +131,11 @@ private:
 
     /* Themes support */
     QString selectedTheme;
+    // FlapXCoin (built in) first, then any folders found in the themes directory
     QStringList themesList;
-    // Path to directory where all themes are (usable for some common images?...)
+    // Directory holding extra themes, one folder per theme with a styles.qss (empty if none)
     QString themesDir;
-    QAction *customActions[100];
+    QActionGroup *themeActionGroup;
     /* /Themes support */
 
     /** Create the main UI actions. */
@@ -174,6 +180,8 @@ private slots:
     void gotoAddressBookPage();
     /** Switch to shopping page */
     void gotoShoppingPage();
+    /** Switch to the built-in block explorer page */
+    void gotoExplorerPage();
     /** Switch to receive coins page */
     void gotoReceiveCoinsPage();
     /** Switch to send coins page */
@@ -217,8 +225,6 @@ private slots:
 
     void updateWeight();
     void updateStakingIcon();
-    /** Switch dark mode on or off and remember the choice */
-    void toggleDarkMode(bool fDark);
     /** Draws the next frame of the staking animation */
     void animateStakingIcon();
 
@@ -227,10 +233,11 @@ private slots:
 
     void charityClicked(QString addr = "");
 
-    /** Load external QSS stylesheet */
+    /** Themes: FlapXCoin is built in and the default; more can be added in a themes folder */
     void changeTheme(QString theme);
     void loadTheme(QString theme);
     void listThemes(QStringList& themes);
+    void themeActionTriggered(QAction *action);
     void keyPressEvent(QKeyEvent * e);
 };
 

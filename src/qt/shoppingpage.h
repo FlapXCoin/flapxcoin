@@ -61,12 +61,6 @@ public:
 
        void setModel(ClientModel *model);
 
-public slots:
-
-       void blockClicked();
-       void txClicked();
-       void updateExplorer(bool);
-
 private:
     Ui::ShoppingPage *ui;
 
