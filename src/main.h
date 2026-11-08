@@ -63,6 +63,12 @@ static const int DEFAULT_BLOCK_BATCH_SIZE = 500;
 static const int64_t SYNC_STALL_TIMEOUT = 60;
 /** Stall watchdog firings in a row (at the same height) before switching to another sync peer */
 static const int SYNC_STALLS_BEFORE_SWITCH = 2;
+/** Peers within this many blocks of the tallest peer all count as tall enough to sync from */
+static const int SYNC_HEIGHT_SLACK = 1000;
+/** Move off a sync peer that has run out of blocks when another peer is at least this far ahead */
+static const int SYNC_SWITCH_MARGIN = 100;
+/** Default -dbcache for the block index (txleveldb) database, in megabytes */
+static const int64_t DEFAULT_TXDB_CACHE_MB = 100;
 static const int64_t MIN_TX_FEE = 1000000;
 static const int64_t MIN_RELAY_TX_FEE = MIN_TX_FEE;
 static const int64_t DUST_SOFT_LIMIT = 100000000;

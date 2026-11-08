@@ -3540,6 +3540,7 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
             vRecv >> pfrom->strSubVer;
         if (!vRecv.empty())
             vRecv >> pfrom->nStartingHeight;
+        pfrom->nKnownHeight = pfrom->nStartingHeight;
 
         // Disconnect if we connected to ourself
         if (nNonce == nLocalHostNonce && nNonce > 1)
@@ -3731,6 +3732,14 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
 
             boost::this_thread::interruption_point();
             pfrom->AddInventoryKnown(inv);
+
+            // A peer announcing a block we already have indexed has at least that height
+            if (inv.type == MSG_BLOCK)
+            {
+                map<uint256, CBlockIndex*>::iterator mi = mapBlockIndex.find(inv.hash);
+                if (mi != mapBlockIndex.end() && mi->second->nHeight > pfrom->nKnownHeight)
+                    pfrom->nKnownHeight = mi->second->nHeight;
+            }
 
             bool fAlreadyHave = AlreadyHave(txdb, inv);
             if (fDebug)
@@ -3961,6 +3970,11 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
         if (ProcessBlock(pfrom, &block))
             mapAlreadyAskedFor.erase(inv);
         if (block.nDoS) pfrom->Misbehaving(block.nDoS);
+
+        // The peer that sent this block has at least its height
+        map<uint256, CBlockIndex*>::iterator mi = mapBlockIndex.find(hashBlock);
+        if (mi != mapBlockIndex.end() && mi->second->nHeight > pfrom->nKnownHeight)
+            pfrom->nKnownHeight = mi->second->nHeight;
     }
     else if (strCommand == "getaddr")
     {
@@ -4276,7 +4290,7 @@ bool SendMessages(CNode* pto, bool fSendTrickle)
         // PushGetBlocks drops a request identical to the last one, so clear that
         // memory and ask again.
         if (!fReindex && pto->pindexLastGetBlocksBegin != NULL &&
-            (pto->nStartingHeight > nBestHeight || IsInitialBlockDownload()))
+            (pto->nKnownHeight > nBestHeight || IsInitialBlockDownload()))
         {
             int64_t nNow = GetTime();
             if (nNow - nTimeBestReceived > SYNC_STALL_TIMEOUT &&
@@ -4298,7 +4312,7 @@ bool SendMessages(CNode* pto, bool fSendTrickle)
                 else
                 {
                     printf("sync stalled at height %d (peer %s reported %d), asking again\n",
-                           nBestHeight, pto->addrName.c_str(), pto->nStartingHeight);
+                           nBestHeight, pto->addrName.c_str(), pto->nKnownHeight);
                     pto->pindexLastGetBlocksBegin = NULL;
                     pto->hashLastGetBlocksEnd = 0;
                     PushGetBlocks(pto, pindexBest, uint256(0));
