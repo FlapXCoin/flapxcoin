@@ -3971,9 +3971,20 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
 
         LOCK(cs_main);
 
+        int64_t nProcessStart = GetTimeMicros();
         if (ProcessBlock(pfrom, &block))
             mapAlreadyAskedFor.erase(inv);
         if (block.nDoS) pfrom->Misbehaving(block.nDoS);
+
+        // Where the time goes while syncing: the gap between blocks arriving
+        // from the network, how long this one sat in our queue, and how long
+        // we spent checking and storing it.
+        static int64_t nPrevBlockArrived = 0;
+        int64_t nProcessEnd = GetTimeMicros();
+        printf("block timing: %" PRId64 " ms since previous block arrived, queued %" PRId64 " ms, processed in %" PRId64 " ms\n",
+               nPrevBlockArrived ? (nTimeReceived - nPrevBlockArrived) / 1000 : 0,
+               (nProcessStart - nTimeReceived) / 1000, (nProcessEnd - nProcessStart) / 1000);
+        nPrevBlockArrived = nTimeReceived;
 
         // The peer that sent this block has at least its height
         map<uint256, CBlockIndex*>::iterator mi = mapBlockIndex.find(hashBlock);
