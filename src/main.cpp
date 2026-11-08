@@ -2637,9 +2637,13 @@ bool CBlock::AcceptBlock()
     if (!AddToBlockIndex(nFile, nBlockPos, hashProof))
         return error("AcceptBlock() : AddToBlockIndex failed");
 
-    // Relay inventory, but don't relay old inventory during initial block download
+    // Relay inventory, but don't relay old inventory during initial block download.
+    // While we are still catching up (our tip is more than a day old) every block
+    // we add is old news: a peer that is ahead of us already has it, and a peer
+    // behind us can't connect it and only answers with getdata and getblocks
+    // requests that keep both nodes busy.
     int nBlockEstimate = Checkpoints::GetTotalBlocksEstimate();
-    if (hashBestChain == hash)
+    if (hashBestChain == hash && GetBlockTime() > GetAdjustedTime() - 24 * 60 * 60)
     {
         LOCK(cs_vNodes);
         BOOST_FOREACH(CNode* pnode, vNodes)
