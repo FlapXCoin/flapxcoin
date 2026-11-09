@@ -5,6 +5,8 @@
 #include <QSystemTrayIcon>
 
 #include <stdint.h>
+#include <deque>
+#include <utility>
 
 class TransactionTableModel;
 class ClientModel;
@@ -122,6 +124,16 @@ private:
     /** Keep track of previous number of blocks, to detect progress */
     int prevBlocks;
 
+    /** Time-left estimate while syncing: (ms timestamp, height) samples from
+        the last few minutes, the tallest peer's height and the text shown */
+    QTimer *syncEstimateTimer;
+    std::deque<std::pair<qint64, int> > syncSamples;
+    int syncTargetHeight;
+    QString syncEstimateText;
+    QString syncRateText;
+    /** Put the current estimate on the progress bar (block-based) */
+    void applySyncEstimate(int count);
+
     uint64_t nWeight;
 
 	bool fStakeForCharity;
@@ -172,6 +184,8 @@ public slots:
     void handleURI(QString strURI);
 
 private slots:
+    /** Recompute the time-left estimate (every few seconds, cheap) */
+    void updateSyncEstimate();
     /** Switch to overview (home) page */
     void gotoOverviewPage();
     /** Switch to history (transactions) page */

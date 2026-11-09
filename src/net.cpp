@@ -1416,6 +1416,15 @@ bool IsSyncNode(const CNode* pnode) {
     return pnode == pnodeSync;
 }
 
+int GetBestPeerHeight() {
+    int nBest = -1;
+    LOCK(cs_vNodes);
+    BOOST_FOREACH(CNode* pnode, vNodes)
+        if (pnode->fSuccessfullyConnected && !pnode->fDisconnect)
+            nBest = std::max(nBest, pnode->nKnownHeight);
+    return nBest;
+}
+
 void ReleaseSyncNode(CNode* pnode, int64_t nSeconds) {
     pnode->nSyncAvoidUntil = GetTime() + nSeconds;
     if (pnode == pnodeSync)
