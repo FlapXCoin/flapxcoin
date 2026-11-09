@@ -35,6 +35,9 @@
 #include "allocators.h"
 #include "init.h"
 #include "util.h"
+#include "main.h"
+#include "net.h"
+#include <algorithm>
 
 #ifdef Q_OS_MAC
 #include "macdockiconhandler.h"
@@ -224,6 +227,13 @@ BitcoinGUI::BitcoinGUI(QWidget *parent):
     // (the progress bar is styled by the application style sheet, GUIUtil::flapxStyleSheet)
     statusBar()->addWidget(progressBarLabel);
     statusBar()->addWidget(progressBar);
+
+    // Time-left estimate while syncing. Each tick reads two numbers without
+    // waiting on block processing, so it costs next to nothing.
+    syncTargetHeight = -1;
+    syncEstimateTimer = new QTimer(this);
+    connect(syncEstimateTimer, SIGNAL(timeout()), this, SLOT(updateSyncEstimate()));
+    syncEstimateTimer->start(SYNC_ESTIMATE_DELAY);
     statusBar()->addPermanentWidget(frameBlocks);
 
     // Clicking on a transaction on the overview page simply sends you to transaction history page
@@ -311,8 +321,8 @@ void BitcoinGUI::createActions()
     charityAction->setCheckable(true);
     tabGroup->addAction(charityAction);
 
-    calcAction = new QAction(QIcon(":/icons/bitcoin"), tr("&PIR Calculator"), this);
-    calcAction->setToolTip(tr("Open PIR Calculator"));
+    calcAction = new QAction(QIcon(":/icons/bitcoin"), tr("&Interest Estimate..."), this);
+    calcAction->setToolTip(tr("Estimate the staking interest on an amount of FLAPX"));
 
     connect(overviewAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
     connect(overviewAction, SIGNAL(triggered()), this, SLOT(gotoOverviewPage()));
@@ -671,9 +681,15 @@ void BitcoinGUI::setNumBlocks(int count)
 
         progressBarLabel->setText(tr("Synchronizing with network..."));
         progressBarLabel->setVisible(true);
-        progressBar->setFormat(tr("%1 behind").arg(timeBehindText));
-        progressBar->setMaximum(totalSecs);
-        progressBar->setValue(totalSecs - secs);
+        if (syncTargetHeight > count && !syncEstimateText.isEmpty())
+            applySyncEstimate(count);
+        else
+        {
+            // No estimate yet (just started, or no peer is ahead): how far behind
+            progressBar->setFormat(tr("%1 behind").arg(timeBehindText));
+            progressBar->setMaximum(totalSecs);
+            progressBar->setValue(totalSecs - secs);
+        }
         progressBar->setVisible(true);
 
         tooltip = tr("Catching up...") + QString("<br>") + tooltip;
@@ -685,6 +701,8 @@ void BitcoinGUI::setNumBlocks(int count)
         tooltip += tr("Last received block was generated %1 ago.").arg(timeBehindText);
         tooltip += QString("<br>");
         tooltip += tr("Transactions after this will not yet be visible.");
+        if (!syncRateText.isEmpty())
+            tooltip += QString("<br>") + syncRateText;
     }
 
     // Don't word-wrap this (fixed-width) tooltip
@@ -1168,6 +1186,83 @@ void BitcoinGUI::charityClicked(QString addr)
 
     exportAction->setEnabled(false);
     disconnect(exportAction, SIGNAL(triggered()), 0, 0);
+}
+
+// Text for a duration, rounded to what's useful for a rough estimate
+static QString FormatTimeLeft(qint64 nSecs)
+{
+    if (nSecs < 60)
+        return QObject::tr("under a minute");
+    if (nSecs < 60 * 60)
+        return QObject::tr("%n min", "", (int)((nSecs + 30) / 60));
+    if (nSecs < 48 * 60 * 60)
+    {
+        int nMins = (int)((nSecs + 30) / 60);
+        return QObject::tr("%1 h %2 min").arg(nMins / 60).arg(nMins % 60);
+    }
+    int nHours = (int)((nSecs + 1800) / 3600);
+    return QObject::tr("%1 days %2 h").arg(nHours / 24).arg(nHours % 24);
+}
+
+void BitcoinGUI::updateSyncEstimate()
+{
+    int nHeight = nBestHeightUI;
+    qint64 nNowMs = GetTimeMillis();
+
+    // Only while catching up (tip more than 90 minutes old, as the bar uses)
+    if (nHeight < 0 || nBestTimeUI >= GetTime() - 90 * 60)
+    {
+        syncSamples.clear();
+        syncEstimateText.clear();
+        syncRateText.clear();
+        syncTargetHeight = -1;
+        return;
+    }
+
+    syncTargetHeight = GetBestPeerHeight();
+
+    // Average the download rate over the last few minutes so short stalls or
+    // bursts don't make the estimate jump around
+    syncSamples.push_back(std::make_pair(nNowMs, nHeight));
+    while (syncSamples.size() > 1 && nNowMs - syncSamples.front().first > SYNC_ESTIMATE_WINDOW_MS)
+        syncSamples.pop_front();
+
+    qint64 nSpanMs = syncSamples.back().first - syncSamples.front().first;
+    int nGained = syncSamples.back().second - syncSamples.front().second;
+    int nLeft = syncTargetHeight - nHeight;
+
+    if (syncTargetHeight <= nHeight)
+    {
+        syncEstimateText.clear();
+        syncRateText.clear();
+    }
+    else if (nSpanMs < 30 * 1000)
+    {
+        syncEstimateText = tr("estimating time left...");
+        syncRateText = tr("%n block(s) to go.", "", nLeft);
+    }
+    else if (nGained <= 0)
+    {
+        syncEstimateText = tr("waiting for blocks...");
+        syncRateText = tr("No blocks received in the last %n minute(s); %1 to go.", "", (int)(nSpanMs / 60000)).arg(nLeft);
+    }
+    else
+    {
+        double dRate = nGained * 1000.0 / nSpanMs;   // blocks per second
+        syncEstimateText = tr("about %1 left").arg(FormatTimeLeft((qint64)(nLeft / dRate)));
+        syncRateText = tr("Downloading %1 blocks a second, %2 blocks to go (highest peer: %3).")
+                       .arg(QString::number(dRate, 'f', dRate < 10 ? 1 : 0)).arg(nLeft).arg(syncTargetHeight);
+    }
+
+    if (progressBar->isVisible() && syncTargetHeight > nHeight && !syncEstimateText.isEmpty())
+        applySyncEstimate(nHeight);
+}
+
+void BitcoinGUI::applySyncEstimate(int count)
+{
+    progressBar->setMaximum(syncTargetHeight);
+    progressBar->setValue(std::min(count, syncTargetHeight));
+    progressBar->setFormat(syncEstimateText);
 }
 
 void BitcoinGUI::calcClicked()

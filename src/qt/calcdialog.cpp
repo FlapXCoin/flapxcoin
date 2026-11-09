@@ -13,6 +13,7 @@
 #include "walletdb.h"
 #include "main.h"
 #include "init.h"
+#include "net.h"
 
 #include <algorithm>
 #include <iomanip>
@@ -37,39 +38,34 @@ void calcDialog::setModel(ClientModel *model)
 
 }
 
-double min(double var1, double var2)
-{
-    return (var1 > var2 ? var2 : var1);
-}
-
+// Uses the same reward rule the network enforces (GetPIRRewardCoinYear and
+// GetProofOfStakeReward in main.cpp), so the estimate always matches what a
+// stake of this size actually earns at the current block height.
 void calcDialog::pushButtonClicked()
+{
+    bool fOk = false;
+    double dAmount = ui->blockSizeEdit->text().trimmed().remove(',').toDouble(&fOk);
+    if (!fOk || dAmount < 0 || dAmount > (double)MAX_MONEY / COIN)
     {
-         QString strUserSize = ui->blockSizeEdit->text();
-        double dUserBlock = strUserSize.toDouble();
-        double dReward = 0;
-
-        if(dUserBlock >= 0 && dUserBlock < 1000) {
-        dReward  = (((dUserBlock - 0.0) / 1000.0) * 5 + 15);
-        }
-        else
-        if(dUserBlock >= 1000 && dUserBlock < 10000) {
-        dReward  = (((dUserBlock - 1000.0) / 9000.0) * 5 + 13);
-        }
-        else
-        if(dUserBlock >= 10000 && dUserBlock < 100000) {
-        dReward  = (((dUserBlock - 10000.0) / 90000.0) * 10 + 10);
-        }
-        else
-        if(dUserBlock >= 100000 && dUserBlock < 1000000) {
-        dReward  = (((dUserBlock - 100000.0) / 900000.0) * 50 + 13);
-        }
-        else
-        if(dUserBlock >= 1000000) {
-        dReward  = (min(((dUserBlock - 1000000.0) / 9000000.0), 1) * 5 + 15);
-        }
-        ui->yearlyAPR->setText(QString::number(dReward));
-        ui->dayResult->setText(QString::number(dReward / 36500.0 * dUserBlock));
+        ui->yearlyAPR->setText("-");
+        ui->dayResult->setText(tr("Enter an amount of FLAPX"));
+        return;
     }
+
+    // Height decides the reward phase. While syncing our own height is old,
+    // so use the tallest peer's if that is higher.
+    int nHeight = std::max((int)nBestHeightUI, GetBestPeerHeight());
+    int64_t nValue = (int64_t)(dAmount * COIN + 0.5);
+    double dRate = (double)GetPIRRewardCoinYear(nValue, nHeight) / CENT;   // percent per year
+
+    // Reward = coin-days x yearly rate / 365.24 (GetProofOfStakeReward)
+    double dDaily = dAmount * dRate / 100.0 / 365.2424;
+    ui->yearlyAPR->setText(QString::number(dRate, 'f', 2));
+    ui->dayResult->setText(tr("%1 FLAPX a day, about %2 a month and %3 a year")
+                           .arg(QString::number(dDaily, 'f', 4))
+                           .arg(QString::number(dDaily * 30.44, 'f', 2))
+                           .arg(QString::number(dDaily * 365.2424, 'f', 2)));
+}
 
 void calcDialog::on_buttonBox_accepted()
 {

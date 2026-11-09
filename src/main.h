@@ -10,6 +10,7 @@
 #define BITCOIN_MAIN_H
 
 #include <stdint.h>
+#include <atomic>
 
 #include "core.h"
 #include "bignum.h"
@@ -148,6 +149,10 @@ extern int nCoinstakeMaturity;
 
 extern CBlockIndex* pindexGenesisBlock;
 extern int nBestHeight;
+// Copies of the tip's height and time the GUI can read at any moment without
+// waiting for cs_main (which block processing holds almost constantly while syncing)
+extern std::atomic<int> nBestHeightUI;
+extern std::atomic<int64_t> nBestTimeUI;
 extern uint256 nBestChainTrust;
 extern uint256 nBestInvalidTrust;
 extern uint256 hashBestChain;

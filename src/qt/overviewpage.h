@@ -65,7 +65,7 @@ public slots:
     void lockWalletToggle();
     void updateStatistics();
     void showSyncing();
-    void setNumBlocks(int count);
+    void updateLiveHeight();
     void updatePrevious(int, int, int, double, double, double, double, QString, int, int);
 
 signals:

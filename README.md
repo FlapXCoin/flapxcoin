@@ -101,6 +101,24 @@ opening it with them: once a 5.3 build has written to a wallet, older builds
 made with Berkeley DB 4.8 can no longer open it.
 
 ##################################################################################################
+Explorer server in one command (Ubuntu 22.04 / 24.04)
+##################################################################################################
+
+On a fresh Ubuntu server, logged in as your normal (sudo) user:
+
+```
+bash <(curl -fsSL https://raw.githubusercontent.com/nerdlabs-dev/flapxcoin-dev/modern-linux-build/contrib/setup-explorer-vm.sh)
+```
+
+It builds flapxd and runs it as a systemd service, installs MongoDB 8.0 and
+Node.js 24, sets up the FlapX explorer (nerdlabs-dev/eiquidus-lab) under pm2 on
+port 3001 with cron jobs that keep it synced, and generates the RPC and database
+passwords. Run it again to update everything. Options and details are at the
+top of contrib/setup-explorer-vm.sh (e.g. ADDNODES="ip" to add your own peers,
+SKIP_EXPLORER=1 for a plain node). MongoDB needs a CPU with AVX: on Proxmox/KVM
+set the VM's CPU type to "host".
+
+##################################################################################################
 Building from source on Ubuntu / Debian
 ##################################################################################################
 

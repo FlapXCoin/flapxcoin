@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>PIR Calculator</string>
+   <string>Interest Estimate</string>
   </property>
   <property name="modal">
    <bool>true</bool>
@@ -24,7 +24,7 @@
        <item row="1" column="0">
         <widget class="QLabel" name="label_3">
          <property name="text">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span&gt;Yearly APR&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span&gt;Yearly interest rate&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
         </widget>
        </item>
@@ -34,7 +34,7 @@
           <number>1</number>
          </property>
          <property name="text">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span&gt;Daily interest:&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span&gt;Estimated interest:&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="textFormat">
           <enum>Qt::AutoText</enum>
@@ -128,7 +128,7 @@
       <number>1</number>
      </property>
      <property name="text">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span&gt;This calculator gives you the daily return and your yearly APR based on the amount entered.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;Enter an amount below and click Calculate.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span&gt;Estimates the staking interest earned on an amount of FLAPX, using the same reward rates the network applies at the current block height.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;The rate depends on the size of each stake, not your total balance: coins stake in separate pieces, and each piece earns the rate for its own size. Full interest needs the coins to stake within 30 days; coins left longer than that keep earning, but more slowly.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span&gt;Enter an amount below and click Calculate.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
@@ -162,7 +162,7 @@
       </font>
      </property>
      <property name="text">
-      <string>PIR Calculator</string>
+      <string>Interest Estimate</string>
      </property>
      <property name="scaledContents">
       <bool>false</bool>

@@ -1,4 +1,7 @@
 #include "rpcconsole.h"
+#include "main.h"
+#include "guiconstants.h"
+#include <QTimer>
 #include "ui_rpcconsole.h"
 
 #include "clientmodel.h"
@@ -274,6 +277,10 @@ void RPCConsole::setClientModel(ClientModel *model)
 
         setNumBlocks(model->getNumBlocks());
         connect(model, SIGNAL(numBlocksChanged(int)), this, SLOT(setNumBlocks(int)));
+        // Block count 10 times a second, read without locking the core
+        QTimer *liveHeightTimer = new QTimer(this);
+        connect(liveHeightTimer, SIGNAL(timeout()), this, SLOT(updateLiveHeight()));
+        liveHeightTimer->start(LIVE_HEIGHT_DELAY);
 
         // Provide initial values
         ui->clientVersion->setText(model->formatFullVersion());
@@ -364,6 +371,13 @@ void RPCConsole::setNumBlocks(int count)
     //    ui->totalBlocks->setText(clientModel->getNumBlocksOfPeers() == 0 ? tr("N/A") : QString::number(clientModel->getNumBlocksOfPeers()));
         ui->lastBlockTime->setText(clientModel->getLastBlockDate().toString());
     // }
+}
+
+void RPCConsole::updateLiveHeight()
+{
+    int nHeight = nBestHeightUI;
+    if (nHeight >= 0 && ui->numberOfBlocks->text() != QString::number(nHeight))
+        ui->numberOfBlocks->setText(QString::number(nHeight));
 }
 
 void RPCConsole::on_lineEdit_returnPressed()
