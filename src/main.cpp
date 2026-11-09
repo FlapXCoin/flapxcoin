@@ -50,6 +50,17 @@ CTxMemPool mempool;
 unsigned int nTransactionsUpdated = 0;
 
 map<uint256, CBlockIndex*> mapBlockIndex;
+
+// Per-block time spent in each part of checking and storing a received block
+// (microseconds), reset for every block and written to the "block timing" line
+enum BlockPhase {
+    PH_CHECK, PH_WORK, PH_STAKE, PH_WRITE, PH_MODIFIER, PH_INDEX,
+    PH_FETCH, PH_INPUTS, PH_COINAGE, PH_WALLET, PH_CONNECT, PH_COMMIT, PH_COUNT
+};
+static int64_t nBlockPhaseUs[PH_COUNT];
+#define TIME_PHASE(phase, expr) \
+    ([&]() { int64_t nPhStart = GetTimeMicros(); bool fPhRet = (expr); \
+             nBlockPhaseUs[phase] += GetTimeMicros() - nPhStart; return fPhRet; }())
 set<pair<COutPoint, unsigned int> > setStakeSeen;
 libzerocoin::Params* ZCParams;
 
@@ -1959,7 +1970,7 @@ bool CBlock::ConnectBlock(CTxDB& txdb, CBlockIndex* pindex, bool fJustCheck)
         else
         {
             bool fInvalid;
-            if (!tx.FetchInputs(txdb, mapQueuedChanges, true, false, mapInputs, fInvalid))
+            if (!TIME_PHASE(PH_FETCH, tx.FetchInputs(txdb, mapQueuedChanges, true, false, mapInputs, fInvalid)))
                 return false;
 
             // Add in sigops done by pay-to-script-hash inputs;
@@ -1978,7 +1989,7 @@ bool CBlock::ConnectBlock(CTxDB& txdb, CBlockIndex* pindex, bool fJustCheck)
             if (tx.IsCoinStake())
                 nStakeReward = nTxValueOut - nTxValueIn;
 
-            if (!tx.ConnectInputs(txdb, mapInputs, mapQueuedChanges, posThisTx, pindex, true, false, flags))
+            if (!TIME_PHASE(PH_INPUTS, tx.ConnectInputs(txdb, mapInputs, mapQueuedChanges, posThisTx, pindex, true, false, flags)))
                 return false;
         }
 
@@ -2005,7 +2016,7 @@ bool CBlock::ConnectBlock(CTxDB& txdb, CBlockIndex* pindex, bool fJustCheck)
         // ppcoin: coin stake tx earns reward instead of paying fee
         uint64_t nCoinAge;
         int64_t nCoinValue;
-        if (!vtx[1].GetCoinAge(txdb, nTime, nCoinAge, nCoinValue))
+        if (!TIME_PHASE(PH_COINAGE, vtx[1].GetCoinAge(txdb, nTime, nCoinAge, nCoinValue)))
             return error("ConnectBlock() : %s unable to get coin age for coinstake", vtx[1].GetHash().ToString().c_str());
 
         int64_t nCalculatedStakeReward = GetProofOfStakeReward(nCoinAge, nCoinValue, nFees, pindex->nHeight);
@@ -2042,7 +2053,11 @@ bool CBlock::ConnectBlock(CTxDB& txdb, CBlockIndex* pindex, bool fJustCheck)
 
     // Watch for transactions paying to me
     BOOST_FOREACH(CTransaction& tx, vtx)
-        SyncWithWallets(tx, this);
+        {
+            int64_t nWalletStart = GetTimeMicros();
+            SyncWithWallets(tx, this);
+            nBlockPhaseUs[PH_WALLET] += GetTimeMicros() - nWalletStart;
+        }
 
     return true;
 }
@@ -2154,13 +2169,13 @@ bool CBlock::SetBestChainInner(CTxDB& txdb, CBlockIndex *pindexNew)
     uint256 hash = GetHash();
 
     // Adding to current best branch
-    if (!ConnectBlock(txdb, pindexNew) || !txdb.WriteHashBestChain(hash))
+    if (!TIME_PHASE(PH_CONNECT, ConnectBlock(txdb, pindexNew)) || !txdb.WriteHashBestChain(hash))
     {
         txdb.TxnAbort();
         InvalidChainFound(pindexNew);
         return false;
     }
-    if (!txdb.TxnCommit())
+    if (!TIME_PHASE(PH_COMMIT, txdb.TxnCommit()))
         return error("SetBestChain() : TxnCommit failed");
 
     // Add to current best branch
@@ -2445,7 +2460,7 @@ bool CBlock::AddToBlockIndex(unsigned int nFile, unsigned int nBlockPos, const u
     // ppcoin: compute stake modifier
     uint64_t nStakeModifier = 0;
     bool fGeneratedStakeModifier = false;
-    if (!ComputeNextStakeModifier(pindexNew->pprev, nStakeModifier, fGeneratedStakeModifier))
+    if (!TIME_PHASE(PH_MODIFIER, ComputeNextStakeModifier(pindexNew->pprev, nStakeModifier, fGeneratedStakeModifier)))
         return error("AddToBlockIndex() : ComputeNextStakeModifier() failed");
     pindexNew->SetStakeModifier(nStakeModifier, fGeneratedStakeModifier);
     pindexNew->nStakeModifierChecksum = GetStakeModifierChecksum(pindexNew);
@@ -2459,12 +2474,14 @@ bool CBlock::AddToBlockIndex(unsigned int nFile, unsigned int nBlockPos, const u
     pindexNew->phashBlock = &((*mi).first);
 
     // Write to disk block index
+    int64_t nIndexStart = GetTimeMicros();
     CTxDB txdb;
     if (!txdb.TxnBegin())
         return false;
     txdb.WriteBlockIndex(CDiskBlockIndex(pindexNew));
     if (!txdb.TxnCommit())
         return false;
+    nBlockPhaseUs[PH_INDEX] += GetTimeMicros() - nIndexStart;
 
     // New best
     if (pindexNew->nChainTrust > nBestChainTrust)
@@ -2583,7 +2600,7 @@ bool CBlock::AcceptBlock()
     int nHeight = pindexPrev->nHeight+1;
 
     // Check proof of work
-    if (nBits != GetNextWorkRequired(pindexPrev, this, IsProofOfStake()))
+    if (!TIME_PHASE(PH_WORK, nBits == GetNextWorkRequired(pindexPrev, this, IsProofOfStake())))
         return DoS(100, error("AcceptBlock() : incorrect proof of work"));
 
     // Check timestamp against prev
@@ -2606,7 +2623,7 @@ bool CBlock::AcceptBlock()
     if (IsProofOfStake())
     {
         uint256 targetProofOfStake;
-        if (!CheckProofOfStake(vtx[1], nTime, nBits, hashProof, targetProofOfStake))
+        if (!TIME_PHASE(PH_STAKE, CheckProofOfStake(vtx[1], nTime, nBits, hashProof, targetProofOfStake)))
         {
             printf("WARNING: AcceptBlock(): check proof-of-stake failed for block %s\n", hash.ToString().c_str());
             return false; // do not error here as we expect this during initial block download
@@ -2632,14 +2649,18 @@ bool CBlock::AcceptBlock()
         return error("AcceptBlock() : out of disk space");
     unsigned int nFile = -1;
     unsigned int nBlockPos = 0;
-    if (!WriteToDisk(nFile, nBlockPos))
+    if (!TIME_PHASE(PH_WRITE, WriteToDisk(nFile, nBlockPos)))
         return error("AcceptBlock() : WriteToDisk failed");
     if (!AddToBlockIndex(nFile, nBlockPos, hashProof))
         return error("AcceptBlock() : AddToBlockIndex failed");
 
-    // Relay inventory, but don't relay old inventory during initial block download
+    // Relay inventory, but don't relay old inventory during initial block download.
+    // While we are still catching up (our tip is more than a day old) every block
+    // we add is old news: a peer that is ahead of us already has it, and a peer
+    // behind us can't connect it and only answers with getdata and getblocks
+    // requests that keep both nodes busy.
     int nBlockEstimate = Checkpoints::GetTotalBlocksEstimate();
-    if (hashBestChain == hash)
+    if (hashBestChain == hash && GetBlockTime() > GetAdjustedTime() - 24 * 60 * 60)
     {
         LOCK(cs_vNodes);
         BOOST_FOREACH(CNode* pnode, vNodes)
@@ -2748,7 +2769,7 @@ bool ProcessBlock(CNode* pfrom, CBlock* pblock)
     }
 
     // Preliminary checks
-    if (!pblock->CheckBlock())
+    if (!TIME_PHASE(PH_CHECK, pblock->CheckBlock()))
         return error("ProcessBlock() : CheckBlock FAILED");
 
     // ppcoin: ask for pending sync-checkpoint if any
@@ -3540,6 +3561,7 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
             vRecv >> pfrom->strSubVer;
         if (!vRecv.empty())
             vRecv >> pfrom->nStartingHeight;
+        pfrom->nKnownHeight = pfrom->nStartingHeight;
 
         // Disconnect if we connected to ourself
         if (nNonce == nLocalHostNonce && nNonce > 1)
@@ -3731,6 +3753,14 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
 
             boost::this_thread::interruption_point();
             pfrom->AddInventoryKnown(inv);
+
+            // A peer announcing a block we already have indexed has at least that height
+            if (inv.type == MSG_BLOCK)
+            {
+                map<uint256, CBlockIndex*>::iterator mi = mapBlockIndex.find(inv.hash);
+                if (mi != mapBlockIndex.end() && mi->second->nHeight > pfrom->nKnownHeight)
+                    pfrom->nKnownHeight = mi->second->nHeight;
+            }
 
             bool fAlreadyHave = AlreadyHave(txdb, inv);
             if (fDebug)
@@ -3958,9 +3988,32 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
 
         LOCK(cs_main);
 
+        memset(nBlockPhaseUs, 0, sizeof(nBlockPhaseUs));
+        int64_t nProcessStart = GetTimeMicros();
         if (ProcessBlock(pfrom, &block))
             mapAlreadyAskedFor.erase(inv);
         if (block.nDoS) pfrom->Misbehaving(block.nDoS);
+
+        // Where the time goes while syncing: the gap between blocks arriving
+        // from the network, how long this one sat in our queue, and how long
+        // we spent checking and storing it.
+        static int64_t nPrevBlockArrived = 0;
+        int64_t nProcessEnd = GetTimeMicros();
+        printf("block timing: %" PRId64 " ms since previous block arrived, queued %" PRId64 " ms, processed in %" PRId64 " ms\n",
+               nPrevBlockArrived ? (nTimeReceived - nPrevBlockArrived) / 1000 : 0,
+               (nProcessStart - nTimeReceived) / 1000, (nProcessEnd - nProcessStart) / 1000);
+        // Breakdown of "processed" (ms): connect includes fetch, inputs, coinage and wallet
+        #define PH_MS(p) (nBlockPhaseUs[p] / 1000.0)
+        printf("block phases: check %.1f work %.1f stake %.1f write %.1f modifier %.1f index %.1f connect %.1f (fetch %.1f inputs %.1f coinage %.1f wallet %.1f) commit %.1f\n",
+               PH_MS(PH_CHECK), PH_MS(PH_WORK), PH_MS(PH_STAKE), PH_MS(PH_WRITE), PH_MS(PH_MODIFIER), PH_MS(PH_INDEX),
+               PH_MS(PH_CONNECT), PH_MS(PH_FETCH), PH_MS(PH_INPUTS), PH_MS(PH_COINAGE), PH_MS(PH_WALLET), PH_MS(PH_COMMIT));
+        #undef PH_MS
+        nPrevBlockArrived = nTimeReceived;
+
+        // The peer that sent this block has at least its height
+        map<uint256, CBlockIndex*>::iterator mi = mapBlockIndex.find(hashBlock);
+        if (mi != mapBlockIndex.end() && mi->second->nHeight > pfrom->nKnownHeight)
+            pfrom->nKnownHeight = mi->second->nHeight;
     }
     else if (strCommand == "getaddr")
     {
@@ -4276,7 +4329,7 @@ bool SendMessages(CNode* pto, bool fSendTrickle)
         // PushGetBlocks drops a request identical to the last one, so clear that
         // memory and ask again.
         if (!fReindex && pto->pindexLastGetBlocksBegin != NULL &&
-            (pto->nStartingHeight > nBestHeight || IsInitialBlockDownload()))
+            (pto->nKnownHeight > nBestHeight || IsInitialBlockDownload()))
         {
             int64_t nNow = GetTime();
             if (nNow - nTimeBestReceived > SYNC_STALL_TIMEOUT &&
@@ -4298,7 +4351,7 @@ bool SendMessages(CNode* pto, bool fSendTrickle)
                 else
                 {
                     printf("sync stalled at height %d (peer %s reported %d), asking again\n",
-                           nBestHeight, pto->addrName.c_str(), pto->nStartingHeight);
+                           nBestHeight, pto->addrName.c_str(), pto->nKnownHeight);
                     pto->pindexLastGetBlocksBegin = NULL;
                     pto->hashLastGetBlocksEnd = 0;
                     PushGetBlocks(pto, pindexBest, uint256(0));

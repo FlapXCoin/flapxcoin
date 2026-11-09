@@ -275,7 +275,18 @@ void OverviewPage::setClientModel(ClientModel *model)
         // Show warning if this is a prerelease version
         connect(model, SIGNAL(alertsChanged(QString)), this, SLOT(updateAlerts(QString)));
         updateAlerts(model->getStatusBarWarnings());
+        // Keep the Height box current while syncing (the client model already
+        // checks the block count every 250 ms and only signals when it changes)
+        connect(model, SIGNAL(numBlocksChanged(int)), this, SLOT(setNumBlocks(int)));
     }
+}
+
+// Live block count while catching up. Once caught up the 30-second statistics
+// refresh fills the Height box (and highlights a new height), as before.
+void OverviewPage::setNumBlocks(int count)
+{
+    if (pindexBest && pindexBest->GetBlockTime() < GetTime() - 60 * 60)
+        ui->heightBox->setText(QString::number(count));
 }
 
 void OverviewPage::setWalletModel(WalletModel *model)
