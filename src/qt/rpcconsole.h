@@ -39,6 +39,7 @@ private slots:
     void on_showCLOptionsButton_clicked();
 
 public slots:
+    void updateLiveHeight();
     void clear();
     void message(int category, const QString &message, bool html = false);
     /** Set number of connections shown in the UI */

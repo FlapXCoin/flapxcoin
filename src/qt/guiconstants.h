@@ -3,6 +3,8 @@
 
 /* Milliseconds between model updates */
 static const int MODEL_UPDATE_DELAY = 250;
+/* Block height display refresh while syncing, in milliseconds (10 times a second) */
+static const int LIVE_HEIGHT_DELAY = 100;
 
 /* AskPassphraseDialog -- Maximum passphrase length */
 static const int MAX_PASSPHRASE_SIZE = 1024;

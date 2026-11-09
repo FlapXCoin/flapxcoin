@@ -277,16 +277,24 @@ void OverviewPage::setClientModel(ClientModel *model)
         updateAlerts(model->getStatusBarWarnings());
         // Keep the Height box current while syncing (the client model already
         // checks the block count every 250 ms and only signals when it changes)
-        connect(model, SIGNAL(numBlocksChanged(int)), this, SLOT(setNumBlocks(int)));
+        // Live block count while syncing, read without locking the core
+        QTimer *liveHeightTimer = new QTimer(this);
+        connect(liveHeightTimer, SIGNAL(timeout()), this, SLOT(updateLiveHeight()));
+        liveHeightTimer->start(LIVE_HEIGHT_DELAY);
     }
 }
 
-// Live block count while catching up. Once caught up the 30-second statistics
-// refresh fills the Height box (and highlights a new height), as before.
-void OverviewPage::setNumBlocks(int count)
+// Live block count while catching up (10 times a second). Once caught up the
+// 30-second statistics refresh fills the Height box (and highlights a new
+// height), as before.
+void OverviewPage::updateLiveHeight()
 {
-    if (pindexBest && pindexBest->GetBlockTime() < GetTime() - 60 * 60)
-        ui->heightBox->setText(QString::number(count));
+    static int nShown = -1;
+    int nHeight = nBestHeightUI;
+    if (nHeight == nShown || nBestTimeUI >= GetTime() - 60 * 60)
+        return;
+    nShown = nHeight;
+    ui->heightBox->setText(QString::number(nHeight));
 }
 
 void OverviewPage::setWalletModel(WalletModel *model)
