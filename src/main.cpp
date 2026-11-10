@@ -3580,6 +3580,8 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
         {
             SeenLocal(addrMe);
         }
+        // Outbound peers tell us our public address; learn it once enough agree
+        LearnLocalFromPeer(pfrom);
 
         // Be shy and don't send version until we hear
         if (pfrom->fInbound)
@@ -4373,8 +4375,12 @@ bool SendMessages(CNode* pto, bool fSendTrickle)
 
         // Address refresh broadcast
         static int64_t nLastRebroadcast;
-        if (!IsInitialBlockDownload() && (GetTime() - nLastRebroadcast > 24 * 60 * 60))
+        static bool fRebroadcastLocal = false;
+        if (TakeLocalAddressChanged())
+            fRebroadcastLocal = true;  // just learned our public address: tell everyone now
+        if (!IsInitialBlockDownload() && (GetTime() - nLastRebroadcast > 24 * 60 * 60 || fRebroadcastLocal))
         {
+            fRebroadcastLocal = false;
             LOCK(cs_vNodes);
             BOOST_FOREACH(CNode* pnode, vNodes)
             {

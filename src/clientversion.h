@@ -9,7 +9,7 @@
 #define CLIENT_VERSION_MAJOR       2   //Manditory
 #define CLIENT_VERSION_MINOR       9   //Checkpoint update
 #define CLIENT_VERSION_REVISION    0   //GUI Update
-#define CLIENT_VERSION_BUILD       5   //Development (Ignore)
+#define CLIENT_VERSION_BUILD       6   //Development (Ignore)
 
 // Set to true for release, false for prerelease or test build
 #define CLIENT_VERSION_IS_RELEASE  true
