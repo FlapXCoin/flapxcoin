@@ -2,11 +2,18 @@
 #define RPCCONSOLE_H
 
 #include <QDialog>
+#include <vector>
 
 namespace Ui {
     class RPCConsole;
 }
 class ClientModel;
+class CNodeStats;
+class TrafficGraphWidget;
+class QTableWidget;
+class QTextBrowser;
+class QLabel;
+class QWidget;
 
 /** Local Bitcoin RPC console. */
 class RPCConsole: public QDialog
@@ -37,6 +44,12 @@ private slots:
     void on_openDebugLogfileButton_clicked();
     /** display messagebox with program parameters (same as bitcoin-qt --help) */
     void on_showCLOptionsButton_clicked();
+    /** Peers tab: reload the peer list (only while the tab is shown) */
+    void refreshPeers();
+    /** Peers tab: show the details of the selected peer */
+    void showPeerDetails();
+    /** Network Traffic tab: read the byte totals and feed the graph */
+    void sampleTraffic();
 
 public slots:
     void updateLiveHeight();
@@ -61,7 +74,23 @@ private:
     QStringList history;
     int historyPtr;
 
+    // Peers tab
+    QWidget *peersTab;
+    QTableWidget *peerTable;
+    QTextBrowser *peerDetails;
+    QLabel *peerSummary;
+    std::vector<CNodeStats> *peerStats;
+    QString selectedPeer;
+
+    // Network Traffic tab
+    QWidget *trafficTab;
+    TrafficGraphWidget *trafficGraph;
+    QLabel *trafficRecvLabel;
+    QLabel *trafficSentLabel;
+
     void startExecutor();
+    void setupPeersTab();
+    void setupTrafficTab();
 };
 
 #endif // RPCCONSOLE_H

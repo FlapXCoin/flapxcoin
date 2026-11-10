@@ -15,6 +15,16 @@
 #include <QKeyEvent>
 #include <QUrl>
 #include <QScrollBar>
+#include <QTableWidget>
+#include <QTextBrowser>
+#include <QHeaderView>
+#include <QSplitter>
+#include <QVBoxLayout>
+#include <QHBoxLayout>
+#include <QLabel>
+
+#include "net.h"
+#include "trafficgraphwidget.h"
 
 #include <openssl/crypto.h>
 
@@ -25,6 +35,28 @@ const int CONSOLE_SCROLLBACK = 50;
 const int CONSOLE_HISTORY = 50;
 
 const QSize ICON_SIZE(24, 24);
+
+// Peers tab refresh and traffic sampling interval. Traffic is sampled even
+// while the window is closed (two counter reads), so the graph has history.
+static const int PEER_REFRESH_MS = 2000;
+
+enum PeerColumn { PC_ADDRESS, PC_DIRECTION, PC_VERSION, PC_HEIGHT, PC_PING, PC_SENT, PC_RECV, PC_COUNT };
+
+/** Table cell that sorts by a number stored in Qt::UserRole when there is one,
+ * so "1.2 MB" sorts after "900 kB" */
+class PeerItem : public QTableWidgetItem
+{
+public:
+    explicit PeerItem(const QString &text) : QTableWidgetItem(text) {}
+    PeerItem(const QString &text, double sortKey) : QTableWidgetItem(text) { setData(Qt::UserRole, sortKey); }
+    bool operator<(const QTableWidgetItem &other) const
+    {
+        QVariant a = data(Qt::UserRole), b = other.data(Qt::UserRole);
+        if (a.isValid() && b.isValid())
+            return a.toDouble() < b.toDouble();
+        return QTableWidgetItem::operator<(other);
+    }
+};
 
 const struct {
     const char *url;
@@ -191,9 +223,19 @@ void RPCExecutor::request(const QString &command)
 RPCConsole::RPCConsole(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::RPCConsole),
-    historyPtr(0)
+    clientModel(0),
+    historyPtr(0),
+    peerStats(new std::vector<CNodeStats>())
 {
     ui->setupUi(this);
+
+    setupPeersTab();
+    setupTrafficTab();
+    QTimer *peerTimer = new QTimer(this);
+    connect(peerTimer, SIGNAL(timeout()), this, SLOT(refreshPeers()));
+    connect(peerTimer, SIGNAL(timeout()), this, SLOT(sampleTraffic()));
+    peerTimer->start(PEER_REFRESH_MS);
+    sampleTraffic();
 
 #ifndef Q_OS_MAC
     ui->openDebugLogfileButton->setIcon(QIcon(":/icons/export"));
@@ -227,6 +269,7 @@ RPCConsole::RPCConsole(QWidget *parent) :
 RPCConsole::~RPCConsole()
 {
     emit stopExecutor();
+    delete peerStats;
     delete ui;
 }
 
@@ -447,6 +490,206 @@ void RPCConsole::on_tabWidget_currentChanged(int index)
     {
         ui->lineEdit->setFocus();
     }
+    else if(ui->tabWidget->widget(index) == peersTab)
+    {
+        refreshPeers();
+    }
+}
+
+void RPCConsole::setupPeersTab()
+{
+    peersTab = new QWidget();
+    QVBoxLayout *layout = new QVBoxLayout(peersTab);
+
+    peerSummary = new QLabel();
+    layout->addWidget(peerSummary);
+
+    QSplitter *splitter = new QSplitter(Qt::Vertical);
+    peerTable = new QTableWidget(0, PC_COUNT);
+    peerTable->setHorizontalHeaderLabels(QStringList() << tr("Address") << tr("Direction") << tr("Version")
+                                         << tr("Height") << tr("Ping") << tr("Sent") << tr("Received"));
+    peerTable->setSelectionBehavior(QAbstractItemView::SelectRows);
+    peerTable->setSelectionMode(QAbstractItemView::SingleSelection);
+    peerTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    peerTable->setAlternatingRowColors(true);
+    peerTable->setShowGrid(false);
+    peerTable->verticalHeader()->hide();
+    peerTable->setSortingEnabled(true);
+    peerTable->sortByColumn(PC_DIRECTION, Qt::AscendingOrder);
+#if QT_VERSION >= 0x050000
+    peerTable->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+    peerTable->horizontalHeader()->setSectionResizeMode(PC_ADDRESS, QHeaderView::Stretch);
+#else
+    peerTable->horizontalHeader()->setResizeMode(QHeaderView::ResizeToContents);
+    peerTable->horizontalHeader()->setResizeMode(PC_ADDRESS, QHeaderView::Stretch);
+#endif
+    connect(peerTable, SIGNAL(itemSelectionChanged()), this, SLOT(showPeerDetails()));
+    splitter->addWidget(peerTable);
+
+    peerDetails = new QTextBrowser();
+    peerDetails->setOpenLinks(false);
+    peerDetails->setHtml("<p style='color:#8a9bb8'>" + tr("Select a peer to see its details.") + "</p>");
+    splitter->addWidget(peerDetails);
+    splitter->setStretchFactor(0, 3);
+    splitter->setStretchFactor(1, 2);
+    layout->addWidget(splitter);
+
+    ui->tabWidget->addTab(peersTab, tr("&Peers"));
+}
+
+void RPCConsole::setupTrafficTab()
+{
+    trafficTab = new QWidget();
+    QVBoxLayout *layout = new QVBoxLayout(trafficTab);
+
+    trafficGraph = new TrafficGraphWidget();
+    layout->addWidget(trafficGraph, 1);
+
+    QHBoxLayout *totals = new QHBoxLayout();
+    trafficRecvLabel = new QLabel();
+    trafficSentLabel = new QLabel();
+    totals->addWidget(trafficRecvLabel);
+    totals->addStretch();
+    totals->addWidget(trafficSentLabel);
+    layout->addLayout(totals);
+
+    QLabel *note = new QLabel(tr("Totals since the wallet started. The graph shows the last 10 minutes."));
+    note->setStyleSheet("color: #8a9bb8;");
+    layout->addWidget(note);
+
+    ui->tabWidget->addTab(trafficTab, tr("&Network Traffic"));
+}
+
+void RPCConsole::sampleTraffic()
+{
+    quint64 nRecv = CNode::GetTotalBytesRecv();
+    quint64 nSent = CNode::GetTotalBytesSent();
+    trafficGraph->addSample(nRecv, nSent, GetTimeMillis());
+
+    if (isVisible() && ui->tabWidget->currentWidget() == trafficTab)
+    {
+        trafficRecvLabel->setText(QString("<span style='color:#2ad8ea'>&#9632;</span> ") +
+            tr("Received: %1 (%2)").arg(GUIUtil::formatBytes(nRecv), GUIUtil::formatBytesPerSecond(trafficGraph->currentRecvRate())));
+        trafficSentLabel->setText(QString("<span style='color:#22f07a'>&#9632;</span> ") +
+            tr("Sent: %1 (%2)").arg(GUIUtil::formatBytes(nSent), GUIUtil::formatBytesPerSecond(trafficGraph->currentSentRate())));
+    }
+}
+
+void RPCConsole::refreshPeers()
+{
+    if (!isVisible() || ui->tabWidget->currentWidget() != peersTab)
+        return;
+
+    std::vector<CNodeStats> vstats;
+    {
+        // Don't make the GUI wait for the network thread; try again next time
+        TRY_LOCK(cs_vNodes, lockNodes);
+        if (!lockNodes)
+            return;
+        vstats.reserve(vNodes.size());
+        BOOST_FOREACH(CNode* pnode, vNodes)
+        {
+            CNodeStats stats;
+            pnode->copyStats(stats);
+            vstats.push_back(stats);
+        }
+    }
+    peerStats->swap(vstats);
+
+    int nInbound = 0;
+    BOOST_FOREACH(const CNodeStats& stats, *peerStats)
+        if (stats.fInbound) nInbound++;
+    peerSummary->setText(tr("%n peer(s): ", "", (int)peerStats->size()) +
+                         tr("%1 outbound, %2 inbound").arg(peerStats->size() - nInbound).arg(nInbound));
+
+    QString keep = selectedPeer;
+    peerTable->blockSignals(true);
+    peerTable->setSortingEnabled(false);
+    peerTable->clearContents();
+    peerTable->setRowCount(peerStats->size());
+    int nRow = 0;
+    BOOST_FOREACH(const CNodeStats& stats, *peerStats)
+    {
+        QString subver = QString::fromStdString(stats.strSubVer);
+        subver.remove('/');
+        QString direction = stats.fInbound ? tr("Inbound") : tr("Outbound");
+        if (stats.fSyncNode)
+            direction += tr(" (sync)");
+        double fPing = stats.dPingWait > stats.dPingTime ? stats.dPingWait : stats.dPingTime;
+
+        peerTable->setItem(nRow, PC_ADDRESS, new PeerItem(QString::fromStdString(stats.addrName)));
+        peerTable->setItem(nRow, PC_DIRECTION, new PeerItem(direction, stats.fInbound ? 1 : 0));
+        peerTable->setItem(nRow, PC_VERSION, new PeerItem(subver.isEmpty() ? QString::number(stats.nVersion) : subver));
+        peerTable->setItem(nRow, PC_HEIGHT, new PeerItem(stats.nKnownHeight >= 0 ? QString::number(stats.nKnownHeight) : tr("unknown"), stats.nKnownHeight));
+        peerTable->setItem(nRow, PC_PING, new PeerItem(fPing > 0 ? tr("%1 ms").arg((int)(fPing * 1000)) : QString("-"), fPing > 0 ? fPing : 1e9));
+        peerTable->setItem(nRow, PC_SENT, new PeerItem(GUIUtil::formatBytes(stats.nSendBytes), (double)stats.nSendBytes));
+        peerTable->setItem(nRow, PC_RECV, new PeerItem(GUIUtil::formatBytes(stats.nRecvBytes), (double)stats.nRecvBytes));
+        for (int c = PC_DIRECTION; c < PC_COUNT; c++)
+            if (c != PC_VERSION && peerTable->item(nRow, c))
+                peerTable->item(nRow, c)->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
+        nRow++;
+    }
+    peerTable->setSortingEnabled(true);
+
+    // Keep the same peer selected across refreshes
+    for (int r = 0; r < peerTable->rowCount(); r++)
+        if (peerTable->item(r, PC_ADDRESS) && peerTable->item(r, PC_ADDRESS)->text() == keep)
+            peerTable->selectRow(r);
+    peerTable->blockSignals(false);
+    showPeerDetails();
+}
+
+void RPCConsole::showPeerDetails()
+{
+    QList<QTableWidgetItem*> sel = peerTable->selectedItems();
+    QString addr;
+    foreach (QTableWidgetItem *item, sel)
+        if (item->column() == PC_ADDRESS)
+            addr = item->text();
+    if (addr.isEmpty())
+    {
+        selectedPeer.clear();
+        peerDetails->setHtml("<p style='color:#8a9bb8'>" + tr("Select a peer to see its details.") + "</p>");
+        return;
+    }
+    selectedPeer = addr;
+
+    const CNodeStats *p = NULL;
+    BOOST_FOREACH(const CNodeStats& stats, *peerStats)
+        if (QString::fromStdString(stats.addrName) == addr)
+            p = &stats;
+    if (!p)
+    {
+        peerDetails->setHtml("<p style='color:#8a9bb8'>" + tr("This peer has disconnected.") + "</p>");
+        return;
+    }
+
+    int64_t nNow = GetTime();
+    QStringList rows;
+#define ROW(label, value) rows << QString("<tr><td style='color:#8a9bb8; padding-right:18px'>%1</td><td>%2</td></tr>").arg(label, value)
+    ROW(tr("Address"), addr.toHtmlEscaped());
+    ROW(tr("Direction"), p->fInbound ? tr("Inbound (they connected to us)") : tr("Outbound (we connected to them)"));
+    if (p->fSyncNode)
+        ROW(tr("Sync"), tr("Blocks are being downloaded from this peer"));
+    ROW(tr("Version"), QString::fromStdString(p->strSubVer).toHtmlEscaped() + tr(" &nbsp;(protocol %1)").arg(p->nVersion));
+    ROW(tr("Services"), QString::fromStdString(strprintf("%08" PRIx64, p->nServices)));
+    ROW(tr("Starting height"), p->nStartingHeight >= 0 ? QString::number(p->nStartingHeight) : tr("unknown"));
+    QString height = p->nKnownHeight >= 0 ? QString::number(p->nKnownHeight) : tr("unknown");
+    if (p->nKnownHeight >= 0 && nBestHeight > p->nKnownHeight)
+        height += tr(" &nbsp;(%1 blocks behind us)").arg(nBestHeight - p->nKnownHeight);
+    ROW(tr("Current height"), height);
+    ROW(tr("Connected for"), GUIUtil::formatDurationStr(nNow - p->nTimeConnected));
+    ROW(tr("Last send"), p->nLastSend ? tr("%1 ago").arg(GUIUtil::formatDurationStr(nNow - p->nLastSend)) : tr("never"));
+    ROW(tr("Last receive"), p->nLastRecv ? tr("%1 ago").arg(GUIUtil::formatDurationStr(nNow - p->nLastRecv)) : tr("never"));
+    ROW(tr("Sent"), GUIUtil::formatBytes(p->nSendBytes));
+    ROW(tr("Received"), GUIUtil::formatBytes(p->nRecvBytes));
+    ROW(tr("Ping"), p->dPingTime > 0 ? tr("%1 ms").arg((int)(p->dPingTime * 1000)) : tr("not measured yet"));
+    if (p->dPingWait > 0)
+        ROW(tr("Ping waiting"), tr("%1 ms").arg((int)(p->dPingWait * 1000)));
+    ROW(tr("Sees us at"), p->addrLocal.empty() ? tr("unknown") : QString::fromStdString(p->addrLocal).toHtmlEscaped());
+    ROW(tr("Ban score"), QString::number(p->nMisbehavior));
+#undef ROW
+    peerDetails->setHtml("<table cellspacing='3'>" + rows.join("") + "</table>");
 }
 
 void RPCConsole::on_openDebugLogfileButton_clicked()

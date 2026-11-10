@@ -130,6 +130,13 @@ namespace GUIUtil
     QString positiveColor();
     QString negativeColor();
 
+    /** "512 B", "3.4 kB", "1.25 MB", "2.1 GB" */
+    QString formatBytes(quint64 bytes);
+    /** Same, per second: "3.4 kB/s" */
+    QString formatBytesPerSecond(double bytes);
+    /** A duration as "45 s", "12 m 5 s", "3 h 4 m" or "2 d 5 h" */
+    QString formatDurationStr(qint64 secs);
+
 } // namespace GUIUtil
 
 #endif // GUIUTIL_H

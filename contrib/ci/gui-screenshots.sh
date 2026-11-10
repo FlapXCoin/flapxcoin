@@ -95,6 +95,23 @@ dialog() {
 dialog '^Options$'        10-options    alt+s o
 dialog 'PIR Calculator'   11-calculator alt+s p
 dialog 'Debug window'     12-debug      alt+h d
+# Debug window again, for its Peers and Network Traffic tabs
+debugtabs() {
+    focus
+    xdotool key alt+h; sleep 0.7; xdotool key d; sleep 2
+    local d
+    d="$(xdotool search --onlyvisible --name 'Debug window' 2>/dev/null | head -n1)"
+    if [ -n "$d" ]; then
+        xdotool windowfocus --sync "$d" 2>/dev/null || true
+        xdotool key alt+p; sleep 3; shot "$d" "12b-debug-peers"
+        xdotool key alt+n; sleep 5; shot "$d" "12c-debug-traffic"
+    else
+        echo "Window 'Debug window' not found"
+    fi
+    xdotool key Escape
+    sleep 1
+}
+debugtabs
 dialog '^About FlapX'     13-about      alt+h a
 
 cleanup

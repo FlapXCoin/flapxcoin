@@ -594,5 +594,35 @@ QString negativeColor()
     return "#ff6b81";
 }
 
+QString formatBytes(quint64 bytes)
+{
+    if (bytes < 1024)
+        return QObject::tr("%1 B").arg(bytes);
+    if (bytes < 1024 * 1024)
+        return QObject::tr("%1 kB").arg(bytes / 1024.0, 0, 'f', 1);
+    if (bytes < 1024 * 1024 * 1024)
+        return QObject::tr("%1 MB").arg(bytes / (1024.0 * 1024), 0, 'f', 2);
+    return QObject::tr("%1 GB").arg(bytes / (1024.0 * 1024 * 1024), 0, 'f', 2);
+}
+
+QString formatBytesPerSecond(double bytes)
+{
+    return QObject::tr("%1/s").arg(formatBytes((quint64)(bytes + 0.5)));
+}
+
+QString formatDurationStr(qint64 secs)
+{
+    if (secs < 0)
+        secs = 0;
+    qint64 d = secs / 86400, h = (secs % 86400) / 3600, m = (secs % 3600) / 60, s = secs % 60;
+    if (d > 0)
+        return QObject::tr("%1 d %2 h").arg(d).arg(h);
+    if (h > 0)
+        return QObject::tr("%1 h %2 m").arg(h).arg(m);
+    if (m > 0)
+        return QObject::tr("%1 m %2 s").arg(m).arg(s);
+    return QObject::tr("%1 s").arg(s);
+}
+
 } // namespace GUIUtil
 

@@ -167,6 +167,10 @@ public:
     std::string strSubVer;
     bool fInbound;
     int nStartingHeight;
+    int nKnownHeight;
+    bool fSyncNode;
+    uint64_t nSendBytes;
+    uint64_t nRecvBytes;
     int nMisbehavior;
     double dPingTime;
     double dPingWait;
@@ -195,6 +199,8 @@ public:
     int64_t nLastSend;
     int64_t nLastRecv;
     int64_t nTimeConnected;
+    uint64_t nSendBytes;        // bytes sent to / received from this peer
+    uint64_t nRecvBytes;
     CAddress addr;
     std::string addrName;
     CService addrLocal;
@@ -216,6 +222,11 @@ protected:
     static std::map<CNetAddr, int64_t> setBanned;
     static CCriticalSection cs_setBanned;
     int nMisbehavior;
+
+    // Network traffic totals over all peers since startup
+    static CCriticalSection cs_totalBytes;
+    static uint64_t nTotalBytesRecv;
+    static uint64_t nTotalBytesSent;
 
 public:
 
@@ -262,6 +273,8 @@ public:
         nLastSend = 0;
         nLastRecv = 0;
         nTimeConnected = GetTime();
+        nSendBytes = 0;
+        nRecvBytes = 0;
         addr = addrIn;
         addrName = addrNameIn == "" ? addr.ToStringIPPort() : addrNameIn;
         nVersion = 0;
@@ -648,6 +661,11 @@ public:
     static bool IsBanned(CNetAddr ip);
     bool Misbehaving(int howmuch); // 1 == a little, 100 == a lot
     void copyStats(CNodeStats &stats);
+
+    static void RecordBytesRecv(uint64_t bytes);
+    static void RecordBytesSent(uint64_t bytes);
+    static uint64_t GetTotalBytesRecv();
+    static uint64_t GetTotalBytesSent();
 };
 
 inline void RelayInventory(const CInv& inv)
