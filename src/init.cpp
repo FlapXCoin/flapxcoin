@@ -933,7 +933,7 @@ bool AppInit2(boost::thread_group& threadGroup)
     }
     if (pindexBest != pindexRescan && pindexBest && pindexRescan && pindexBest->nHeight > pindexRescan->nHeight)
     {
-        uiInterface.InitMessage(_("Flapping The Fappin Blocks....Please Hold"));
+        uiInterface.InitMessage(_("Flapping The Flappin Blocks....Please Hold"));
         printf("Rescanning last %i blocks (from block %i)...\n", pindexBest->nHeight - pindexRescan->nHeight, pindexRescan->nHeight);
         nStart = GetTimeMillis();
         pwalletMain->ScanForWalletTransactions(pindexRescan, true);
