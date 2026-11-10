@@ -92,6 +92,16 @@ dialog() {
     xdotool key Escape
     sleep 1
 }
+# Explorer page (Alt+7): the newest block (the genesis block here, as the
+# throwaway wallet has no chain), then the transaction in it
+focus
+xdotool key alt+7; sleep 1
+xdotool type 0; xdotool key Return; sleep 2
+shot "$WID" "07-explorer-block"
+# then the genesis block's transaction, by its ID
+xdotool key ctrl+a; xdotool type 9e17be6aefbffc74cf4deab73f93bd050e696008fe28c56de80520a22b05fafb; xdotool key Return; sleep 2
+shot "$WID" "07b-explorer-tx"
+
 dialog '^Options$'        10-options    alt+s o
 dialog 'PIR Calculator'   11-calculator alt+s p
 dialog 'Debug window'     12-debug      alt+h d

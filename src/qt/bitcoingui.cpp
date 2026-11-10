@@ -311,7 +311,7 @@ void BitcoinGUI::createActions()
     tabGroup->addAction(shoppingAction);
 
     explorerAction = new QAction(QIcon(":/icons/res/icons/stakingTab.png"), tr("&Explorer"), this);
-    explorerAction->setToolTip(tr("Look up blocks with the built-in block explorer"));
+    explorerAction->setToolTip(tr("Look up blocks and transactions with the built-in block explorer"));
     explorerAction->setCheckable(true);
     explorerAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_7));
     tabGroup->addAction(explorerAction);
