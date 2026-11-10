@@ -247,6 +247,88 @@ void AdvertizeLocal(CNode *pnode)
     }
 }
 
+// Learning our public address from our peers
+//
+// Every peer tells us, in its version message, the address it sees us at
+// (pnode->addrLocal). Behind a home router no local interface has the public
+// address, so without UPnP or -externalip we would never know it: getinfo
+// shows "ip" : "0.0.0.0", our version messages say we are at 0.0.0.0, and we
+// rarely advertise ourselves, so other wallets can't find us. (Old Bitcoin
+// code asked checkip.dyndns.org; this does the same job without a website.)
+//
+// One peer could lie, so an address is only taken once outbound peers in at
+// least PEER_LOCAL_MIN_VOTES different network groups (/16s) report it. It is
+// stored with our listen port (60042, or 60242 with -altport), not the
+// outgoing port the peer saw. If our public IP changes later, the new one
+// replaces it the same way.
+static const unsigned int PEER_LOCAL_MIN_VOTES = 2;
+static const unsigned int PEER_LOCAL_MAX_CANDIDATES = 64;
+static CCriticalSection cs_peerLocal;
+static map<CNetAddr, set<vector<unsigned char> > > mapPeerLocalVotes;
+static CNetAddr addrPeerLocal;          // address currently learned from peers
+static bool fPeerLocalOwned = false;    // true if we added it to mapLocalHost
+static bool fLocalAddressChanged = false;
+
+bool LearnLocalFromPeer(CNode *pnode)
+{
+    if (!fDiscover || pnode->fInbound)
+        return false;
+    if (!pnode->addr.IsRoutable() || !pnode->addrLocal.IsRoutable() || IsLimited(pnode->addrLocal))
+        return false;
+
+    CNetAddr ip(pnode->addrLocal);
+    CNetAddr addrOld;
+    bool fRemoveOld = false;
+    {
+        LOCK(cs_peerLocal);
+        if (addrPeerLocal.IsValid() && ip == addrPeerLocal)
+            return false;
+        if (mapPeerLocalVotes.size() >= PEER_LOCAL_MAX_CANDIDATES && !mapPeerLocalVotes.count(ip))
+            mapPeerLocalVotes.clear();
+        set<vector<unsigned char> >& setVoters = mapPeerLocalVotes[ip];
+        setVoters.insert(pnode->addr.GetGroup());
+        if (setVoters.size() < PEER_LOCAL_MIN_VOTES)
+            return false;
+
+        addrOld = addrPeerLocal;
+        fRemoveOld = fPeerLocalOwned && addrOld.IsValid();
+        addrPeerLocal = ip;
+        mapPeerLocalVotes.clear();
+    }
+
+    CService addrNew(ip, GetListenPort());
+    bool fOwned;
+    {
+        LOCK(cs_mapLocalHost);
+        if (fRemoveOld)
+            mapLocalHost.erase(addrOld);
+        // Leave an address that UPnP, -externalip or an interface already
+        // gave us alone; only one we add here is ours to remove later
+        fOwned = mapLocalHost.count(ip) == 0;
+    }
+    AddLocal(addrNew, LOCAL_PEER);
+    {
+        LOCK(cs_peerLocal);
+        fPeerLocalOwned = fOwned;
+        fLocalAddressChanged = true;
+    }
+    if (fRemoveOld)
+        printf("Public address changed from %s to %s (reported by peers)\n", addrOld.ToString().c_str(), addrNew.ToString().c_str());
+    else
+        printf("Public address %s learned from peers\n", addrNew.ToString().c_str());
+    return true;
+}
+
+// True once after our public address was learned or changed, so it can be
+// advertised to all peers right away instead of at the next daily rebroadcast
+bool TakeLocalAddressChanged()
+{
+    LOCK(cs_peerLocal);
+    bool fChanged = fLocalAddressChanged;
+    fLocalAddressChanged = false;
+    return fChanged;
+}
+
 void SetReachable(enum Network net, bool fFlag)
 {
     LOCK(cs_mapLocalHost);
@@ -275,7 +357,7 @@ bool AddLocal(const CService& addr, int nScore)
         LocalServiceInfo &info = mapLocalHost[addr];
         if (!fAlready || nScore >= info.nScore) {
             info.nScore = nScore;
-            info.nPort = addr.GetPort() + (fAlready ? 1 : 0);
+            info.nPort = addr.GetPort();
         }
         SetReachable(addr.GetNetwork());
     }

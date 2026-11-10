@@ -69,6 +69,7 @@ enum
     LOCAL_IF,     // address a local interface listens on
     LOCAL_BIND,   // address explicit bound to
     LOCAL_UPNP,   // address reported by UPnP
+    LOCAL_PEER,   // address that several outbound peers agree they see us at
     LOCAL_MANUAL, // address explicitly specified (-externalip=)
 
     LOCAL_MAX
@@ -76,6 +77,8 @@ enum
 
 bool IsPeerAddrLocalGood(CNode *pnode);
 void AdvertizeLocal(CNode *pnode);
+bool LearnLocalFromPeer(CNode *pnode);
+bool TakeLocalAddressChanged();
 void SetLimited(enum Network net, bool fLimited = true);
 bool IsLimited(enum Network net);
 bool IsLimited(const CNetAddr& addr);

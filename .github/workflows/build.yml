@@ -13,7 +13,7 @@ name: Build
 # Documentation-only changes don't need new binaries (tag pushes always build)
 on:
   push:
-    branches: [ master, modern-linux-build ]
+    branches: [ master, modern-linux-build, external-ip ]
     tags: [ 'v*' ]
     paths-ignore: [ '**.md', 'doc/**', 'README', 'COPYING', 'INSTALL' ]
   pull_request:
