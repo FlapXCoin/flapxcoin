@@ -150,6 +150,11 @@ namespace GUIUtil
     /** Secondary text colour in the active theme */
     QString mutedColor();
 
+    /** FlappyCoin theme: give a label's text the game's dark brown drop
+        outline, so yellow text reads on the light sky. Removes it again under
+        other themes. Call again after a theme change. */
+    void applyTextOutline(QWidget *widget);
+
     /** "512 B", "3.4 kB", "1.25 MB", "2.1 GB" */
     QString formatBytes(quint64 bytes);
     /** Same, per second: "3.4 kB/s" */

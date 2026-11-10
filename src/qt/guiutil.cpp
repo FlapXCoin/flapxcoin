@@ -25,6 +25,7 @@
 #include <QMap>
 #include <QMapIterator>
 #include <QPainter>
+#include <QGraphicsDropShadowEffect>
 #include <QPixmap>
 #include <QBrush>
 
@@ -644,6 +645,27 @@ QString negativeColor()
 QString mutedColor()
 {
     return themeColor(TC_MUTED).name();
+}
+
+void applyTextOutline(QWidget *widget)
+{
+    if (!widget)
+        return;
+    if (fFlappyTheme)
+    {
+        if (!widget->graphicsEffect())
+        {
+            QGraphicsDropShadowEffect *outline = new QGraphicsDropShadowEffect(widget);
+            outline->setBlurRadius(0);
+            outline->setOffset(1.5, 1.5);
+            outline->setColor(QColor(84, 56, 71));   // Flappy Bird's dark brown outline
+            widget->setGraphicsEffect(outline);
+        }
+    }
+    else if (widget->graphicsEffect())
+    {
+        widget->setGraphicsEffect(0);   // deletes the effect
+    }
 }
 
 void applyFlappyPalette()

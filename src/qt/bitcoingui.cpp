@@ -1320,12 +1320,13 @@ void BitcoinGUI::loadTheme(QString theme)
         styleSheet = GUIUtil::flapxStyleSheet();
     }
 
-    // FlappyCoin has its own light palette; every other theme sits on the FlapX one
+    // FlappyCoin has its own light palette; every other theme sits on the FlapX one.
+    // Set the flag first: widgets read it when the palette-change events reach them.
+    GUIUtil::setFlappyTheme(fFlappy);
     if (fFlappy)
         GUIUtil::applyFlappyPalette();
     else
         GUIUtil::applyFlapXPalette();
-    GUIUtil::setFlappyTheme(fFlappy);
     qApp->setStyleSheet(styleSheet);
     update();
 

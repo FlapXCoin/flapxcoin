@@ -20,6 +20,7 @@
 @muted = #5e7356
 @sand = #ded895
 @danger = #d23c3c
+@yellow = #fcd535
 [/VARS] */
 
 /* ---------- window, menus ---------- */
@@ -163,8 +164,11 @@ QGroupBox QLabel#labelInterest {
     font-weight: bold;
 }
 
+/* Staking status line: Flappy Bird yellow, bold, with the game's dark
+   brown outline (added in code, GUIUtil::applyTextOutline) */
 QLabel#labelMyWeight {
-    color: #2f7d2a;
+    color: @yellow;
+    font-weight: bold;
 }
 
 QLabel#labelAlerts {
