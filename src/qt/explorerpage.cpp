@@ -352,7 +352,8 @@ QString ExplorerPage::txHtml(const QString &hashHex, bool &fFound)
     }
     else
         html += Row(tr("Status"), "<b>" + tr("Unconfirmed (waiting in the memory pool)") + "</b>");
-    html += Row(tr("Transaction time"), Time(tx.nTime));
+    if (!tx.strTxComment.empty())
+        html += Row(tr("Comment"), QString::fromStdString(tx.strTxComment).toHtmlEscaped());
     html += Row(tr("Size"), tr("%1 bytes").arg(::GetSerializeSize(tx, SER_NETWORK, PROTOCOL_VERSION)));
     if (!tx.IsCoinBase() && fAllInputsKnown)
         html += Row(tr("Total in"), Amount(nValueIn));
