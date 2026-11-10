@@ -466,7 +466,7 @@ QVariant TransactionTableModel::txStatusDecoration(const TransactionRecord *wtx)
     {
     case TransactionStatus::OpenUntilBlock:
     case TransactionStatus::OpenUntilDate:
-        return QColor(42,216,234);
+        return GUIUtil::themeColor(GUIUtil::TC_ACCENT);
     case TransactionStatus::Offline:
         return QColor(192,192,192);
     case TransactionStatus::Unconfirmed:

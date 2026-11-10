@@ -4,8 +4,8 @@
 #
 # Usage: contrib/ci/gui-screenshots.sh <path to flapx-qt> <output directory>
 # Needs: Xvfb, xdotool, ImageMagick (import)
-# DARK=1 takes them in dark mode (writes the wallet's GUI settings file, so
-# only use it on a build machine)
+# THEME=<name> takes them with that theme, e.g. THEME=FlappyCoin (writes the
+# wallet's GUI settings file, so only use it on a build machine)
 #
 # Uses a throwaway data directory with networking off, so no real wallet or
 # chain data is involved.
@@ -22,10 +22,10 @@ connect=0
 upnp=0
 EOF
 
-# Light or dark mode (the wallet keeps this in its Qt settings file)
+# Theme (the wallet keeps it in its Qt settings file)
 mkdir -p "$HOME/.config/FlapX"
-if [ "${DARK:-0}" = 1 ]; then
-    printf '[General]\nfDarkMode=true\n' > "$HOME/.config/FlapX/FlapX-Qt.conf"
+if [ -n "${THEME:-}" ]; then
+    printf '[General]\nTemplate=%s\n' "$THEME" > "$HOME/.config/FlapX/FlapX-Qt.conf"
 else
     rm -f "$HOME/.config/FlapX/FlapX-Qt.conf"
 fi

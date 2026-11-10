@@ -448,6 +448,12 @@ QSplitter::handle {
     background-color: @border;
 }
 
+/* ---------- debug window ---------- */
+
+QLabel#trafficNote {
+    color: @muted;
+}
+
 /* ---------- message boxes ---------- */
 
 QMessageBox QLabel {

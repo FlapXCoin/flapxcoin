@@ -1138,6 +1138,17 @@ void BitcoinGUI::paintEvent(QPaintEvent *event)
 {
     QMainWindow::paintEvent(event);
 
+    // FlappyCoin theme: sky, with clouds, city and bushes just above the status bar
+    if (GUIUtil::isFlappyTheme())
+    {
+        QRect area = rect();
+        if (statusBar() && statusBar()->isVisible())
+            area.setBottom(statusBar()->geometry().top() - 1);
+        QPainter painter(this);
+        GUIUtil::drawFlappyScenery(painter, area);
+        return;
+    }
+
     // Same as the explorer's background: a navy glow centred above the top edge
     // (ellipse at 50% -20%), fading into the background 60% of the way to the far corner.
     // "Lighten" only brightens, so the starfield under it stays visible.
@@ -1272,8 +1283,10 @@ void BitcoinGUI::calcClicked()
 }
 
 /* zeewolf: Hot swappable wallet themes */
-// Name of the built-in default theme (res/flapxcoin.qss, compiled into the wallet)
+// Names of the built-in themes (compiled into the wallet): the default look
+// (res/flapxcoin.qss) and the original 2014 FlappyCoin wallet's look (res/flappycoin.qss)
 static const QString FLAPXCOIN_THEME = "FlapXCoin";
+static const QString FLAPPYCOIN_THEME = "FlappyCoin";
 
 void BitcoinGUI::themeActionTriggered(QAction *action)
 {
@@ -1288,9 +1301,12 @@ void BitcoinGUI::changeTheme(QString theme)
 void BitcoinGUI::loadTheme(QString theme)
 {
     QString styleSheet;
+    bool fFlappy = (theme == FLAPPYCOIN_THEME);
 
+    if (fFlappy)
+        styleSheet = GUIUtil::flappyStyleSheet();
     // Extra themes live in <themes dir>/<name>/styles.qss and may use $theme-dir for their own files
-    if (theme != FLAPXCOIN_THEME && !themesDir.isEmpty())
+    else if (theme != FLAPXCOIN_THEME && !themesDir.isEmpty())
     {
         QString themeDir = themesDir + "/" + theme;
         styleSheet = GUIUtil::loadStyleSheet(themeDir + "/styles.qss", themeDir);
@@ -1300,10 +1316,18 @@ void BitcoinGUI::loadTheme(QString theme)
     if (styleSheet.isEmpty())
     {
         theme = FLAPXCOIN_THEME;
+        fFlappy = false;
         styleSheet = GUIUtil::flapxStyleSheet();
     }
 
+    // FlappyCoin has its own light palette; every other theme sits on the FlapX one
+    if (fFlappy)
+        GUIUtil::applyFlappyPalette();
+    else
+        GUIUtil::applyFlapXPalette();
+    GUIUtil::setFlappyTheme(fFlappy);
     qApp->setStyleSheet(styleSheet);
+    update();
 
     // remember the choice and tick it in the Themes menu
     selectedTheme = theme;
@@ -1319,9 +1343,10 @@ void BitcoinGUI::loadTheme(QString theme)
 
 void BitcoinGUI::listThemes(QStringList& themes)
 {
-    // The built-in theme is always available and always first
+    // The built-in themes are always available and always first
     themes.clear();
     themes.append(FLAPXCOIN_THEME);
+    themes.append(FLAPPYCOIN_THEME);
 
     // Extra themes: a "themes" folder in the data directory, next to the wallet,
     // or in the source tree when running a development build
@@ -1347,8 +1372,10 @@ void BitcoinGUI::listThemes(QStringList& themes)
         QDir dir(themesDir);
         foreach (const QString &entry, dir.entryList(QDir::Dirs | QDir::NoDotAndDotDot, QDir::Name))
         {
-            // a theme folder needs a styles.qss, and can't reuse the built-in name
-            if (entry.compare(FLAPXCOIN_THEME, Qt::CaseInsensitive) != 0 && QFile::exists(dir.filePath(entry + "/styles.qss")))
+            // a theme folder needs a styles.qss, and can't reuse a built-in name
+            if (entry.compare(FLAPXCOIN_THEME, Qt::CaseInsensitive) != 0 &&
+                entry.compare(FLAPPYCOIN_THEME, Qt::CaseInsensitive) != 0 &&
+                QFile::exists(dir.filePath(entry + "/styles.qss")))
                 themes.append(entry);
         }
     }

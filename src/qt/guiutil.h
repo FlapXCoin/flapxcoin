@@ -17,6 +17,9 @@ class SendCoinsRecipient;
 
 /** Utility functions used by the Bitcoin Qt UI.
  */
+class QPainter;
+class QRect;
+
 namespace GUIUtil
 {
     // Create human-readable string from date
@@ -126,9 +129,26 @@ namespace GUIUtil
     /** The built-in FlapXCoin theme (res/flapxcoin.qss), the wallet's default look */
     QString flapxStyleSheet();
 
-    /** Text colours for gains/losses in the FlapX palette */
+    /** The built-in FlappyCoin theme (res/flappycoin.qss): the original 2014 wallet's look */
+    QString flappyStyleSheet();
+    /** Light sky-blue palette for the FlappyCoin theme */
+    void applyFlappyPalette();
+    /** Draw the FlappyCoin scenery (clouds, city, bushes) along the bottom of rect */
+    void drawFlappyScenery(QPainter &painter, const QRect &rect);
+
+    /** Which built-in look is active, for colours set in code */
+    void setFlappyTheme(bool fFlappy);
+    bool isFlappyTheme();
+
+    enum ThemeColor { TC_POSITIVE, TC_NEGATIVE, TC_NEGATIVE_AMOUNT, TC_MUTED, TC_ACCENT, TC_ACCENT2,
+                      TC_GRAPH_BG, TC_GRAPH_GRID };
+    QColor themeColor(ThemeColor which);
+
+    /** Text colours for gains/losses in the active theme */
     QString positiveColor();
     QString negativeColor();
+    /** Secondary text colour in the active theme */
+    QString mutedColor();
 
     /** "512 B", "3.4 kB", "1.25 MB", "2.1 GB" */
     QString formatBytes(quint64 bytes);

@@ -1,9 +1,16 @@
 # FlapX wallet themes
 
-The wallet's default look is the built-in **FlapXCoin** theme. Its style sheet is
-`src/qt/res/flapxcoin.qss`, compiled into the wallet through `bitcoin.qrc`, so it
-is always available. All themes are picked from the **Themes** menu, and the choice
-is remembered.
+The wallet has two built-in themes, compiled in through `bitcoin.qrc`, so they
+are always available:
+
+- **FlapXCoin** (the default): navy with a starfield, cyan and mint, matching the
+  block explorer. Style sheet `src/qt/res/flapxcoin.qss`.
+- **FlappyCoin**: the look of the original 2014 FlappyCoin-Qt wallet: Flappy Bird
+  sky blue with clouds, city and bushes along the bottom (drawn in code, no
+  images), cream panels, green outlines and orange buttons. Style sheet
+  `src/qt/res/flappycoin.qss`, palette `GUIUtil::applyFlappyPalette()`.
+
+All themes are picked from the **Themes** menu, and the choice is remembered.
 
 ## Adding a theme
 
@@ -28,7 +35,7 @@ The easiest start is a copy of `src/qt/res/flapxcoin.qss` with new colours.
 ## Style sheet notes
 
 - A theme replaces the FlapXCoin style sheet completely. The FlapX palette
-  (navy window and input colours) still sits underneath every theme.
+  (navy window and input colours) still sits underneath every theme folder.
 - Variables go in a block at the top and can be used anywhere below:
 
   ```

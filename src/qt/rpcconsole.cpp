@@ -251,15 +251,7 @@ RPCConsole::RPCConsole(QWidget *parent) :
     // set OpenSSL version label
 
     ui->openSSLVersion->setText(SSLeay_version(SSLEAY_VERSION));
-    ui->openSSLVersion->setStyleSheet("selection-background-color: rgba(42, 216, 234, 90); selection-color: white;");
-    ui->startupTime->setStyleSheet("selection-background-color: rgba(42, 216, 234, 90); selection-color: white;");
-    ui->clientName->setStyleSheet("selection-background-color: rgba(42, 216, 234, 90); selection-color: white;");
-    ui->clientVersion->setStyleSheet("selection-background-color: rgba(42, 216, 234, 90); selection-color: white;");
-    ui->buildDate->setStyleSheet("selection-background-color: rgba(42, 216, 234, 90); selection-color: white;");
-    ui->numberOfBlocks->setStyleSheet("selection-background-color: rgba(42, 216, 234, 90); selection-color: white;");
-    ui->numberOfConnections->setStyleSheet("selection-background-color: rgba(42, 216, 234, 90); selection-color: white;");
     // ui->totalBlocks->setStyleSheet("selection-background-color: rgba(42, 216, 234, 90); selection-color: white;");
-    ui->lastBlockTime->setStyleSheet("selection-background-color: rgba(42, 216, 234, 90); selection-color: white;");
 
     startExecutor();
 
@@ -366,10 +358,11 @@ void RPCConsole::clear()
     }
 
     // Set default style sheet
-    const QString teal = "#2ad8ea"; // FlapX cyan
+    // (set again on clear, so it follows the active theme)
+    const QString teal = GUIUtil::themeColor(GUIUtil::TC_ACCENT).name(); // FlapX cyan / Flappy orange
     ui->messagesWidget->document()->setDefaultStyleSheet(
                 "table { }"
-                "td.time { color: #8a9bb8; padding-top: 3px; } "
+                "td.time { color: " + GUIUtil::mutedColor() + "; padding-top: 3px; } "
                 "td.message { font-family: Monospace; font-size: 12px; } "
                 "td.cmd-request { color: " + teal + "; } "
                 "td.cmd-error { color: " + GUIUtil::negativeColor() + "; } "
@@ -528,7 +521,7 @@ void RPCConsole::setupPeersTab()
 
     peerDetails = new QTextBrowser();
     peerDetails->setOpenLinks(false);
-    peerDetails->setHtml("<p style='color:#8a9bb8'>" + tr("Select a peer to see its details.") + "</p>");
+    peerDetails->setHtml("<p style='color:" + GUIUtil::mutedColor() + "'>" + tr("Select a peer to see its details.") + "</p>");
     splitter->addWidget(peerDetails);
     splitter->setStretchFactor(0, 3);
     splitter->setStretchFactor(1, 2);
@@ -554,7 +547,7 @@ void RPCConsole::setupTrafficTab()
     layout->addLayout(totals);
 
     QLabel *note = new QLabel(tr("Totals since the wallet started. The graph shows the last 10 minutes."));
-    note->setStyleSheet("color: #8a9bb8;");
+    note->setObjectName("trafficNote");
     layout->addWidget(note);
 
     ui->tabWidget->addTab(trafficTab, tr("&Network Traffic"));
@@ -568,9 +561,9 @@ void RPCConsole::sampleTraffic()
 
     if (isVisible() && ui->tabWidget->currentWidget() == trafficTab)
     {
-        trafficRecvLabel->setText(QString("<span style='color:#2ad8ea'>&#9632;</span> ") +
+        trafficRecvLabel->setText(QString("<span style='color:%1'>&#9632;</span> ").arg(GUIUtil::themeColor(GUIUtil::TC_ACCENT).name()) +
             tr("Received: %1 (%2)").arg(GUIUtil::formatBytes(nRecv), GUIUtil::formatBytesPerSecond(trafficGraph->currentRecvRate())));
-        trafficSentLabel->setText(QString("<span style='color:#22f07a'>&#9632;</span> ") +
+        trafficSentLabel->setText(QString("<span style='color:%1'>&#9632;</span> ").arg(GUIUtil::themeColor(GUIUtil::TC_ACCENT2).name()) +
             tr("Sent: %1 (%2)").arg(GUIUtil::formatBytes(nSent), GUIUtil::formatBytesPerSecond(trafficGraph->currentSentRate())));
     }
 }
@@ -649,7 +642,7 @@ void RPCConsole::showPeerDetails()
     if (addr.isEmpty())
     {
         selectedPeer.clear();
-        peerDetails->setHtml("<p style='color:#8a9bb8'>" + tr("Select a peer to see its details.") + "</p>");
+        peerDetails->setHtml("<p style='color:" + GUIUtil::mutedColor() + "'>" + tr("Select a peer to see its details.") + "</p>");
         return;
     }
     selectedPeer = addr;
@@ -660,13 +653,14 @@ void RPCConsole::showPeerDetails()
             p = &stats;
     if (!p)
     {
-        peerDetails->setHtml("<p style='color:#8a9bb8'>" + tr("This peer has disconnected.") + "</p>");
+        peerDetails->setHtml("<p style='color:" + GUIUtil::mutedColor() + "'>" + tr("This peer has disconnected.") + "</p>");
         return;
     }
 
     int64_t nNow = GetTime();
     QStringList rows;
-#define ROW(label, value) rows << QString("<tr><td style='color:#8a9bb8; padding-right:18px'>%1</td><td>%2</td></tr>").arg(label, value)
+    const QString muted = GUIUtil::mutedColor();
+#define ROW(label, value) rows << QString("<tr><td style='color:%3; padding-right:18px'>%1</td><td>%2</td></tr>").arg(label, value, muted)
     ROW(tr("Address"), addr.toHtmlEscaped());
     ROW(tr("Direction"), p->fInbound ? tr("Inbound (they connected to us)") : tr("Outbound (we connected to them)"));
     if (p->fSyncNode)

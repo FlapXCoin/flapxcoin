@@ -97,8 +97,9 @@ void TrafficGraphWidget::paintEvent(QPaintEvent *)
     QPainter painter(this);
     painter.setRenderHint(QPainter::Antialiasing);
 
-    const QColor bg("#0b1220"), grid("#24345a"), muted("#8a9bb8");
-    const QColor cyan("#2ad8ea"), mint("#22f07a");
+    const QColor bg = GUIUtil::themeColor(GUIUtil::TC_GRAPH_BG), grid = GUIUtil::themeColor(GUIUtil::TC_GRAPH_GRID);
+    const QColor muted = GUIUtil::themeColor(GUIUtil::TC_MUTED);
+    const QColor cyan = GUIUtil::themeColor(GUIUtil::TC_ACCENT), mint = GUIUtil::themeColor(GUIUtil::TC_ACCENT2);
 
     painter.fillRect(rect(), bg);
     QRect area = rect().adjusted(MARGIN + 60, MARGIN, -MARGIN, -MARGIN);
