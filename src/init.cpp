@@ -994,8 +994,9 @@ bool AppInit2(boost::thread_group& threadGroup)
 
     // ********************************************************* Step 10: load peers
 
-    uiInterface.InitMessage(_("Final Coundown"));
+    uiInterface.InitMessage(_("Final Countdown"));
     printf("Loading addresses...\n");
+    CAddrDB::RemoveLeftoverTempFiles();
     nStart = GetTimeMillis();
 
     {

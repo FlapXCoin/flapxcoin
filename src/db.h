@@ -325,6 +325,9 @@ public:
     CAddrDB();
     bool Write(const CAddrMan& addr);
     bool Read(CAddrMan& addr);
+    /** Delete peers.dat.XXXX files left by saves that were interrupted
+     *  (crash, forced kill, power cut). Call at start-up, before any save. */
+    static void RemoveLeftoverTempFiles();
 };
 
 #endif // BITCOIN_DB_H
