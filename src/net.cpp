@@ -1120,9 +1120,12 @@ void ThreadMapPort()
     int error = 0;
     devlist = upnpDiscover(2000, multicastif, minissdpdpath, 0, 0, &error);
 #else
-    /* miniupnpc 1.9.20150730 */
+    /* miniupnpc 1.9.20150730: the last number before &error is the TTL, how
+       many router hops the discovery search may cross. Older miniupnpc used 2
+       internally; 4 also finds routers behind an extra router (some double-router
+       and mesh setups). */
     int error = 0;
-    devlist = upnpDiscover(2000, multicastif, minissdpdpath, 0, 0, 2, &error);
+    devlist = upnpDiscover(2000, multicastif, minissdpdpath, 0, 0, 4, &error);
 #endif
 
     struct UPNPUrls urls;
