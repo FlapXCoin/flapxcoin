@@ -21,6 +21,7 @@
 @text = #e6edf7
 @muted = #8a9bb8
 @danger = #ff6b81
+@yellow = #fcd535
 [/VARS] */
 
 /* ---------- window, menus ---------- */
@@ -163,8 +164,9 @@ QGroupBox QLabel#labelInterest {
     font-weight: bold;
 }
 
+/* Staking status line: Flappy Bird yellow */
 QLabel#labelMyWeight {
-    color: @mint;
+    color: @yellow;
 }
 
 QLabel#labelAlerts {
@@ -446,6 +448,12 @@ QToolTip {
 
 QSplitter::handle {
     background-color: @border;
+}
+
+/* ---------- debug window ---------- */
+
+QLabel#trafficNote {
+    color: @muted;
 }
 
 /* ---------- message boxes ---------- */

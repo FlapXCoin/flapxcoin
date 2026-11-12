@@ -5,7 +5,7 @@
 # All are built with UPnP compiled in and on by default (USE_UPNP=1).
 #
 # Every push builds them and keeps them as downloadable "artifacts" on the
-# run's page. Pushing a version tag (e.g. v2.9.0.4) also publishes them as a
+# run's page. Pushing a version tag (e.g. v2.9.1.0) also publishes them as a
 # GitHub release.
 
 name: Build
@@ -149,7 +149,7 @@ jobs:
         run: |
           sudo apt-get install -y xvfb xdotool imagemagick
           PRINT_SCREENSHOTS_BASE64=1 contrib/ci/gui-screenshots.sh ./flapx-qt screenshots
-          PRINT_SCREENSHOTS_BASE64=1 DARK=1 contrib/ci/gui-screenshots.sh ./flapx-qt screenshots/dark
+          PRINT_SCREENSHOTS_BASE64=1 THEME=FlappyCoin contrib/ci/gui-screenshots.sh ./flapx-qt screenshots/flappycoin
 
       - uses: actions/upload-artifact@v4
         if: always()

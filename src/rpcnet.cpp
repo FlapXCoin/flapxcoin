@@ -54,6 +54,21 @@ static void CopyNodeStats(std::vector<CNodeStats>& vstats)
     }
 }
 
+Value getnettotals(const Array& params, bool fHelp)
+{
+    if (fHelp || params.size() > 0)
+        throw runtime_error(
+            "getnettotals\n"
+            "Returns information about network traffic since startup: total bytes\n"
+            "received and sent over all peers, and the current time in milliseconds.");
+
+    Object obj;
+    obj.push_back(Pair("totalbytesrecv", (boost::int64_t)CNode::GetTotalBytesRecv()));
+    obj.push_back(Pair("totalbytessent", (boost::int64_t)CNode::GetTotalBytesSent()));
+    obj.push_back(Pair("timemillis", (boost::int64_t)GetTimeMillis()));
+    return obj;
+}
+
 Value getpeerinfo(const Array& params, bool fHelp)
 {
     if (fHelp || params.size() != 0)
@@ -84,6 +99,12 @@ Value getpeerinfo(const Array& params, bool fHelp)
         obj.push_back(Pair("inbound", stats.fInbound));
         // obj.push_back(Pair("releasetime", (boost::int64_t)stats.nReleaseTime));
         obj.push_back(Pair("startingheight", stats.nStartingHeight));
+        // Highest block this peer is known to have: its starting height,
+        // raised by every block it sends or announces to us
+        obj.push_back(Pair("currentheight", stats.nKnownHeight));
+        obj.push_back(Pair("syncnode", stats.fSyncNode));
+        obj.push_back(Pair("bytessent", (boost::int64_t)stats.nSendBytes));
+        obj.push_back(Pair("bytesrecv", (boost::int64_t)stats.nRecvBytes));
         obj.push_back(Pair("banscore", stats.nMisbehavior));
 
         ret.push_back(obj);

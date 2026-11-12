@@ -96,6 +96,13 @@ connections to the same internet address, one on each of the two ports. Older
 wallets connect to the 60242 one less readily. (Two wallets on the same computer
 also need separate data directories: -datadir.)
 
+Running a wallet in a virtual machine
+To accept incoming connections from a VM, set its network adapter to
+"bridged" (it then gets its own address on your home network, and UPnP and
+port forwarding work as for any other computer). With the VM's default "NAT"
+networking, the VM can still connect out, sync and stake, but other wallets
+can't connect in, and UPnP can't reach your router.
+
 Wallet note: these builds use Berkeley DB 5.3. Back up wallet.dat before
 opening it with them: once a 5.3 build has written to a wallet, older builds
 made with Berkeley DB 4.8 can no longer open it.

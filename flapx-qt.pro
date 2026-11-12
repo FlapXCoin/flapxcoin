@@ -2,7 +2,7 @@ TEMPLATE = app
 TARGET = flapx-qt
 CONFIG += qt
 QT += gui
-VERSION = 2.9.0.5
+VERSION = 2.9.1.0
 INCLUDEPATH += src src/json src/qt
 DEFINES += QT_GUI BOOST_THREAD_USE_LIB BOOST_SPIRIT_THREADSAFE
 CONFIG += no_include_pwd
@@ -306,6 +306,7 @@ HEADERS += src/qt/bitcoingui.h \
     src/allocators.h \
     src/ui_interface.h \
     src/qt/rpcconsole.h \
+    src/qt/trafficgraphwidget.h \
     src/version.h \
     src/netbase.h \
     src/clientversion.h \
@@ -379,6 +380,7 @@ SOURCES += src/qt/bitcoin.cpp src/qt/bitcoingui.cpp \
     src/qt/notificator.cpp \
     src/qt/qtipcserver.cpp \
     src/qt/rpcconsole.cpp \
+    src/qt/trafficgraphwidget.cpp \
     src/noui.cpp \
     src/kernel.cpp \
     src/scrypt-arm.S \

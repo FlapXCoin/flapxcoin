@@ -4,8 +4,8 @@
 #
 # Usage: contrib/ci/gui-screenshots.sh <path to flapx-qt> <output directory>
 # Needs: Xvfb, xdotool, ImageMagick (import)
-# DARK=1 takes them in dark mode (writes the wallet's GUI settings file, so
-# only use it on a build machine)
+# THEME=<name> takes them with that theme, e.g. THEME=FlappyCoin (writes the
+# wallet's GUI settings file, so only use it on a build machine)
 #
 # Uses a throwaway data directory with networking off, so no real wallet or
 # chain data is involved.
@@ -22,10 +22,10 @@ connect=0
 upnp=0
 EOF
 
-# Light or dark mode (the wallet keeps this in its Qt settings file)
+# Theme (the wallet keeps it in its Qt settings file)
 mkdir -p "$HOME/.config/FlapX"
-if [ "${DARK:-0}" = 1 ]; then
-    printf '[General]\nfDarkMode=true\n' > "$HOME/.config/FlapX/FlapX-Qt.conf"
+if [ -n "${THEME:-}" ]; then
+    printf '[General]\nTemplate=%s\n' "$THEME" > "$HOME/.config/FlapX/FlapX-Qt.conf"
 else
     rm -f "$HOME/.config/FlapX/FlapX-Qt.conf"
 fi
@@ -92,9 +92,36 @@ dialog() {
     xdotool key Escape
     sleep 1
 }
+# Explorer page (Alt+7): the newest block (the genesis block here, as the
+# throwaway wallet has no chain), then the transaction in it
+focus
+xdotool key alt+7; sleep 1
+xdotool type 0; xdotool key Return; sleep 2
+shot "$WID" "07-explorer-block"
+# then the genesis block's transaction, by its ID
+xdotool key ctrl+a; xdotool type 9e17be6aefbffc74cf4deab73f93bd050e696008fe28c56de80520a22b05fafb; xdotool key Return; sleep 2
+shot "$WID" "07b-explorer-tx"
+
 dialog '^Options$'        10-options    alt+s o
 dialog 'PIR Calculator'   11-calculator alt+s p
 dialog 'Debug window'     12-debug      alt+h d
+# Debug window again, for its Peers and Network Traffic tabs
+debugtabs() {
+    focus
+    xdotool key alt+h; sleep 0.7; xdotool key d; sleep 2
+    local d
+    d="$(xdotool search --onlyvisible --name 'Debug window' 2>/dev/null | head -n1)"
+    if [ -n "$d" ]; then
+        xdotool windowfocus --sync "$d" 2>/dev/null || true
+        xdotool key alt+p; sleep 3; shot "$d" "12b-debug-peers"
+        xdotool key alt+n; sleep 5; shot "$d" "12c-debug-traffic"
+    else
+        echo "Window 'Debug window' not found"
+    fi
+    xdotool key Escape
+    sleep 1
+}
+debugtabs
 dialog '^About FlapX'     13-about      alt+h a
 
 cleanup

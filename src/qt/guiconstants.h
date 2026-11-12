@@ -18,15 +18,16 @@ static const int STATUSBAR_ICONSIZE = 24;
 /* Invalid field background style */
 #define STYLE_INVALID "background:#3a1622; border:1px solid #ff6b81; color:#ffffff;"
 
-/* Transaction list colours (FlapXCoin theme) */
+/* Transaction list colours; they follow the active theme (see GUIUtil::themeColor,
+   needs guiutil.h) */
 /* Transaction list -- unconfirmed transaction (muted) */
-#define COLOR_UNCONFIRMED QColor(138, 155, 184)
-/* Transaction list -- negative amount (silver) */
-#define COLOR_NEGATIVE QColor(201, 212, 227)
-/* Transaction list -- positive amount (mint) */
-#define COLOR_POSITIVE QColor(34, 240, 122)
+#define COLOR_UNCONFIRMED GUIUtil::themeColor(GUIUtil::TC_MUTED)
+/* Transaction list -- negative amount */
+#define COLOR_NEGATIVE GUIUtil::themeColor(GUIUtil::TC_NEGATIVE_AMOUNT)
+/* Transaction list -- positive amount */
+#define COLOR_POSITIVE GUIUtil::themeColor(GUIUtil::TC_POSITIVE)
 /* Transaction list -- bare address (without label) (muted) */
-#define COLOR_BAREADDRESS QColor(138, 155, 184)
+#define COLOR_BAREADDRESS GUIUtil::themeColor(GUIUtil::TC_MUTED)
 
 /* Tooltips longer than this (in characters) are converted into rich text,
    so that they can be word-wrapped.

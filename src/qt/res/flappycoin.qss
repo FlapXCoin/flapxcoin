@@ -1,0 +1,469 @@
+/*
+  FlappyCoin theme - the look of the original 2014 FlappyCoin-Qt wallet.
+
+  Flappy Bird sky blue behind everything, cream panels with green outlines,
+  orange buttons and progress bar, and the sandy ground in the status bar.
+  The base colours come from GUIUtil::applyFlappyPalette(); the clouds, city
+  and bushes along the bottom of the window are drawn in code (no images).
+*/
+
+/** [VARS]
+@sky = #70c5ce
+@cream2 = #fdfff7
+@cream = #f4fbe9
+@border = #9cc98f
+@outline = #517f4b
+@orange = #f0821e
+@lime = #bee25b
+@green = #5dbb4a
+@text = #2b3a1f
+@muted = #5e7356
+@sand = #ded895
+@danger = #d23c3c
+@yellow = #fcd535
+[/VARS] */
+
+/* ---------- window, menus ---------- */
+
+/* The window background (sky, clouds, city and bushes) comes from the palette
+   and the main window, so it isn't set here */
+QMainWindow, QDialog {
+    color: @text;
+}
+
+QMenuBar {
+    background-color: @cream;
+    color: @text;
+    border-bottom: 2px solid @outline;
+    padding: 2px 4px;
+}
+
+QMenuBar::item {
+    background: transparent;
+    padding: 4px 10px;
+    border-radius: 4px;
+}
+
+QMenuBar::item:selected {
+    background-color: @lime;
+    color: @text;
+}
+
+QMenu {
+    background-color: @cream2;
+    color: @text;
+    border: 2px solid @outline;
+    padding: 4px;
+}
+
+QMenu::item {
+    padding: 5px 24px 5px 24px;
+    border-radius: 4px;
+}
+
+QMenu::item:selected {
+    background-color: @lime;
+    color: @text;
+}
+
+QMenu::separator {
+    height: 1px;
+    background: @border;
+    margin: 4px 8px;
+}
+
+/* ---------- toolbar (page buttons) ---------- */
+
+QToolBar {
+    background-color: rgba(244, 251, 233, 215);
+    border: none;
+    border-bottom: 2px solid @outline;
+    padding: 6px;
+    spacing: 6px;
+}
+
+QToolBar QToolButton {
+    color: @text;
+    background: transparent;
+    border: 2px solid transparent;
+    border-radius: 7px;
+    padding: 5px 12px 5px 8px;
+}
+
+QToolBar QToolButton:hover {
+    background-color: rgba(190, 226, 91, 120);
+    border: 2px solid @border;
+}
+
+QToolBar QToolButton:checked {
+    background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #d4ef84, stop:1 @lime);
+    border: 2px solid @outline;
+    color: @text;
+    font-weight: bold;
+}
+
+/* ---------- panels ---------- */
+
+QGroupBox {
+    background-color: @cream;
+    border: 2px solid @outline;
+    border-radius: 10px;
+    margin-top: 14px;
+    padding: 18px 10px 8px 10px;
+    color: @text;
+    font-weight: bold;
+}
+
+QGroupBox::title {
+    subcontrol-origin: margin;
+    subcontrol-position: top left;
+    left: 10px;
+    padding: 3px 10px;
+    color: @text;
+    background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #d4ef84, stop:1 @lime);
+    border: 2px solid @outline;
+    border-radius: 6px;
+}
+
+QGroupBox QLabel {
+    font-weight: normal;
+    color: @muted;
+}
+
+QLabel {
+    color: @text;
+    background: transparent;
+}
+
+QFrame[frameShape="4"], QFrame[frameShape="5"] {
+    color: @border;
+}
+
+/* ---------- overview page ---------- */
+
+QLabel#labelOverviewTitle {
+    color: @text;
+}
+
+QGroupBox QLabel#labelBalance, QGroupBox QLabel#labelStake, QGroupBox QLabel#labelUnconfirmed,
+QGroupBox QLabel#labelImmature, QGroupBox QLabel#heightBox, QGroupBox QLabel#rewardBox,
+QGroupBox QLabel#volumeBox, QGroupBox QLabel#diffBox, QGroupBox QLabel#diffBox2,
+QGroupBox QLabel#pawrateBox, QGroupBox QLabel#connectionBox {
+    color: @text;
+    font-weight: bold;
+}
+
+QGroupBox QLabel#labelTotal {
+    color: #c8610c;
+    font-weight: bold;
+    font-size: 15px;
+}
+
+QGroupBox QLabel#labelInterest {
+    color: #2f7d2a;
+    font-weight: bold;
+}
+
+/* Staking status line: Flappy Bird yellow, bold, with the game's dark
+   brown outline (added in code, GUIUtil::applyTextOutline) */
+QLabel#labelMyWeight {
+    color: @yellow;
+    font-weight: bold;
+}
+
+QLabel#labelAlerts {
+    background-color: rgba(210, 60, 60, 30);
+    color: @text;
+    border: 2px solid @danger;
+    border-radius: 6px;
+    padding: 4px 8px;
+}
+
+QLabel#labelTransactionsStatus {
+    color: @danger;
+}
+
+/* ---------- lists & tables ---------- */
+
+QListView, QTableView, QTreeView {
+    background-color: @cream2;
+    alternate-background-color: #eef8e2;
+    color: @text;
+    border: 2px solid @outline;
+    border-radius: 8px;
+    gridline-color: @border;
+    selection-background-color: #f9c27f;
+    selection-color: @text;
+    outline: 0;
+}
+
+QListView::item:hover, QTableView::item:hover, QTreeView::item:hover {
+    background-color: rgba(190, 226, 91, 90);
+}
+
+QHeaderView {
+    background-color: @cream;
+    border: none;
+}
+
+QHeaderView::section {
+    background-color: @cream;
+    color: @outline;
+    font-weight: bold;
+    padding: 6px 8px;
+    border: none;
+    border-right: 1px solid @border;
+    border-bottom: 2px solid @orange;
+}
+
+QTableCornerButton::section {
+    background-color: @cream;
+    border: none;
+}
+
+/* ---------- inputs ---------- */
+
+QLineEdit, QTextEdit, QPlainTextEdit, QComboBox, QSpinBox, QDoubleSpinBox, QDateTimeEdit {
+    background-color: @cream2;
+    color: @text;
+    border: 2px solid @border;
+    border-radius: 6px;
+    padding: 4px 6px;
+    selection-background-color: #f9c27f;
+    selection-color: @text;
+}
+
+QLineEdit:focus, QTextEdit:focus, QPlainTextEdit:focus, QComboBox:focus,
+QSpinBox:focus, QDoubleSpinBox:focus, QDateTimeEdit:focus {
+    border: 2px solid @orange;
+}
+
+QLineEdit:disabled, QComboBox:disabled, QSpinBox:disabled, QDoubleSpinBox:disabled {
+    color: @muted;
+    background-color: @cream;
+}
+
+QComboBox::drop-down {
+    border: none;
+    width: 20px;
+}
+
+QComboBox QAbstractItemView {
+    background-color: @cream2;
+    color: @text;
+    border: 2px solid @outline;
+    selection-background-color: @lime;
+    selection-color: @text;
+}
+
+/* ---------- buttons ---------- */
+
+/* Chunky Flappy Bird buttons: light face, dark green outline */
+QPushButton {
+    background-color: @cream2;
+    color: @text;
+    border: 2px solid @outline;
+    border-radius: 7px;
+    padding: 6px 14px;
+    font-weight: bold;
+}
+
+QPushButton:hover {
+    background-color: #fff3df;
+    border-color: @orange;
+}
+
+QPushButton:pressed {
+    background-color: #f9d9b0;
+}
+
+QPushButton:disabled {
+    color: #9aa891;
+    border-color: @border;
+}
+
+QPushButton:default, QPushButton#startButton, QPushButton#sendButton {
+    background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #ffa040, stop:1 @orange);
+    color: #ffffff;
+    border: 2px solid #8a4a10;
+}
+
+QPushButton:default:hover, QPushButton#startButton:hover, QPushButton#sendButton:hover {
+    background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #ffb563, stop:1 #f7963f);
+    color: #ffffff;
+}
+
+QPushButton:default:disabled, QPushButton#startButton:disabled, QPushButton#sendButton:disabled {
+    background-color: @border;
+    color: #f4fbe9;
+    border-color: @border;
+}
+
+QToolButton {
+    color: @text;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    padding: 3px;
+}
+
+QToolButton:hover {
+    border: 1px solid @border;
+    background-color: rgba(190, 226, 91, 90);
+}
+
+/* ---------- tabs ---------- */
+
+QTabWidget::pane {
+    background-color: @cream;
+    border: 2px solid @outline;
+    border-radius: 8px;
+    top: -2px;
+}
+
+QTabBar::tab {
+    background-color: #e3f1d3;
+    color: @muted;
+    border: 2px solid @outline;
+    border-bottom: none;
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+    padding: 6px 14px;
+    margin-right: 2px;
+}
+
+QTabBar::tab:selected {
+    background-color: @cream;
+    color: @text;
+    font-weight: bold;
+}
+
+QTabBar::tab:hover:!selected {
+    color: @text;
+    background-color: #eaf6dc;
+}
+
+/* ---------- check boxes & radio buttons ---------- */
+
+QCheckBox, QRadioButton {
+    color: @text;
+    spacing: 6px;
+    background: transparent;
+}
+
+QCheckBox::indicator, QRadioButton::indicator {
+    width: 14px;
+    height: 14px;
+    background-color: @cream2;
+    border: 2px solid @outline;
+}
+
+QCheckBox::indicator {
+    border-radius: 3px;
+}
+
+QRadioButton::indicator {
+    border-radius: 8px;
+}
+
+QCheckBox::indicator:checked, QRadioButton::indicator:checked {
+    background-color: @orange;
+    border: 2px solid #8a4a10;
+}
+
+QCheckBox::indicator:hover, QRadioButton::indicator:hover {
+    border: 2px solid @orange;
+}
+
+/* ---------- status bar & progress ---------- */
+
+/* The status bar is the Flappy Bird ground: sand with a green stripe on top */
+QStatusBar {
+    background-color: @sand;
+    color: #5b4a2c;
+    border-top: 4px solid #73bf2e;
+}
+
+QStatusBar::item {
+    border: none;
+}
+
+QStatusBar QLabel {
+    color: #5b4a2c;
+}
+
+/* The original wallet's orange sync bar */
+QProgressBar {
+    background-color: @cream2;
+    color: @text;
+    border: 2px solid @outline;
+    border-radius: 7px;
+    text-align: center;
+    font-weight: bold;
+    min-height: 20px;
+    min-width: 260px;
+}
+
+QProgressBar::chunk {
+    background-color: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #ff8000, stop:1 #ffa500);
+    border-radius: 5px;
+}
+
+/* ---------- scroll bars ---------- */
+
+QScrollBar:vertical {
+    background: @cream;
+    width: 10px;
+    margin: 0;
+}
+
+QScrollBar:horizontal {
+    background: @cream;
+    height: 10px;
+    margin: 0;
+}
+
+QScrollBar::handle:vertical, QScrollBar::handle:horizontal {
+    background: @border;
+    border-radius: 5px;
+    min-height: 24px;
+    min-width: 24px;
+}
+
+QScrollBar::handle:vertical:hover, QScrollBar::handle:horizontal:hover {
+    background: @green;
+}
+
+QScrollBar::add-line, QScrollBar::sub-line {
+    width: 0;
+    height: 0;
+}
+
+QScrollBar::add-page, QScrollBar::sub-page {
+    background: none;
+}
+
+/* ---------- tooltips & splitters ---------- */
+
+QToolTip {
+    background-color: @cream2;
+    color: @text;
+    border: 2px solid @outline;
+    padding: 4px;
+}
+
+QSplitter::handle {
+    background-color: @border;
+}
+
+/* ---------- debug window ---------- */
+
+QLabel#trafficNote {
+    color: @muted;
+}
+
+/* ---------- message boxes ---------- */
+
+QMessageBox QLabel {
+    color: @text;
+}

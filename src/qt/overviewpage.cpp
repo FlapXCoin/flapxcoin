@@ -129,6 +129,7 @@ OverviewPage::OverviewPage(QWidget *parent) :
 {
 
     ui->setupUi(this);
+    GUIUtil::applyTextOutline(ui->labelMyWeight);
 
     if (GetBoolArg("-staking", true))
     {
@@ -199,6 +200,13 @@ void OverviewPage::setNumTransactions(int count)
     ui->labelNumTransactions->setText(QLocale::system().toString(count));
 }
 
+
+void OverviewPage::changeEvent(QEvent *e)
+{
+    QWidget::changeEvent(e);
+    if (e->type() == QEvent::PaletteChange || e->type() == QEvent::StyleChange)
+        GUIUtil::applyTextOutline(ui->labelMyWeight);
+}
 
 void OverviewPage::updateMyWeight()
 {
