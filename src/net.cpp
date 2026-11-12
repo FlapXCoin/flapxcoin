@@ -1559,10 +1559,38 @@ static bool CanSyncFrom(const CNode *pnode) {
            (pnode->nVersion < NOBLKS_VERSION_START || pnode->nVersion >= NOBLKS_VERSION_END);
 }
 
+// The chain height our peers agree on: the tallest height that at least two
+// usable peers report (within SYNC_HEIGHT_SLACK of each other). A lone peer far
+// above everyone else is usually on its own fork, so its claim doesn't count.
+// With one usable peer, that peer's height.
+static int AgreedPeerHeight(const vector<CNode*> &vNodes, bool fUseAvoided, int64_t nNow) {
+    std::vector<int> vHeights;
+    BOOST_FOREACH(CNode* pnode, vNodes) {
+        if (!CanSyncFrom(pnode) || (pnode->nSyncAvoidUntil > nNow) != fUseAvoided)
+            continue;
+        vHeights.push_back(pnode->nKnownHeight);
+    }
+    if (vHeights.empty())
+        return -1;
+    std::sort(vHeights.begin(), vHeights.end(), std::greater<int>());
+    if (vHeights.size() == 1)
+        return vHeights[0];
+    for (size_t i = 0; i + 1 < vHeights.size(); i++)
+        if (vHeights[i] - vHeights[i + 1] <= SYNC_HEIGHT_SLACK)
+            return vHeights[i];
+    return vHeights[1];   // no two agree: don't trust the tallest alone
+}
+
+// Is this peer's height believable next to the others (not a lone outlier)?
+static bool HeightAgreed(const CNode *pnode, int nAgreed) {
+    return pnode->nKnownHeight <= nAgreed + SYNC_HEIGHT_SLACK;
+}
+
 // Pick the peer to download blocks from. Height comes first: only peers within
-// SYNC_HEIGHT_SLACK blocks of the tallest one are considered, so a new node
-// does not latch onto another node that is itself still syncing. Among those,
-// 2.9+ peers win (bigger batches), then the one we heard from most recently.
+// SYNC_HEIGHT_SLACK blocks of the height peers agree on are considered, so a new
+// node neither latches onto a node that is itself still syncing nor follows a
+// lone peer on a much taller fork. Among those, 2.9+ peers win (bigger
+// batches), then the one we heard from most recently.
 void static StartSync(const vector<CNode*> &vNodes) {
     // fImporting and fReindex are accessed out of cs_main here, but only
     // as an optimization - they are checked again in SendMessages.
@@ -1575,12 +1603,7 @@ void static StartSync(const vector<CNode*> &vNodes) {
     for (int nPass = 0; nPass < 2; nPass++) {
         bool fUseAvoided = (nPass == 1);
 
-        int nMaxHeight = -1;
-        BOOST_FOREACH(CNode* pnode, vNodes) {
-            if (!CanSyncFrom(pnode) || (pnode->nSyncAvoidUntil > nNow) != fUseAvoided)
-                continue;
-            nMaxHeight = std::max(nMaxHeight, pnode->nKnownHeight);
-        }
+        int nMaxHeight = AgreedPeerHeight(vNodes, fUseAvoided, nNow);
         if (nMaxHeight <= nBestHeight - 144)
             continue;
 
@@ -1590,7 +1613,8 @@ void static StartSync(const vector<CNode*> &vNodes) {
             if (!CanSyncFrom(pnode) || (pnode->nSyncAvoidUntil > nNow) != fUseAvoided)
                 continue;
             if (pnode->nKnownHeight <= nBestHeight - 144 ||
-                pnode->nKnownHeight < nMaxHeight - SYNC_HEIGHT_SLACK)
+                pnode->nKnownHeight < nMaxHeight - SYNC_HEIGHT_SLACK ||
+                !HeightAgreed(pnode, nMaxHeight))
                 continue;
             int64_t nScore = NodeSyncScore(pnode);
             if (pnodeNewSync == NULL || nScore > nBestScore) {
@@ -1599,7 +1623,7 @@ void static StartSync(const vector<CNode*> &vNodes) {
             }
         }
         if (pnodeNewSync) {
-            printf("sync: downloading from %s (%s) height %d, tallest peer %d, us %d\n",
+            printf("sync: downloading from %s (%s) height %d, agreed peer height %d, us %d\n",
                    pnodeNewSync->addrName.c_str(), pnodeNewSync->strSubVer.c_str(),
                    pnodeNewSync->nKnownHeight, nMaxHeight, nBestHeight);
             pnodeNewSync->fStartSync = true;
@@ -1616,8 +1640,10 @@ void static SwitchIfSyncNodeExhausted(const vector<CNode*> &vNodes) {
     if (fReindex || pnodeSync == NULL || pnodeSync->nKnownHeight > nBestHeight)
         return;
     int64_t nNow = GetTime();
+    int nAgreed = AgreedPeerHeight(vNodes, false, nNow);
     BOOST_FOREACH(CNode* pnode, vNodes) {
-        if (pnode == pnodeSync || !CanSyncFrom(pnode) || pnode->nSyncAvoidUntil > nNow)
+        if (pnode == pnodeSync || !CanSyncFrom(pnode) || pnode->nSyncAvoidUntil > nNow ||
+            !HeightAgreed(pnode, nAgreed))
             continue;
         if (pnode->nKnownHeight >= nBestHeight + SYNC_SWITCH_MARGIN) {
             printf("sync: %s has no more blocks for us (height %d), %s is at %d, switching\n",

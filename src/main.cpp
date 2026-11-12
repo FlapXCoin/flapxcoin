@@ -2622,6 +2622,12 @@ bool CBlock::AcceptBlock()
     if (!Checkpoints::CheckHardened(nHeight, hash))
         return DoS(100, error("AcceptBlock() : rejected by hardened checkpoint lock-in at %d", nHeight));
 
+    // Don't accept a fork from the main chain below the last checkpoint we
+    // already have (as in Bitcoin): a peer sending one is on another chain
+    CBlockIndex* pcheckpoint = Checkpoints::GetLastCheckpoint(mapBlockIndex);
+    if (pcheckpoint && nHeight < pcheckpoint->nHeight)
+        return DoS(100, error("AcceptBlock() : forked chain older than last checkpoint (height %d, checkpoint %d)", nHeight, pcheckpoint->nHeight));
+
     uint256 hashProof;
     // Verify hash target and signature of coinstake tx
     if (IsProofOfStake())
