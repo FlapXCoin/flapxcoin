@@ -229,6 +229,8 @@ HEADERS += src/qt/bitcoingui.h \
     src/qt/bitcoinaddressvalidator.h \
     src/qt/intro.h \
     src/qt/calcdialog.h \
+    src/qt/stakereportdialog.h \
+    src/stakereport.h \
     src/alert.h \
     src/addrman.h \
     src/base58.h \
@@ -328,6 +330,7 @@ SOURCES += src/qt/bitcoin.cpp src/qt/bitcoingui.cpp \
     src/qt/editaddressdialog.cpp \
     src/qt/bitcoinaddressvalidator.cpp \
     src/qt/calcdialog.cpp \
+    src/qt/stakereportdialog.cpp \
     src/qt/intro.cpp \
     src/alert.cpp \
     src/chainparams.cpp \
@@ -383,6 +386,7 @@ SOURCES += src/qt/bitcoin.cpp src/qt/bitcoingui.cpp \
     src/qt/trafficgraphwidget.cpp \
     src/noui.cpp \
     src/kernel.cpp \
+    src/stakereport.cpp \
     src/scrypt-arm.S \
     src/scrypt-x86.S \
     src/scrypt-x86_64.S \
@@ -421,7 +425,8 @@ FORMS += \
     src/qt/forms/explorerpage.ui \
     src/qt/forms/charitydialog.ui \
     src/qt/forms/intro.ui \
-    src/qt/forms/calcdialog.ui
+    src/qt/forms/calcdialog.ui \
+    src/qt/forms/stakereportdialog.ui
 
 contains(USE_QRCODE, 1) {
 HEADERS += src/qt/qrcodedialog.h

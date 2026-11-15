@@ -5,6 +5,7 @@
 
 #include <boost/assign/list_of.hpp>
 #include "wallet.h"
+#include "stakereport.h"
 #include "walletdb.h"
 #include "bitcoinrpc.h"
 #include "init.h"
@@ -1993,3 +1994,41 @@ Value makekeypair(const Array& params, bool fHelp)
     return result;
 }
 
+
+// getstakereport: this wallet's staking earnings per day and per period
+static Object StakePeriodToJSON(const StakePeriod& p, bool fWithDate)
+{
+    Object o;
+    if (fWithDate)
+        o.push_back(Pair("date", p.strName));
+    o.push_back(Pair("amount", ValueFromAmount(p.nAmount)));
+    o.push_back(Pair("stakes", p.nCount));
+    return o;
+}
+
+Value getstakereport(const Array& params, bool fHelp)
+{
+    if (fHelp || params.size() != 0)
+        throw runtime_error(
+            "getstakereport\n"
+            "This wallet's staking earnings: per day for the last 30 days (local time,\n"
+            "today first) and over the last 24 hours, 7, 30 and 365 days. Amounts are\n"
+            "the net reward to this wallet, including stakes that are still maturing.");
+
+    StakeReport report;
+    GetStakeReport(pwalletMain, report, false);
+
+    Object result;
+    BOOST_FOREACH(const StakePeriod& p, report.vTotals)
+        result.push_back(Pair(p.strName, StakePeriodToJSON(p, false)));
+    Array days;
+    BOOST_FOREACH(const StakePeriod& p, report.vDays)
+        days.push_back(StakePeriodToJSON(p, true));
+    result.push_back(Pair("days", days));
+    result.push_back(Pair("latesttime", report.nLatestTime ? DateTimeStrFormat(report.nLatestTime) : string("never")));
+    result.push_back(Pair("latestamount", ValueFromAmount(report.nLatestAmount)));
+    result.push_back(Pair("maturingamount", ValueFromAmount(report.nMaturingAmount)));
+    result.push_back(Pair("maturingstakes", report.nMaturingCount));
+    result.push_back(Pair("stakescounted", report.nStakesCounted));
+    return result;
+}

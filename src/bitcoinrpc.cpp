@@ -261,6 +261,7 @@ static const CRPCCommand vRPCCommands[] =
     { "addnode",                &addnode,                true,   false },
     { "getaddednodeinfo",       &getaddednodeinfo,       true,   false },
     { "disconnectnode",         &disconnectnode,         true,   false },
+    { "getstakereport",         &getstakereport,         false,  false },
     { "getdifficulty",          &getdifficulty,          true,   false },
     { "getinfo",                &getinfo,                true,   false },
     { "getmininginfo",          &getmininginfo,          true,   false },

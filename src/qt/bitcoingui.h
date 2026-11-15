@@ -13,6 +13,7 @@ class ClientModel;
 class WalletModel;
 class TransactionView;
 class OverviewPage;
+class StakeReportDialog;
 class AddressBookPage;
 class ShoppingPage;
 class ExplorerPage;
@@ -72,6 +73,7 @@ private:
     QStackedWidget *centralWidget;
 
     OverviewPage *overviewPage;
+    StakeReportDialog *stakeReportDialog;
     QWidget *transactionsPage;
     AddressBookPage *addressBookPage;
     ShoppingPage *shoppingPage;
@@ -113,6 +115,7 @@ private:
     QAction *openRPCConsoleAction;
     QAction *charityAction;
     QAction *calcAction;
+    QAction *stakeReportAction;
 
     QSystemTrayIcon *trayIcon;
     Notificator *notificator;
@@ -212,6 +215,8 @@ private slots:
     void aboutClicked();
     /** Show Stake Calculator Dialog */
     void calcClicked();
+    /** Show the APR Tracking > Stake Report window */
+    void stakeReportClicked();
 #ifndef Q_OS_MAC
     /** Handle tray icon clicked */
     void trayIconActivated(QSystemTrayIcon::ActivationReason reason);

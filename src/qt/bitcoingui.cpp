@@ -6,6 +6,7 @@
  */
 #include "bitcoingui.h"
 #include "calcdialog.h"
+#include "stakereportdialog.h"
 #include "transactiontablemodel.h"
 #include "addressbookpage.h"
 #include "shoppingpage.h"
@@ -141,6 +142,7 @@ BitcoinGUI::BitcoinGUI(QWidget *parent):
     // Create tabs
 
     overviewPage = new OverviewPage();
+    stakeReportDialog = new StakeReportDialog(this);
 
     transactionsPage = new QWidget(this);
     QVBoxLayout *vbox = new QVBoxLayout();
@@ -323,6 +325,8 @@ void BitcoinGUI::createActions()
 
     calcAction = new QAction(QIcon(":/icons/bitcoin"), tr("&Interest Estimate..."), this);
     calcAction->setToolTip(tr("Estimate the staking interest on an amount of FLAPX"));
+    stakeReportAction = new QAction(QIcon(":/icons/bitcoin"), tr("&Stake Report..."), this);
+    stakeReportAction->setToolTip(tr("What this wallet has earned from staking, per day and per period"));
 
     connect(overviewAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
     connect(overviewAction, SIGNAL(triggered()), this, SLOT(gotoOverviewPage()));
@@ -340,6 +344,8 @@ void BitcoinGUI::createActions()
     connect(explorerAction, SIGNAL(triggered()), this, SLOT(gotoExplorerPage()));
     connect(calcAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
     connect(calcAction, SIGNAL(triggered()), this, SLOT(calcClicked()));
+    connect(stakeReportAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
+    connect(stakeReportAction, SIGNAL(triggered()), this, SLOT(stakeReportClicked()));
 
 
     quitAction = new QAction(QIcon(":/icons/quit"), tr("E&xit"), this);
@@ -432,9 +438,12 @@ void BitcoinGUI::createMenuBar()
 	settings->addAction(charityAction);
     settings->addSeparator();
     settings->addAction(optionsAction);
-    settings->addSeparator();
-    settings->addAction(calcAction);
-    
+
+    // Staking returns: what the wallet has earned, and what an amount would earn
+    QMenu *apr = appMenuBar->addMenu(tr("&APR Tracking"));
+    apr->addAction(stakeReportAction);
+    apr->addAction(calcAction);
+
     /* zeewolf: Hot swappable wallet themes */
     QMenu *themes = appMenuBar->addMenu(tr("T&hemes"));
     themes->addActions(themeActionGroup->actions());
@@ -522,6 +531,7 @@ void BitcoinGUI::setWalletModel(WalletModel *walletModel)
         transactionView->setModel(walletModel);
 
         overviewPage->setWalletModel(walletModel);
+        stakeReportDialog->setModel(walletModel);
         addressBookPage->setModel(walletModel->getAddressTableModel());
         receiveCoinsPage->setModel(walletModel->getAddressTableModel());
         sendCoinsPage->setModel(walletModel);
@@ -1280,6 +1290,14 @@ void BitcoinGUI::calcClicked()
 {
     calcDialog dlg;
     dlg.exec();
+}
+
+void BitcoinGUI::stakeReportClicked()
+{
+    // One window, kept for the session; it refreshes itself while open
+    stakeReportDialog->show();
+    stakeReportDialog->raise();
+    stakeReportDialog->activateWindow();
 }
 
 /* zeewolf: Hot swappable wallet themes */
