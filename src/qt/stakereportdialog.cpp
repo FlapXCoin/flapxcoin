@@ -12,6 +12,7 @@
 #include "stakereport.h"
 #include "wallet.h"
 #include "main.h"
+#include "init.h"
 
 #include <QApplication>
 #include <QClipboard>
