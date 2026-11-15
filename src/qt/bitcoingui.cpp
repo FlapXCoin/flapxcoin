@@ -1288,7 +1288,7 @@ void BitcoinGUI::applySyncEstimate(int count)
 
 void BitcoinGUI::calcClicked()
 {
-    calcDialog dlg;
+    calcDialog dlg(this);
     dlg.exec();
 }
 

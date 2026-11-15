@@ -18,7 +18,6 @@ public:
 
     void setModel(ClientModel *model);
 private slots:
-    void on_buttonBox_accepted();
     void pushButtonClicked();
 
 private:
