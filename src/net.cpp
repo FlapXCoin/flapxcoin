@@ -1627,6 +1627,7 @@ int GetBestPeerHeight() {
 
 void ReleaseSyncNode(CNode* pnode, int64_t nSeconds) {
     pnode->nSyncAvoidUntil = GetTime() + nSeconds;
+    pnode->ResetBlockPrefetch();
     if (pnode == pnodeSync)
         pnodeSync = NULL;   // ThreadMessageHandler picks a new one
 }

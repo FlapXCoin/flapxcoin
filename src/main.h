@@ -76,6 +76,9 @@ static const int MIN_SYNC_PEER_VERSION = 2090005;
 /** While we are this many blocks behind the height our peers agree on, we
  *  don't hand out blocks (getblocks), so our own download goes faster */
 static const int CATCHING_UP_BLOCKS = 144;
+/** An announcement of at least this many blocks from the sync peer is a
+ *  download batch (the answer to getblocks), not news of a new block */
+static const unsigned int SYNC_PREFETCH_MIN_BATCH = 10;
 /** Default -dbcache for the block index (txleveldb) database, in megabytes */
 static const int64_t DEFAULT_TXDB_CACHE_MB = 100;
 static const int64_t MIN_TX_FEE = 1000000;

@@ -237,6 +237,12 @@ public:
     CBlockIndex* pindexLastGetBlocksBegin;
     uint256 hashLastGetBlocksEnd;
     int64_t nLastGetBlocksTime; // when we last sent this peer a getblocks request
+    // Sync look-ahead (see PushGetBlocksAfter in main.cpp): the last block of
+    // each batch this peer announced whose blocks we haven't finished
+    // processing, oldest first, and the block we last asked it to continue from
+    std::deque<uint256> vSyncBatchEnds;
+    uint256 hashPrefetchFrom;
+    void ResetBlockPrefetch() { vSyncBatchEnds.clear(); hashPrefetchFrom = 0; }
     int nSyncStalls;            // stall watchdog firings in a row at the same height
     int nSyncStallHeight;       // our height at the last firing
     int64_t nSyncAvoidUntil;    // don't pick this peer to sync from before this time
@@ -295,6 +301,7 @@ public:
         pindexLastGetBlocksBegin = 0;
         hashLastGetBlocksEnd = 0;
         nLastGetBlocksTime = 0;
+        hashPrefetchFrom = 0;
         nSyncStalls = 0;
         nSyncStallHeight = -1;
         nSyncAvoidUntil = 0;
