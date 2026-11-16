@@ -492,8 +492,12 @@ WalletModel::UnlockContext::~UnlockContext()
 
 void WalletModel::UnlockContext::CopyFrom(const UnlockContext& rhs)
 {
-    // Transfer context; old object no longer relocks wallet
-    *this = rhs;
+    // Transfer context; old object no longer relocks wallet. (This used to be
+    // "*this = rhs", which calls operator=, which calls CopyFrom again: endless
+    // recursion and a crash on any copy.)
+    wallet = rhs.wallet;
+    valid = rhs.valid;
+    relock = rhs.relock;
     rhs.relock = false;
 }
 

@@ -1866,7 +1866,7 @@ bool CTransaction::ConnectInputs(CTxDB& txdb, MapPrevTx inputs, map<uint256, CTx
         if (!IsCoinStake())
         {
             if (nValueIn < GetValueOut())
-                return DoS(100, error("ConnectInputs() : %s value in %ld < value out %ld", GetHash().ToString().c_str(), nValueIn, GetValueOut()));
+                return DoS(100, error("ConnectInputs() : %s value in %" PRId64 " < value out %" PRId64, GetHash().ToString().c_str(), nValueIn, GetValueOut()));
 
             // Tally transaction fees
             int64_t nTxFee = nValueIn - GetValueOut();
@@ -4018,18 +4018,23 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
 
         // Where the time goes while syncing: the gap between blocks arriving
         // from the network, how long this one sat in our queue, and how long
-        // we spent checking and storing it.
+        // we spent checking and storing it. Two lines per block (over 1 GB of
+        // debug.log for a full sync), so only with -printblocktiming.
+        static const bool fPrintBlockTiming = GetBoolArg("-printblocktiming", false);
         static int64_t nPrevBlockArrived = 0;
         int64_t nProcessEnd = GetTimeMicros();
-        printf("block timing: %" PRId64 " ms since previous block arrived, queued %" PRId64 " ms, processed in %" PRId64 " ms\n",
-               nPrevBlockArrived ? (nTimeReceived - nPrevBlockArrived) / 1000 : 0,
-               (nProcessStart - nTimeReceived) / 1000, (nProcessEnd - nProcessStart) / 1000);
-        // Breakdown of "processed" (ms): connect includes fetch, inputs, coinage and wallet
-        #define PH_MS(p) (nBlockPhaseUs[p] / 1000.0)
-        printf("block phases: check %.1f work %.1f stake %.1f write %.1f modifier %.1f index %.1f connect %.1f (fetch %.1f inputs %.1f coinage %.1f wallet %.1f) commit %.1f\n",
-               PH_MS(PH_CHECK), PH_MS(PH_WORK), PH_MS(PH_STAKE), PH_MS(PH_WRITE), PH_MS(PH_MODIFIER), PH_MS(PH_INDEX),
-               PH_MS(PH_CONNECT), PH_MS(PH_FETCH), PH_MS(PH_INPUTS), PH_MS(PH_COINAGE), PH_MS(PH_WALLET), PH_MS(PH_COMMIT));
-        #undef PH_MS
+        if (fPrintBlockTiming)
+        {
+            printf("block timing: %" PRId64 " ms since previous block arrived, queued %" PRId64 " ms, processed in %" PRId64 " ms\n",
+                   nPrevBlockArrived ? (nTimeReceived - nPrevBlockArrived) / 1000 : 0,
+                   (nProcessStart - nTimeReceived) / 1000, (nProcessEnd - nProcessStart) / 1000);
+            // Breakdown of "processed" (ms): connect includes fetch, inputs, coinage and wallet
+            #define PH_MS(p) (nBlockPhaseUs[p] / 1000.0)
+            printf("block phases: check %.1f work %.1f stake %.1f write %.1f modifier %.1f index %.1f connect %.1f (fetch %.1f inputs %.1f coinage %.1f wallet %.1f) commit %.1f\n",
+                   PH_MS(PH_CHECK), PH_MS(PH_WORK), PH_MS(PH_STAKE), PH_MS(PH_WRITE), PH_MS(PH_MODIFIER), PH_MS(PH_INDEX),
+                   PH_MS(PH_CONNECT), PH_MS(PH_FETCH), PH_MS(PH_INPUTS), PH_MS(PH_COINAGE), PH_MS(PH_WALLET), PH_MS(PH_COMMIT));
+            #undef PH_MS
+        }
         nPrevBlockArrived = nTimeReceived;
 
         // The peer that sent this block has at least its height
@@ -4127,7 +4132,7 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
         }
 
         if (!(sProblem.empty())) {
-            printf("pong %s %s: %s, %" PRIx64 " expected, %" PRIx64 " received, %zu bytes\n"
+            printf("pong %s %s: %s, %" PRIx64 " expected, %" PRIx64 " received, %" PRIszu " bytes\n"
                 , pfrom->addr.ToString().c_str()
                 , pfrom->strSubVer.c_str()
                 , sProblem.c_str()

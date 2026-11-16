@@ -322,7 +322,7 @@ Value disconnectnode(const Array& params, bool fHelp)
         throw runtime_error(
             "disconnectnode <node>\n"
             "Disconnects from a connected peer. <node> is its address as getpeerinfo\n"
-            "shows it (\"addr\", e.g. 68.9.211.231:60042), or just its IP address.");
+            "shows it (\"addr\", e.g. <ip>:60042), or just its IP address.");
 
     string strNode = params[0].get_str();
     bool fFound = false;

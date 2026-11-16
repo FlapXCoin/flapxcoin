@@ -236,6 +236,8 @@ static MapCheckpoints mapCheckpoints =
     {
         MapCheckpoints& checkpoints = (TestNet() ? mapCheckpointsTestnet : mapCheckpoints);
 
+        if (checkpoints.empty())   // testnet has none
+            return 0;
         return checkpoints.rbegin()->first;
     }
 

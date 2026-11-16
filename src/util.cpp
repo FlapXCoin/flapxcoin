@@ -167,7 +167,7 @@ void RandAddSeedPerfmon()
         RAND_add(pdata, nSize, nSize/100.0);
         // memset(pdata, 0, nSize);
         OPENSSL_cleanse(pdata, nSize);
-        printf("RandAddSeed() %d bytes\n", nSize);
+        printf("RandAddSeed() %lu bytes\n", (unsigned long)nSize);
     }
 #endif
 }
