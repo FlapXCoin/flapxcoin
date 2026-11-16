@@ -2733,16 +2733,14 @@ void PushGetBlocks(CNode* pnode, CBlockIndex* pindexBegin, uint256 hashEnd)
 // so a peer is never asked to queue more than that for us.
 void static PushGetBlocksAfter(CNode* pnode, const uint256& hashAfter)
 {
-    std::vector<uint256> vHave;
-    vHave.push_back(hashAfter);
-    CBlockLocator locatorBest(pindexBest);
-    vHave.insert(vHave.end(), locatorBest.vHave.begin(), locatorBest.vHave.end());
+    CBlockLocator locator(pindexBest);
+    locator.PushFront(hashAfter);
 
     pnode->hashPrefetchFrom = hashAfter;
     pnode->nLastGetBlocksTime = GetTime();
     if (fDebug)
         printf("sync look-ahead: asking %s for the blocks after %s\n", pnode->addrName.c_str(), hashAfter.ToString().c_str());
-    pnode->PushMessage("getblocks", CBlockLocator(vHave), uint256(0));
+    pnode->PushMessage("getblocks", locator, uint256(0));
 }
 
 bool static IsCanonicalBlockSignature(CBlock* pblock, bool checkLowS)

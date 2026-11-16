@@ -1389,6 +1389,12 @@ public:
         vHave = vHaveIn;
     }
 
+    /** Put a block in front of the list: the first block the peer should look for */
+    void PushFront(const uint256& hashBlock)
+    {
+        vHave.insert(vHave.begin(), hashBlock);
+    }
+
     IMPLEMENT_SERIALIZE
     (
         if (!(nType & SER_GETHASH))
