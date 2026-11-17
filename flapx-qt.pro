@@ -222,7 +222,7 @@ HEADERS += src/qt/bitcoingui.h \
     src/qt/coincontroltreewidget.h \
     src/qt/sendcoinsdialog.h \
     src/qt/addressbookpage.h \
-    src/qt/charitydialog.h \
+    src/qt/multisenddialog.h \
     src/qt/signverifymessagedialog.h \
     src/qt/aboutdialog.h \
     src/qt/editaddressdialog.h \
@@ -324,7 +324,7 @@ SOURCES += src/qt/bitcoin.cpp src/qt/bitcoingui.cpp \
     src/qt/coincontroldialog.cpp \
     src/qt/coincontroltreewidget.cpp \
     src/qt/addressbookpage.cpp \
-    src/qt/charitydialog.cpp \
+    src/qt/multisenddialog.cpp \
     src/qt/signverifymessagedialog.cpp \
     src/qt/aboutdialog.cpp \
     src/qt/editaddressdialog.cpp \
@@ -423,7 +423,7 @@ FORMS += \
     src/qt/forms/optionsdialog.ui \
     src/qt/forms/shoppingpage.ui \
     src/qt/forms/explorerpage.ui \
-    src/qt/forms/charitydialog.ui \
+    src/qt/forms/multisenddialog.ui \
     src/qt/forms/intro.ui \
     src/qt/forms/calcdialog.ui \
     src/qt/forms/stakereportdialog.ui

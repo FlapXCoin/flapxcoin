@@ -154,7 +154,7 @@
                </widget>
               </item>
               <item>
-               <widget class="QPushButton" name="stakeForCharityPushButton">
+               <widget class="QPushButton" name="multiSendPushButton">
                 <property name="text">
                  <string>Multisend</string>
                 </property>

@@ -97,17 +97,17 @@ public:
     // Wallet backup
     bool backupWallet(const QString &filename);
 
-    void setStakeForCharity(bool fStakeForCharity, int& nStakeForCharityPercent,
-                            CBitcoinAddress& strStakeForCharityAddress,
-                            CBitcoinAddress& strStakeForCharityChangeAddress,
-                            qint64& nStakeForCharityMinAmount,
-                            qint64& nStakeForCharityMaxAmount);
-    // Wallet Information about Stake For Charity
-    void getStakeForCharity(int& nStakeForCharityPercent,
-                            CBitcoinAddress& strStakeForCharityAddress,
-                            CBitcoinAddress& strStakeForCharityChangeAddress,
-                            qint64& nStakeForCharityMinAmount,
-                            qint64& nStakeForCharityMaxAmount);
+    void setMultiSend(bool fMultiSend, int& nMultiSendPercent,
+                            CBitcoinAddress& strMultiSendAddress,
+                            CBitcoinAddress& strMultiSendChangeAddress,
+                            qint64& nMultiSendMinAmount,
+                            qint64& nMultiSendMaxAmount);
+    // Wallet Information about MultiSend
+    void getMultiSend(int& nMultiSendPercent,
+                            CBitcoinAddress& strMultiSendAddress,
+                            CBitcoinAddress& strMultiSendChangeAddress,
+                            qint64& nMultiSendMinAmount,
+                            qint64& nMultiSendMaxAmount);
 
     // RAI object for unlocking wallet, returned by requestUnlock()
     class UnlockContext

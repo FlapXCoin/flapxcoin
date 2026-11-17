@@ -232,26 +232,29 @@ public:
         return Write(std::string("minversion"), nVersion);
     }
 
-    bool WriteStakeForCharity(std::string strStakeForCharityAddress,
-                              int nStakeForCharityPercent,
-                              std::string strStakeForCharityChangeAddress,
-                              int64_t nStakeForCharityMinAmount,
-                              int64_t nStakeForCharityMaxAmount)
+    bool WriteMultiSend(std::string strMultiSendAddress,
+                              int nMultiSendPercent,
+                              std::string strMultiSendChangeAddress,
+                              int64_t nMultiSendMinAmount,
+                              int64_t nMultiSendMaxAmount)
     {
         nWalletDBUpdated++;
-        if (!Write(std::make_pair(std::string("s4c"), strStakeForCharityAddress),std::make_pair(strStakeForCharityChangeAddress ,nStakeForCharityPercent)))
+        if (!Write(std::make_pair(std::string("s4c"), strMultiSendAddress),std::make_pair(strMultiSendChangeAddress ,nMultiSendPercent)))
             return false;
 
-        return Write(std::make_pair(std::string("s4c2"), strStakeForCharityAddress),std::make_pair(nStakeForCharityMinAmount ,nStakeForCharityMaxAmount));
+        return Write(std::make_pair(std::string("s4c2"), strMultiSendAddress),std::make_pair(nMultiSendMinAmount ,nMultiSendMaxAmount));
 
     }
 
-    bool EraseStakeForCharity(std::string strStakeForCharityAddress)
+    bool EraseMultiSend(std::string strMultiSendAddress)
     {
         nWalletDBUpdated++;
 
-        return Erase(std::make_pair(std::string("s4c"), strStakeForCharityAddress));
-        return Erase(std::make_pair(std::string("s4c2"), strStakeForCharityAddress));
+        // record names kept from Stake For Charity so existing wallets keep their settings;
+        // erase both (the second record used to be left behind)
+        bool fOk = Erase(std::make_pair(std::string("s4c"), strMultiSendAddress));
+        Erase(std::make_pair(std::string("s4c2"), strMultiSendAddress));
+        return fOk;
     }
 
 

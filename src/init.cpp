@@ -371,7 +371,11 @@ std::string HelpMessage()
         // "  -enforcecanonical      " + _("Enforce transaction scripts to use canonical PUSH operators (default: 1)") + "\n" +
         "  -alertnotify=<cmd>     " + _("Execute command when a relevant alert is received (%s in cmd is replaced by message)") + "\n" +
         "  -upgradewallet         " + _("Upgrade wallet to latest format") + "\n" +
-        "  -keypool=<n>           " + _("Set key pool size to <n> (default: 100)") + "\n" +
+        "  -keypool=<n>           " + _("Set key pool size to <n> (default: 1000)") + "\n" +
+        "  -returnchange          " + _("Send change back to the address it came from instead of a new address, so wallet backups always cover change (default: 1)") + "\n" +
+        "  -staketargetmin=<amt>  " + _("Stake auto-balance: combine small inputs up to this size (default: 100000)") + "\n" +
+        "  -staketargetmax=<amt>  " + _("Stake auto-balance: split stakes larger than this into pieces of at least -staketargetmin (default: 200000)") + "\n" +
+        "  -stakemaxsplit=<n>     " + _("Stake auto-balance: most pieces one stake may be split into (default: 50)") + "\n" +
         "  -rescan                " + _("Rescan the block chain for missing wallet transactions") + "\n" +
         "  -salvagewallet         " + _("Attempt to recover private keys from a corrupt wallet.dat") + "\n" +
         "  -checkblocks=<n>       " + _("How many blocks to check at startup (default: 2500, 0 = all)") + "\n" +
@@ -774,6 +778,23 @@ bool AppInit2(boost::thread_group& threadGroup)
             return false;
         }
     }
+
+    // FlapX: change and stake auto-balance settings
+    fReturnChangeToSource = GetBoolArg("-returnchange", true);
+
+    if (mapArgs.count("-staketargetmin"))
+    {
+        if (!ParseMoney(mapArgs["-staketargetmin"], nStakeTargetMin) || nStakeTargetMin <= 0)
+            return InitError(_("Invalid amount for -staketargetmin=<amount>"));
+    }
+    if (mapArgs.count("-staketargetmax"))
+    {
+        if (!ParseMoney(mapArgs["-staketargetmax"], nStakeTargetMax))
+            return InitError(_("Invalid amount for -staketargetmax=<amount>"));
+    }
+    if (nStakeTargetMax < 2 * nStakeTargetMin)
+        return InitError(_("-staketargetmax must be at least twice -staketargetmin"));
+    nStakeMaxSplitOutputs = (unsigned int)max((int64_t)1, min((int64_t)200, GetArg("-stakemaxsplit", 50)));
 
     if (mapArgs.count("-checkpointkey")) // ppcoin: checkpoint master priv key
     {

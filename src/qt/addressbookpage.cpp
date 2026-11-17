@@ -55,12 +55,12 @@ AddressBookPage::AddressBookPage(Mode mode, Tabs tab, QWidget *parent) :
         ui->labelExplanation->setVisible(false);
         ui->deleteButton->setVisible(true);
         ui->signMessage->setVisible(false);
-		ui->stakeForCharityPushButton->setVisible(true);
+		ui->multiSendPushButton->setVisible(true);
         break;
     case ReceivingTab:
         ui->deleteButton->setVisible(false);
         ui->signMessage->setVisible(true);
-		ui->stakeForCharityPushButton->setVisible(false);
+		ui->multiSendPushButton->setVisible(false);
         break;
     }
 
@@ -72,7 +72,7 @@ AddressBookPage::AddressBookPage(Mode mode, Tabs tab, QWidget *parent) :
     QAction *showQRCodeAction = new QAction(ui->showQRCode->text(), this);
     QAction *signMessageAction = new QAction(ui->signMessage->text(), this);
     QAction *verifyMessageAction = new QAction(ui->verifyMessage->text(), this);
-	QAction *stakeForCharityAction = new QAction(ui->stakeForCharityPushButton->text(), this);
+	QAction *multiSendAction = new QAction(ui->multiSendPushButton->text(), this);
     deleteAction = new QAction(ui->deleteButton->text(), this);
 
     // Build context menu
@@ -89,7 +89,7 @@ AddressBookPage::AddressBookPage(Mode mode, Tabs tab, QWidget *parent) :
     else if(tab == SendingTab)
 	{
         contextMenu->addAction(verifyMessageAction);
-		contextMenu->addAction(stakeForCharityAction);
+		contextMenu->addAction(multiSendAction);
 	}
     // Connect signals for context menu actions
     connect(copyAddressAction, SIGNAL(triggered()), this, SLOT(on_copyToClipboard_clicked()));
@@ -99,7 +99,7 @@ AddressBookPage::AddressBookPage(Mode mode, Tabs tab, QWidget *parent) :
     connect(showQRCodeAction, SIGNAL(triggered()), this, SLOT(on_showQRCode_clicked()));
     connect(signMessageAction, SIGNAL(triggered()), this, SLOT(on_signMessage_clicked()));
     connect(verifyMessageAction, SIGNAL(triggered()), this, SLOT(on_verifyMessage_clicked()));
-	connect(stakeForCharityAction, SIGNAL(triggered()), this, SLOT(on_stakeForCharityPushButton_clicked()));
+	connect(multiSendAction, SIGNAL(triggered()), this, SLOT(on_multiSendPushButton_clicked()));
     connect(ui->tableView, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(contextualMenu(QPoint)));
 
     // Pass through accept action from button box
@@ -217,7 +217,7 @@ void AddressBookPage::on_verifyMessage_clicked()
     emit verifyMessage(addr);
 }
 
-void AddressBookPage::on_stakeForCharityPushButton_clicked()
+void AddressBookPage::on_multiSendPushButton_clicked()
 {
 	QTableView *table = ui->tableView;
 	QModelIndexList indexes = table->selectionModel()->selectedRows(AddressTableModel::Address);
@@ -229,7 +229,7 @@ void AddressBookPage::on_stakeForCharityPushButton_clicked()
 		addr = address.toString();
 	}
 	
-	emit stakeForCharitySignal(addr);
+	emit multiSendSignal(addr);
 }
 
 void AddressBookPage::on_newAddressButton_clicked()
@@ -279,8 +279,8 @@ void AddressBookPage::selectionChanged()
             ui->signMessage->setVisible(false);
             ui->verifyMessage->setEnabled(true);
             ui->verifyMessage->setVisible(true);
-			ui->stakeForCharityPushButton->setEnabled(true);
-			ui->stakeForCharityPushButton->setVisible(true);
+			ui->multiSendPushButton->setEnabled(true);
+			ui->multiSendPushButton->setVisible(true);
             break;
         case ReceivingTab:
             // Deleting receiving addresses, however, is not allowed
@@ -291,8 +291,8 @@ void AddressBookPage::selectionChanged()
             ui->signMessage->setVisible(true);
             ui->verifyMessage->setEnabled(false);
             ui->verifyMessage->setVisible(false);
-			ui->stakeForCharityPushButton->setEnabled(false);
-			ui->stakeForCharityPushButton->setVisible(false );
+			ui->multiSendPushButton->setEnabled(false);
+			ui->multiSendPushButton->setVisible(false );
             break;
         }
         ui->copyToClipboard->setEnabled(true);
@@ -305,7 +305,7 @@ void AddressBookPage::selectionChanged()
         ui->copyToClipboard->setEnabled(false);
         ui->signMessage->setEnabled(false);
         ui->verifyMessage->setEnabled(false);
-		ui->stakeForCharityPushButton->setEnabled(false);
+		ui->multiSendPushButton->setEnabled(false);
     }
 }
 
