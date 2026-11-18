@@ -100,8 +100,8 @@ QToolBar {
     background-color: @space;
     border: none;
     border-bottom: 1px solid @border;
-    padding: 4px;
-    spacing: 2px;
+    padding: 3px 2px;
+    spacing: 0px;
 }
 
 QToolBar QToolButton {
@@ -109,7 +109,8 @@ QToolBar QToolButton {
     background: transparent;
     border: 1px solid transparent;
     border-radius: 7px;
-    padding: 4px 8px 4px 5px;
+    padding: 4px 5px 4px 3px;
+    margin: 0px;
 }
 
 QToolBar QToolButton:hover {
