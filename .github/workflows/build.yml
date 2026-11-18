@@ -5,7 +5,7 @@
 # All are built with UPnP compiled in and on by default (USE_UPNP=1).
 #
 # Every push builds them and keeps them as downloadable "artifacts" on the
-# run's page. Pushing a version tag (e.g. v2.9.1.2) also publishes them as a
+# run's page. Pushing a version tag (e.g. v3.0.0.0) also publishes them as a
 # GitHub release.
 
 name: Build
@@ -269,3 +269,39 @@ jobs:
         with:
           name: flapx-qt-windows-x86_64
           path: release/flapx-qt.exe
+
+  # A version tag (e.g. v3.0.0.0) publishes the binaries as a GitHub release.
+  # The 32-bit Windows build runs in build-win32.yml and adds its .exe to the
+  # same release when it finishes.
+  release:
+    name: Publish release
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [ linux-daemon, linux-qt, windows-qt ]
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: flapx*
+          path: dist
+
+      - name: Package the binaries
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          mkdir out
+          chmod +x dist/flapxd-linux-x86_64/flapxd dist/flapx-qt-linux-x86_64/flapx-qt
+          tar -C dist/flapxd-linux-x86_64 -czf "out/flapxd-$TAG-linux-x86_64.tar.gz" flapxd
+          tar -C dist/flapx-qt-linux-x86_64 -czf "out/flapx-qt-$TAG-linux-x86_64.tar.gz" flapx-qt
+          cp dist/flapx-qt-windows-x86_64/flapx-qt.exe "out/flapx-qt-$TAG-win64.exe"
+          ls -l out
+
+      - name: Publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          # Either workflow may get here first; the other one just uploads
+          gh release create "$TAG" --repo "$GITHUB_REPOSITORY" --title "FlapX $TAG" --generate-notes \
+            || gh release view "$TAG" --repo "$GITHUB_REPOSITORY" > /dev/null
+          gh release upload "$TAG" out/* --repo "$GITHUB_REPOSITORY" --clobber
