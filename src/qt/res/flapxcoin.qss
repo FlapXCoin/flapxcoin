@@ -307,18 +307,20 @@ QPushButton:disabled {
     border-color: @border;
 }
 
-QPushButton:default, QPushButton#startButton, QPushButton#sendButton {
+/* Main buttons (OK, Send): the theme gradient. Multisend on the overview is a
+   plain framed button like Lock/Unlock. */
+QPushButton:default, QPushButton#sendButton {
     background-color: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 @btn1, stop:1 @btn2);
     color: @onbtn;
     border: none;
 }
 
-QPushButton:default:hover, QPushButton#startButton:hover, QPushButton#sendButton:hover {
+QPushButton:default:hover:hover, QPushButton#sendButton:hover {
     background-color: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 @btn1light, stop:1 @btn2light);
     color: @onbtn;
 }
 
-QPushButton:default:disabled, QPushButton#startButton:disabled, QPushButton#sendButton:disabled {
+QPushButton:default:disabled:disabled, QPushButton#sendButton:disabled {
     background-color: @border;
     color: @muted;
 }
