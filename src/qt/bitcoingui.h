@@ -21,7 +21,7 @@ class SendCoinsDialog;
 class SignVerifyMessageDialog;
 class Notificator;
 class RPCConsole;
-class StakeForCharityDialog;
+class MultiSendDialog;
 
 QT_BEGIN_NAMESPACE
 class QLabel;
@@ -81,7 +81,7 @@ private:
     AddressBookPage *receiveCoinsPage;
     SendCoinsDialog *sendCoinsPage;
     SignVerifyMessageDialog *signVerifyMessageDialog;
-    StakeForCharityDialog *stakeForCharityDialog;
+    MultiSendDialog *multiSendDialog;
 
     QLabel *labelEncryptionIcon;
     QLabel *labelStakingIcon;
@@ -113,7 +113,7 @@ private:
     QAction *aboutQtAction;
     QAction *themeCustomAction;
     QAction *openRPCConsoleAction;
-    QAction *charityAction;
+    QAction *multiSendAction;
     QAction *calcAction;
     QAction *stakeReportAction;
 
@@ -139,10 +139,10 @@ private:
 
     uint64_t nWeight;
 
-	bool fStakeForCharity;
-	bool fS4CNotificator;
-	int nCharityPercent;
-	QString strCharityAddress;
+	bool fMultiSend;
+	bool fMultiSendNotify;
+	int nMultiSendPercent;
+	QString strMultiSendAddress;
 
     /* Themes support */
     QString selectedTheme;
@@ -250,7 +250,7 @@ private slots:
     /** called by a timer to check if fRequestShutdown has been set **/
     void detectShutdown();
 
-    void charityClicked(QString addr = "");
+    void multiSendClicked(QString addr = "");
 
     /** Themes: FlapXCoin is built in and the default; more can be added in a themes folder */
     void changeTheme(QString theme);

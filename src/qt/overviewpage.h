@@ -106,7 +106,7 @@ private slots:
     void on_unlockWalletActionNew_clicked();
 
 signals:
-    void stakeForCharitySignal();
+    void multiSendSignal();
 };
 
 #endif // OVERVIEWPAGE_H

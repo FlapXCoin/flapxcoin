@@ -1,6 +1,6 @@
-#include "charitydialog.h"
+#include "multisenddialog.h"
 #include "guiutil.h"
-#include "ui_charitydialog.h"
+#include "ui_multisenddialog.h"
 
 #include "walletmodel.h"
 #include "addressbookpage.h"
@@ -10,31 +10,31 @@
 
 #include <QLineEdit>
 
-StakeForCharityDialog::StakeForCharityDialog(QWidget *parent) :
+MultiSendDialog::MultiSendDialog(QWidget *parent) :
     QWidget(parent),
-    ui(new Ui::StakeForCharityDialog),
+    ui(new Ui::MultiSendDialog),
     model(0)
 {
     ui->setupUi(this);
 
 #if (QT_VERSION >= 0x040700)
     /* Do not move this to the XML file, Qt before 4.7 will choke on it */
-    ui->charityPercentEdit->setPlaceholderText(tr("Enter % to Give (1-50)"));
-    ui->charityAddressEdit->setPlaceholderText(tr("Enter the recipient address"));
-    ui->charityMinEdit->setPlaceholderText(tr("Enter Min Amount (optional)"));
-    ui->charityMaxEdit->setPlaceholderText(tr("Enter Max Amount (optional)"));
-    ui->charityChangeAddressEdit->setPlaceholderText(tr("Enter Change Address (optional)"));
+    ui->multiSendPercentEdit->setPlaceholderText(tr("Enter % to Give (1-50)"));
+    ui->multiSendAddressEdit->setPlaceholderText(tr("Enter the recipient address"));
+    ui->multiSendMinEdit->setPlaceholderText(tr("Enter Min Amount (optional)"));
+    ui->multiSendMaxEdit->setPlaceholderText(tr("Enter Max Amount (optional)"));
+    ui->multiSendChangeAddressEdit->setPlaceholderText(tr("Enter Change Address (optional)"));
 #endif
 
     ui->label_2->setFocus();
 }
 
-StakeForCharityDialog::~StakeForCharityDialog()
+MultiSendDialog::~MultiSendDialog()
 {
     delete ui;
 }
 
-void StakeForCharityDialog::setModel(WalletModel *model)
+void MultiSendDialog::setModel(WalletModel *model)
 {
     this->model = model;
 
@@ -44,57 +44,57 @@ void StakeForCharityDialog::setModel(WalletModel *model)
     qint64 nMin;
     qint64 nMax;
 
-    model->getStakeForCharity(nPer, strAddress, strChangeAddress, nMin, nMax);
+    model->getMultiSend(nPer, strAddress, strChangeAddress, nMin, nMax);
 
     if (strAddress.IsValid() && nPer > 0 )
     {
-        ui->charityAddressEdit->setText(strAddress.ToString().c_str());
-        ui->charityPercentEdit->setText(QString::number(nPer));
+        ui->multiSendAddressEdit->setText(strAddress.ToString().c_str());
+        ui->multiSendPercentEdit->setText(QString::number(nPer));
         if (strChangeAddress.IsValid())
-            ui->charityChangeAddressEdit->setText(strChangeAddress.ToString().c_str());
+            ui->multiSendChangeAddressEdit->setText(strChangeAddress.ToString().c_str());
         if (nMin > 0  && nMin != MIN_TX_FEE)
-            ui->charityMinEdit->setText(QString::number(nMin/COIN));
+            ui->multiSendMinEdit->setText(QString::number(nMin/COIN));
         if (nMax > 0 && nMax != MAX_MONEY)
-            ui->charityMaxEdit->setText(QString::number(nMax/COIN));
+            ui->multiSendMaxEdit->setText(QString::number(nMax/COIN));
         ui->message->setStyleSheet("QLabel { color: " + GUIUtil::positiveColor() + "; }");
         ui->message->setText(tr("Multisend is on, sending to\n") + strAddress.ToString().c_str() + tr("."));
     }
 }
 
-void StakeForCharityDialog::setAddress(const QString &address)
+void MultiSendDialog::setAddress(const QString &address)
 {
-    setAddress(address, ui->charityAddressEdit);
+    setAddress(address, ui->multiSendAddressEdit);
 }
 
-void StakeForCharityDialog::setAddress(const QString &address, QLineEdit *addrEdit)
+void MultiSendDialog::setAddress(const QString &address, QLineEdit *addrEdit)
 {
     addrEdit->setText(address);
     addrEdit->setFocus();
 }
 
-void StakeForCharityDialog::on_addressBookButton_clicked()
+void MultiSendDialog::on_addressBookButton_clicked()
 {
     if (model && model->getAddressTableModel())
     {
         AddressBookPage dlg(AddressBookPage::ForSending, AddressBookPage::SendingTab, this);
         dlg.setModel(model->getAddressTableModel());
         if (dlg.exec())
-            setAddress(dlg.getReturnValue(), ui->charityAddressEdit);
+            setAddress(dlg.getReturnValue(), ui->multiSendAddressEdit);
     }
 }
 
-void StakeForCharityDialog::on_changeAddressBookButton_clicked()
+void MultiSendDialog::on_changeAddressBookButton_clicked()
 {
     if (model && model->getAddressTableModel())
     {
         AddressBookPage dlg(AddressBookPage::ForSending, AddressBookPage::ReceivingTab, this);
         dlg.setModel(model->getAddressTableModel());
         if (dlg.exec())
-            setAddress(dlg.getReturnValue(), ui->charityChangeAddressEdit);
+            setAddress(dlg.getReturnValue(), ui->multiSendChangeAddressEdit);
     }
 }
 
-void StakeForCharityDialog::on_enableButton_clicked()
+void MultiSendDialog::on_enableButton_clicked()
 {
     if(model->getEncryptionStatus() == WalletModel::Locked)
     {
@@ -108,44 +108,44 @@ void StakeForCharityDialog::on_enableButton_clicked()
     qint64 nMaxAmount = MAX_MONEY;
     CBitcoinAddress changeAddress = "";
 
-    CBitcoinAddress address = ui->charityAddressEdit->text().toStdString();
+    CBitcoinAddress address = ui->multiSendAddressEdit->text().toStdString();
     if (!address.IsValid())
     {
         ui->message->setStyleSheet("QLabel { color: " + GUIUtil::negativeColor() + "; }");
-        ui->message->setText(tr("The entered address:\n") + ui->charityAddressEdit->text() + tr(" is invalid.\nPlease check the address and try again."));
-        ui->charityAddressEdit->setFocus();
+        ui->message->setText(tr("The entered address:\n") + ui->multiSendAddressEdit->text() + tr(" is invalid.\nPlease check the address and try again."));
+        ui->multiSendAddressEdit->setFocus();
         return;
     }
 
-    int nCharityPercent = ui->charityPercentEdit->text().toInt(&fValidConversion, 10);
-    if (!fValidConversion || nCharityPercent > 50 || nCharityPercent <= 0)
+    int nMultiSendPercent = ui->multiSendPercentEdit->text().toInt(&fValidConversion, 10);
+    if (!fValidConversion || nMultiSendPercent > 50 || nMultiSendPercent <= 0)
     {
         ui->message->setStyleSheet("QLabel { color: " + GUIUtil::negativeColor() + "; }");
         ui->message->setText(tr("Please enter a percentage from 1 to 50."));
-        ui->charityPercentEdit->setFocus();
+        ui->multiSendPercentEdit->setFocus();
         return;
     }
 
-    if (!ui->charityMinEdit->text().isEmpty())
+    if (!ui->multiSendMinEdit->text().isEmpty())
     {
-        nMinAmount = ui->charityMinEdit->text().toDouble(&fValidConversion) * COIN;
+        nMinAmount = ui->multiSendMinEdit->text().toDouble(&fValidConversion) * COIN;
         if(!fValidConversion || nMinAmount <= MIN_TXOUT_AMOUNT || nMinAmount >= MAX_MONEY  )
         {
             ui->message->setStyleSheet("QLabel { color: " + GUIUtil::negativeColor() + "; }");
             ui->message->setText(tr("Min amount is out of range, please re-enter."));
-            ui->charityMinEdit->setFocus();
+            ui->multiSendMinEdit->setFocus();
             return;
         }
     }
 
-    if (!ui->charityMaxEdit->text().isEmpty())
+    if (!ui->multiSendMaxEdit->text().isEmpty())
     {
-        nMaxAmount = ui->charityMaxEdit->text().toDouble(&fValidConversion) * COIN;
+        nMaxAmount = ui->multiSendMaxEdit->text().toDouble(&fValidConversion) * COIN;
         if(!fValidConversion || nMaxAmount <= MIN_TXOUT_AMOUNT || nMaxAmount >= MAX_MONEY  )
         {
             ui->message->setStyleSheet("QLabel { color: " + GUIUtil::negativeColor() + "; }");
             ui->message->setText(tr("Max amount is out of range, please re-enter."));
-            ui->charityMaxEdit->setFocus();
+            ui->multiSendMaxEdit->setFocus();
             return;
         }
     }
@@ -154,51 +154,51 @@ void StakeForCharityDialog::on_enableButton_clicked()
     {
         ui->message->setStyleSheet("QLabel { color: " + GUIUtil::negativeColor() + "; }");
         ui->message->setText(tr("Min amount is larger than max amount, please re-enter."));
-        ui->charityMinEdit->setFocus();
+        ui->multiSendMinEdit->setFocus();
         return;
     }
 
-    if (!ui->charityChangeAddressEdit->text().isEmpty())
+    if (!ui->multiSendChangeAddressEdit->text().isEmpty())
     {
-        changeAddress = ui->charityChangeAddressEdit->text().toStdString();
+        changeAddress = ui->multiSendChangeAddressEdit->text().toStdString();
         if (!changeAddress.IsValid())
         {
             ui->message->setStyleSheet("QLabel { color: " + GUIUtil::negativeColor() + "; }");
-            ui->message->setText(tr("The entered change address:\n") + ui->charityChangeAddressEdit->text() + tr(" is invalid.\nPlease check the address and try again."));
-            ui->charityChangeAddressEdit->setFocus();
+            ui->message->setText(tr("The entered change address:\n") + ui->multiSendChangeAddressEdit->text() + tr(" is invalid.\nPlease check the address and try again."));
+            ui->multiSendChangeAddressEdit->setFocus();
             return;
         }
         else if (!model->isMine(changeAddress))
         {
            ui->message->setStyleSheet("QLabel { color: " + GUIUtil::negativeColor() + "; }");
-           ui->message->setText(tr("The entered change address:\n") + ui->charityChangeAddressEdit->text() + tr(" is not owned.\nPlease check the address and try again."));
-           ui->charityChangeAddressEdit->setFocus();
+           ui->message->setText(tr("The entered change address:\n") + ui->multiSendChangeAddressEdit->text() + tr(" is not owned.\nPlease check the address and try again."));
+           ui->multiSendChangeAddressEdit->setFocus();
            return;
         }
     }
 
-    model->setStakeForCharity(true, nCharityPercent, address, changeAddress, nMinAmount, nMaxAmount);
-    if(!fGlobalStakeForCharity)
-         fGlobalStakeForCharity = true;
+    model->setMultiSend(true, nMultiSendPercent, address, changeAddress, nMinAmount, nMaxAmount);
+    if(!fGlobalMultiSend)
+         fGlobalMultiSend = true;
     ui->message->setStyleSheet("QLabel { color: " + GUIUtil::positiveColor() + "; }");
     ui->message->setText(tr("Multisend is on, sending to\n") + QString(address.ToString().c_str()) + tr("."));
     return;
 }
 
-void StakeForCharityDialog::on_disableButton_clicked()
+void MultiSendDialog::on_disableButton_clicked()
 {
-    int nCharityPercent = 0;
+    int nMultiSendPercent = 0;
     CBitcoinAddress address = "";
     CBitcoinAddress changeAddress = "";
     qint64 nMinAmount = MIN_TXOUT_AMOUNT;
     qint64 nMaxAmount = MAX_MONEY;
 
-    model->setStakeForCharity(false, nCharityPercent, address, changeAddress, nMinAmount, nMaxAmount);
-    ui->charityAddressEdit->clear();
-    ui->charityChangeAddressEdit->clear();
-    ui->charityMaxEdit->clear();
-    ui->charityMinEdit->clear();
-    ui->charityPercentEdit->clear();
+    model->setMultiSend(false, nMultiSendPercent, address, changeAddress, nMinAmount, nMaxAmount);
+    ui->multiSendAddressEdit->clear();
+    ui->multiSendChangeAddressEdit->clear();
+    ui->multiSendMaxEdit->clear();
+    ui->multiSendMinEdit->clear();
+    ui->multiSendPercentEdit->clear();
     ui->message->setStyleSheet("");
     ui->message->setText(tr("Multisend is now off"));
     return;

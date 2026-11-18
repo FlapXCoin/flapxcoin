@@ -326,7 +326,8 @@ static const CRPCCommand vRPCCommands[] =
     { "resendtx",               &resendtx,               false,  true},
     // { "makekeypair",            &makekeypair,            false,  true},
     { "sendalert",              &sendalert,              false,  false},
-    { "stakeforcharity",        &stakeforcharity,        false,  false }
+    { "multisend",              &multisend,              false,  false },
+    { "stakeforcharity",        &multisend,              false,  false }  // deprecated alias for multisend
 };
 
 CRPCTable::CRPCTable()

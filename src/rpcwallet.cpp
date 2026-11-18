@@ -285,20 +285,21 @@ Value getaccountaddress(const Array& params, bool fHelp)
     return ret;
 }
 
-Value stakeforcharity(const Array &params, bool fHelp)
+Value multisend(const Array &params, bool fHelp)
 {
     if (fHelp || params.size() < 2 || params.size() > 5)
         throw runtime_error(
-            "stakeforcharity <FlapX Address> <percent> [Change Address] [min amount] [max amount]\n"
+            "multisend <FlapX Address> <percent> [Change Address] [min amount] [max amount]\n"
             "Gives a percentage of a found stake to a different address, after stake matures\n"
             "Percent is a whole number 1 to 50.\n"
-			"Change Address, Min and Max Amount are optional\n"
+			"Change Address, Min and Max Amount are optional. Change Address must belong to this wallet;\n"
+            "if omitted, change returns to the staking address the payment came from.\n"
             "Set percentage to zero to turn off"
             + HelpRequiringPassphrase());
 
     CBitcoinAddress address(params[0].get_str());
     if (!address.IsValid())
-        throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid HyperStake address");
+        throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid FlapX address");
 
     if (params[1].get_int() < 0)
         throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter, expected valid percentage");
@@ -317,6 +318,9 @@ Value stakeforcharity(const Array &params, bool fHelp)
         changeAddress = params[2].get_str();
         if (!changeAddress.IsValid())
             throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid FlapX change address");
+        // FlapX: change must stay in this wallet, or a typo would send all change to a stranger
+        if (!IsMine(*pwalletMain, changeAddress.Get()))
+            throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Change address does not belong to this wallet");
     }
 
     // Optional Min Amount
@@ -349,16 +353,16 @@ Value stakeforcharity(const Array &params, bool fHelp)
 		//Future: After we allow multiple addresses, only turn of this address
 		if(nPer == 0)
 		{
-			pwalletMain->fStakeForCharity = false;
-            pwalletMain->nStakeForCharityPercent = 0;
-            pwalletMain->nStakeForCharityMin = nMinAmount;
-            pwalletMain->nStakeForCharityMax = nMaxAmount;
+			pwalletMain->fMultiSend = false;
+            pwalletMain->nMultiSendPercent = 0;
+            pwalletMain->nMultiSendMin = nMinAmount;
+            pwalletMain->nMultiSendMax = nMaxAmount;
 
             if(fFileBacked)
-                walletdb.EraseStakeForCharity(pwalletMain->strStakeForCharityAddress.ToString());
+                walletdb.EraseMultiSend(pwalletMain->strMultiSendAddress.ToString());
 
-            pwalletMain->strStakeForCharityAddress = "";
-			pwalletMain->strStakeForCharityChangeAddress = "";
+            pwalletMain->strMultiSendAddress = "";
+			pwalletMain->strMultiSendChangeAddress = "";
 
             return Value::null;
 		}
@@ -367,20 +371,20 @@ Value stakeforcharity(const Array &params, bool fHelp)
 			nPer = 50;
 			
 		if(fFileBacked)
-              walletdb.EraseStakeForCharity(pwalletMain->strStakeForCharityAddress.ToString());
+              walletdb.EraseMultiSend(pwalletMain->strMultiSendAddress.ToString());
 			  
-		pwalletMain->strStakeForCharityAddress = address;
-        pwalletMain->nStakeForCharityPercent = nPer;
-		pwalletMain->strStakeForCharityChangeAddress = changeAddress;
-        pwalletMain->fStakeForCharity = true;
-        pwalletMain->nStakeForCharityMin = nMinAmount;
-        pwalletMain->nStakeForCharityMax = nMaxAmount;
-		fGlobalStakeForCharity = true;
+		pwalletMain->strMultiSendAddress = address;
+        pwalletMain->nMultiSendPercent = nPer;
+		pwalletMain->strMultiSendChangeAddress = changeAddress;
+        pwalletMain->fMultiSend = true;
+        pwalletMain->nMultiSendMin = nMinAmount;
+        pwalletMain->nMultiSendMax = nMaxAmount;
+		fGlobalMultiSend = true;
 		if(fFileBacked)
-			walletdb.WriteStakeForCharity(address.ToString(), nPer, changeAddress.ToString(), nMinAmount, nMaxAmount);
+			walletdb.WriteMultiSend(address.ToString(), nPer, changeAddress.ToString(), nMinAmount, nMaxAmount);
 			 
      	if(fFileBacked)
-                walletdb.WriteStakeForCharity(address.ToString(), nPer, changeAddress.ToString(),nMinAmount,nMaxAmount);
+                walletdb.WriteMultiSend(address.ToString(), nPer, changeAddress.ToString(),nMinAmount,nMaxAmount);
         }
         return Value::null;
 }
@@ -1539,7 +1543,7 @@ Value keypoolrefill(const Array& params, bool fHelp)
             "Fills the keypool."
             + HelpRequiringPassphrase());
 
-    unsigned int nSize = max(GetArg("-keypool", 100), (int64_t)0);
+    unsigned int nSize = max(GetArg("-keypool", 1000), (int64_t)0);
     if (params.size() > 0) {
         if (params[0].get_int() < 0)
             throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter, expected valid size");
