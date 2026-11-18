@@ -35,6 +35,8 @@
 @muted = #a9b6cc
 @track = #8fa3bf
 @statusbg = #070c17
+@total = #fcd535
+@interest = #22f07a
 @danger = #ff6b81
 [/VARS] */
 
@@ -98,8 +100,8 @@ QToolBar {
     background-color: @space;
     border: none;
     border-bottom: 1px solid @border;
-    padding: 6px;
-    spacing: 6px;
+    padding: 4px;
+    spacing: 2px;
 }
 
 QToolBar QToolButton {
@@ -107,7 +109,7 @@ QToolBar QToolButton {
     background: transparent;
     border: 1px solid transparent;
     border-radius: 7px;
-    padding: 5px 12px 5px 8px;
+    padding: 4px 8px 4px 5px;
 }
 
 QToolBar QToolButton:hover {
@@ -173,13 +175,13 @@ QGroupBox QLabel#pawrateBox, QGroupBox QLabel#connectionBox {
 }
 
 QGroupBox QLabel#labelTotal {
-    color: @accent;
+    color: @total;
     font-weight: bold;
     font-size: 15px;
 }
 
 QGroupBox QLabel#labelInterest {
-    color: @accent2;
+    color: @interest;
     font-weight: bold;
 }
 
