@@ -1189,9 +1189,9 @@ void BitcoinGUI::paintEvent(QPaintEvent *event)
     // a navy glow centred above the top edge
     // (ellipse at 50% -20%), fading into the background 60% of the way to the far corner.
     // "Lighten" only brightens, so the starfield under it stays visible.
-    const QRectF area = rect();
-    const QPointF centre(area.width() / 2.0, -0.2 * area.height());
-    const double farCorner = std::sqrt(std::pow(area.width() / 2.0, 2) + std::pow(1.2 * area.height(), 2));
+    const QRectF window = rect();
+    const QPointF centre(window.width() / 2.0, -0.2 * window.height());
+    const double farCorner = std::sqrt(std::pow(window.width() / 2.0, 2) + std::pow(1.2 * window.height(), 2));
 
     QRadialGradient glow(centre, 0.6 * farCorner);
     glow.setColorAt(0.0, QColor(24, 40, 74));
