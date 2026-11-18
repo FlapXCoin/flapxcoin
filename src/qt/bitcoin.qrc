@@ -66,7 +66,10 @@
         <file>res/images/art/panic.png</file>
         <file>res/images/art/pool.png</file>
     </qresource>
-    <qresource prefix="/translations"/>
+    <qresource prefix="/translations">
+        <file alias="en">locale/bitcoin_en.qm</file>
+        <file alias="ru">locale/bitcoin_ru.qm</file>
+    </qresource>
     <qresource prefix="/toolTip"/>
     <qresource prefix="/"/>
     <qresource prefix="/themes">
