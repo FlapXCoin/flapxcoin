@@ -511,7 +511,7 @@ void applyFlapXPalette()
         QApplication::setStyle(style);
 
     const QColor space(11, 18, 32), space2(17, 26, 46), panel(21, 32, 58), border(36, 52, 90);
-    const QColor text(230, 237, 247), cyan(42, 216, 234), mint(34, 240, 122);
+    const QColor text(255, 255, 255), cyan(252, 213, 53), mint(34, 240, 122);   // "cyan": the accent, now Flappy yellow
     const QColor disabled(91, 106, 134);
 
     QPalette p;
@@ -595,6 +595,21 @@ QString flappyStyleSheet()
     return loadStyleSheet(":/themes/flappycoin.qss", ":/themes");
 }
 
+QString plainStyleSheet()
+{
+    return loadStyleSheet(":/themes/plain.qss", ":/themes");
+}
+
+void applyPlainPalette()
+{
+    // Plain grey and black: Qt's Fusion style with its standard light palette
+    if (QStyle *style = QStyleFactory::create("Fusion"))
+    {
+        QApplication::setStyle(style);
+        QApplication::setPalette(style->standardPalette());
+    }
+}
+
 QString kosmosStyleSheet()
 {
     return loadStyleSheet(":/themes/kosmos.qss", ":/themes");
@@ -623,14 +638,28 @@ QColor themeColor(ThemeColor which)
     {
         switch (which)
         {
-        case TC_POSITIVE:        return QColor(46, 196, 182);   // teal
-        case TC_NEGATIVE:        return QColor(255, 90, 95);
-        case TC_NEGATIVE_AMOUNT: return QColor(233, 220, 196);  // cream
-        case TC_MUTED:           return QColor(169, 159, 182);
-        case TC_ACCENT:          return QColor(255, 140, 66);   // burnt orange
-        case TC_ACCENT2:         return QColor(242, 177, 52);   // mustard
+        case TC_POSITIVE:        return QColor(249, 200, 14);   // star gold
+        case TC_NEGATIVE:        return QColor(255, 138, 128);
+        case TC_NEGATIVE_AMOUNT: return QColor(255, 255, 255);  // white
+        case TC_MUTED:           return QColor(214, 208, 226);
+        case TC_ACCENT:          return QColor(229, 57, 53);    // Soviet red
+        case TC_ACCENT2:         return QColor(249, 200, 14);   // star gold
         case TC_GRAPH_BG:        return QColor(15, 20, 48);
         case TC_GRAPH_GRID:      return QColor(43, 47, 99);
+        }
+    }
+    if (nThemeLook == LOOK_NONE)
+    {
+        switch (which)
+        {
+        case TC_POSITIVE:        return QColor(0, 110, 0);
+        case TC_NEGATIVE:        return QColor(180, 0, 0);
+        case TC_NEGATIVE_AMOUNT: return QColor(0, 0, 0);
+        case TC_MUTED:           return QColor(96, 96, 96);
+        case TC_ACCENT:          return QColor(40, 40, 40);
+        case TC_ACCENT2:         return QColor(110, 110, 110);
+        case TC_GRAPH_BG:        return QColor(255, 255, 255);
+        case TC_GRAPH_GRID:      return QColor(200, 200, 200);
         }
     }
     if (nThemeLook == LOOK_FLAPPY)
@@ -649,12 +678,12 @@ QColor themeColor(ThemeColor which)
     }
     switch (which)
     {
-    case TC_POSITIVE:        return QColor(34, 240, 122);   // mint
+    case TC_POSITIVE:        return QColor(34, 240, 122);   // FlapX green
     case TC_NEGATIVE:        return QColor(255, 107, 129);
-    case TC_NEGATIVE_AMOUNT: return QColor(201, 212, 227);  // silver
-    case TC_MUTED:           return QColor(138, 155, 184);
-    case TC_ACCENT:          return QColor(42, 216, 234);   // cyan
-    case TC_ACCENT2:         return QColor(34, 240, 122);   // mint
+    case TC_NEGATIVE_AMOUNT: return QColor(255, 255, 255);  // white
+    case TC_MUTED:           return QColor(206, 214, 228);
+    case TC_ACCENT:          return QColor(252, 213, 53);   // Flappy Bird yellow
+    case TC_ACCENT2:         return QColor(34, 240, 122);   // FlapX green
     case TC_GRAPH_BG:        return QColor(11, 18, 32);
     case TC_GRAPH_GRID:      return QColor(36, 52, 90);
     }
@@ -815,7 +844,7 @@ void applyKosmosPalette()
         QApplication::setStyle(style);
 
     const QColor space(15, 20, 48), space2(22, 28, 62), panel(29, 36, 80), border(58, 63, 120);
-    const QColor text(246, 236, 220), orange(255, 140, 66), teal(46, 196, 182);
+    const QColor text(255, 255, 255), orange(229, 57, 53), teal(249, 200, 14);   // red accent, star gold
     const QColor disabled(110, 106, 140);
 
     QPalette p;
@@ -834,7 +863,7 @@ void applyKosmosPalette()
     p.setColor(QPalette::BrightText, QColor(255, 90, 95));
     p.setColor(QPalette::Link, orange);
     p.setColor(QPalette::LinkVisited, teal);
-    p.setColor(QPalette::Highlight, QColor(150, 74, 30));
+    p.setColor(QPalette::Highlight, QColor(150, 30, 30));
     p.setColor(QPalette::HighlightedText, Qt::white);
     p.setColor(QPalette::Light, QColor(72, 78, 140));
     p.setColor(QPalette::Midlight, border);
@@ -1099,6 +1128,37 @@ static void drawKosmosFallback(QPainter &painter, const QRect &rect)
     painter.restore();
 }
 
+// Draw a background picture filling rect, keeping its shape and anchored to the
+// bottom, so what's at the bottom of the picture always sits along the bottom
+// edge; anything that doesn't fit is cut off at the top and the sides. The
+// scaled copy is kept per window size. Returns false if the picture is missing.
+static bool drawBottomAnchored(QPainter &painter, const QRect &rect, const QImage &picture,
+                               QPixmap &scaled, QSize &scaledFor)
+{
+    if (picture.isNull() || rect.isEmpty())
+        return false;
+    if (scaledFor != rect.size())
+    {
+        QImage fill = picture.scaled(rect.size(), Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation);
+        const int x = (fill.width() - rect.width()) / 2;
+        const int y = fill.height() - rect.height();
+        scaled = QPixmap::fromImage(fill.copy(x, y, rect.width(), rect.height()));
+        scaledFor = rect.size();
+    }
+    painter.drawPixmap(rect.topLeft(), scaled);
+    return true;
+}
+
+bool drawFlapXScenery(QPainter &painter, const QRect &rect)
+{
+    // The FlapX picture (res/images/flapx.jpg): a moon base with a stainless-steel
+    // rocket lifting off its pad, a Voyager-style probe, and cyan and mint nebulas
+    static QImage picture(":/themes/flapx.jpg");
+    static QPixmap scaled;
+    static QSize scaledFor;
+    return drawBottomAnchored(painter, rect, picture, scaled, scaledFor);
+}
+
 void drawKosmosScenery(QPainter &painter, const QRect &rect)
 {
     // The Kosmos picture (res/images/kosmos.jpg): Soyuz over the Earth, Sputnik,
@@ -1109,21 +1169,8 @@ void drawKosmosScenery(QPainter &painter, const QRect &rect)
     static QImage picture(":/themes/kosmos.jpg");
     static QPixmap scaled;
     static QSize scaledFor;
-
-    if (picture.isNull() || rect.isEmpty())
-    {
+    if (!drawBottomAnchored(painter, rect, picture, scaled, scaledFor))
         drawKosmosFallback(painter, rect);
-        return;
-    }
-    if (scaledFor != rect.size())
-    {
-        QImage fill = picture.scaled(rect.size(), Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation);
-        const int x = (fill.width() - rect.width()) / 2;
-        const int y = fill.height() - rect.height();
-        scaled = QPixmap::fromImage(fill.copy(x, y, rect.width(), rect.height()));
-        scaledFor = rect.size();
-    }
-    painter.drawPixmap(rect.topLeft(), scaled);
 }
 
 QString formatBytes(quint64 bytes)

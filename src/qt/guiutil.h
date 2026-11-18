@@ -136,6 +136,15 @@ namespace GUIUtil
     /** Draw the FlappyCoin scenery (clouds, city, bushes) along the bottom of rect */
     void drawFlappyScenery(QPainter &painter, const QRect &rect);
 
+    /** Draw the FlapX background picture in rect, filling it and anchored to the bottom.
+        Returns false if the picture is missing (the starfield shows instead). */
+    bool drawFlapXScenery(QPainter &painter, const QRect &rect);
+
+    /** The built-in None theme (res/plain.qss): plain grey and black, no decoration */
+    QString plainStyleSheet();
+    /** Qt's standard light grey palette, for the None theme */
+    void applyPlainPalette();
+
     /** The built-in Kosmos theme (res/kosmos.qss): the 1970s Soviet space programme */
     QString kosmosStyleSheet();
     /** Deep-space palette for the Kosmos theme */
@@ -146,7 +155,7 @@ namespace GUIUtil
 
     /** Which built-in look is active, for colours set in code. Themes loaded from a
         themes folder use the FlapX look underneath. */
-    enum ThemeLook { LOOK_FLAPX, LOOK_FLAPPY, LOOK_KOSMOS };
+    enum ThemeLook { LOOK_FLAPX, LOOK_FLAPPY, LOOK_KOSMOS, LOOK_NONE };
     void setThemeLook(ThemeLook look);
     ThemeLook themeLook();
     bool isFlappyTheme();

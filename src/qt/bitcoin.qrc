@@ -80,6 +80,8 @@
         <file alias="flappycoin.qss">res/flappycoin.qss</file>
         <file alias="kosmos.qss">res/kosmos.qss</file>
         <file alias="kosmos.jpg">res/images/kosmos.jpg</file>
+        <file alias="flapx.jpg">res/images/flapx.jpg</file>
+        <file alias="plain.qss">res/plain.qss</file>
     </qresource>
     <qresource prefix="/qt/art">
         <file>res/images/art/ccflapx.png</file>

@@ -150,6 +150,9 @@ jobs:
           sudo apt-get install -y xvfb xdotool imagemagick
           PRINT_SCREENSHOTS_BASE64=1 contrib/ci/gui-screenshots.sh ./flapx-qt screenshots
           PRINT_SCREENSHOTS_BASE64=1 THEME=FlappyCoin contrib/ci/gui-screenshots.sh ./flapx-qt screenshots/flappycoin
+          # Космос, written the way QSettings stores non-Latin text in its .conf file
+          PRINT_SCREENSHOTS_BASE64=1 THEME='\x41a\x43e\x441\x43c\x43e\x441' contrib/ci/gui-screenshots.sh ./flapx-qt screenshots/kosmos
+          PRINT_SCREENSHOTS_BASE64=1 THEME=None contrib/ci/gui-screenshots.sh ./flapx-qt screenshots/none
 
       - uses: actions/upload-artifact@v4
         if: always()

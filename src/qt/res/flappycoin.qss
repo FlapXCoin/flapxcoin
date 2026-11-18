@@ -171,6 +171,12 @@ QLabel#labelMyWeight {
     font-weight: bold;
 }
 
+/* Mission Logs: the list of recent transactions sits straight on the panel */
+QListView#listTransactions {
+    background: transparent;
+    border: none;
+}
+
 QLabel#labelAlerts {
     background-color: rgba(210, 60, 60, 30);
     color: @text;
