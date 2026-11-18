@@ -13,9 +13,18 @@
 #include "addrman.h"
 #include "ui_interface.h"
 
+// Defined further down, next to the message handler it wakes
+static void WakeMessageHandler();
+
 #ifdef WIN32
 #include <string.h>
 #endif
+
+#include <limits>
+
+#include <boost/thread/condition_variable.hpp>
+#include <boost/thread/mutex.hpp>
+#include <boost/chrono/duration.hpp>
 
 #ifdef USE_UPNP
 #include <miniupnpc/miniwget.h>
@@ -31,8 +40,9 @@ using namespace std;
 using namespace boost;
 
 static const int MAX_OUTBOUND_CONNECTIONS = 42;
+// Most inbound connections accepted from one IP address (local ones excepted)
+static const int MAX_INBOUND_PER_IP = 2;
 
-bool OpenNetworkConnection(const CAddress& addrConnect, CSemaphoreGrant *grantOutbound = NULL, const char *strDest = NULL, bool fOneShot = false);
 
 
 struct LocalServiceInfo {
@@ -85,7 +95,37 @@ void AddOneShot(string strDest)
 
 unsigned short GetListenPort()
 {
-    return (unsigned short)(GetArg("-port", Params().GetDefaultPort()));
+    // -altport: listen on the second peer port (for a second wallet behind the
+    // same internet connection). An explicit -port always wins.
+    int nPort = GetBoolArg("-altport", false) ? Params().GetAltPort() : Params().GetDefaultPort();
+    return (unsigned short)(GetArg("-port", nPort));
+}
+
+// The two ports wallets expect peers on: the default and the second peer port
+static bool IsStandardPeerPort(unsigned short nPort)
+{
+    return nPort == Params().GetDefaultPort() || nPort == Params().GetAltPort();
+}
+
+// Outgoing connections are limited to one per network group (/16 for IPv4)
+// for each of the two peer ports, so two wallets behind the same internet
+// connection (one on each port) can both be reached
+static std::vector<unsigned char> OutboundGroupKey(const CAddress& addr)
+{
+    std::vector<unsigned char> key = addr.GetGroup();
+    key.push_back(addr.GetPort() == Params().GetAltPort() ? 1 : 0);
+    return key;
+}
+
+// Number of connections (either direction) with this IP address
+static int CountNodesWithIP(const CNetAddr& ip)
+{
+    LOCK(cs_vNodes);
+    int nCount = 0;
+    BOOST_FOREACH(CNode* pnode, vNodes)
+        if ((CNetAddr)pnode->addr == ip)
+            nCount++;
+    return nCount;
 }
 
 // find 'best' local address for a particular peer
@@ -218,6 +258,88 @@ void AdvertizeLocal(CNode *pnode)
     }
 }
 
+// Learning our public address from our peers
+//
+// Every peer tells us, in its version message, the address it sees us at
+// (pnode->addrLocal). Behind a home router no local interface has the public
+// address, so without UPnP or -externalip we would never know it: getinfo
+// shows "ip" : "0.0.0.0", our version messages say we are at 0.0.0.0, and we
+// rarely advertise ourselves, so other wallets can't find us. (Old Bitcoin
+// code asked checkip.dyndns.org; this does the same job without a website.)
+//
+// One peer could lie, so an address is only taken once outbound peers in at
+// least PEER_LOCAL_MIN_VOTES different network groups (/16s) report it. It is
+// stored with our listen port (60042, or 60242 with -altport), not the
+// outgoing port the peer saw. If our public IP changes later, the new one
+// replaces it the same way.
+static const unsigned int PEER_LOCAL_MIN_VOTES = 2;
+static const unsigned int PEER_LOCAL_MAX_CANDIDATES = 64;
+static CCriticalSection cs_peerLocal;
+static map<CNetAddr, set<vector<unsigned char> > > mapPeerLocalVotes;
+static CNetAddr addrPeerLocal;          // address currently learned from peers
+static bool fPeerLocalOwned = false;    // true if we added it to mapLocalHost
+static bool fLocalAddressChanged = false;
+
+bool LearnLocalFromPeer(CNode *pnode)
+{
+    if (!fDiscover || pnode->fInbound)
+        return false;
+    if (!pnode->addr.IsRoutable() || !pnode->addrLocal.IsRoutable() || IsLimited(pnode->addrLocal))
+        return false;
+
+    CNetAddr ip(pnode->addrLocal);
+    CNetAddr addrOld;
+    bool fRemoveOld = false;
+    {
+        LOCK(cs_peerLocal);
+        if (addrPeerLocal.IsValid() && ip == addrPeerLocal)
+            return false;
+        if (mapPeerLocalVotes.size() >= PEER_LOCAL_MAX_CANDIDATES && !mapPeerLocalVotes.count(ip))
+            mapPeerLocalVotes.clear();
+        set<vector<unsigned char> >& setVoters = mapPeerLocalVotes[ip];
+        setVoters.insert(pnode->addr.GetGroup());
+        if (setVoters.size() < PEER_LOCAL_MIN_VOTES)
+            return false;
+
+        addrOld = addrPeerLocal;
+        fRemoveOld = fPeerLocalOwned && addrOld.IsValid();
+        addrPeerLocal = ip;
+        mapPeerLocalVotes.clear();
+    }
+
+    CService addrNew(ip, GetListenPort());
+    bool fOwned;
+    {
+        LOCK(cs_mapLocalHost);
+        if (fRemoveOld)
+            mapLocalHost.erase(addrOld);
+        // Leave an address that UPnP, -externalip or an interface already
+        // gave us alone; only one we add here is ours to remove later
+        fOwned = mapLocalHost.count(ip) == 0;
+    }
+    AddLocal(addrNew, LOCAL_PEER);
+    {
+        LOCK(cs_peerLocal);
+        fPeerLocalOwned = fOwned;
+        fLocalAddressChanged = true;
+    }
+    if (fRemoveOld)
+        printf("Public address changed from %s to %s (reported by peers)\n", addrOld.ToString().c_str(), addrNew.ToString().c_str());
+    else
+        printf("Public address %s learned from peers\n", addrNew.ToString().c_str());
+    return true;
+}
+
+// True once after our public address was learned or changed, so it can be
+// advertised to all peers right away instead of at the next daily rebroadcast
+bool TakeLocalAddressChanged()
+{
+    LOCK(cs_peerLocal);
+    bool fChanged = fLocalAddressChanged;
+    fLocalAddressChanged = false;
+    return fChanged;
+}
+
 void SetReachable(enum Network net, bool fFlag)
 {
     LOCK(cs_mapLocalHost);
@@ -246,7 +368,7 @@ bool AddLocal(const CService& addr, int nScore)
         LocalServiceInfo &info = mapLocalHost[addr];
         if (!fAlready || nScore >= info.nScore) {
             info.nScore = nScore;
-            info.nPort = addr.GetPort() + (fAlready ? 1 : 0);
+            info.nPort = addr.GetPort();
         }
         SetReachable(addr.GetNetwork());
     }
@@ -493,6 +615,34 @@ bool CNode::Misbehaving(int howmuch)
     return false;
 }
 
+CCriticalSection CNode::cs_totalBytes;
+uint64_t CNode::nTotalBytesRecv = 0;
+uint64_t CNode::nTotalBytesSent = 0;
+
+void CNode::RecordBytesRecv(uint64_t bytes)
+{
+    LOCK(cs_totalBytes);
+    nTotalBytesRecv += bytes;
+}
+
+void CNode::RecordBytesSent(uint64_t bytes)
+{
+    LOCK(cs_totalBytes);
+    nTotalBytesSent += bytes;
+}
+
+uint64_t CNode::GetTotalBytesRecv()
+{
+    LOCK(cs_totalBytes);
+    return nTotalBytesRecv;
+}
+
+uint64_t CNode::GetTotalBytesSent()
+{
+    LOCK(cs_totalBytes);
+    return nTotalBytesSent;
+}
+
 #undef X
 #define X(name) stats.name = name
 void CNode::copyStats(CNodeStats &stats)
@@ -506,7 +656,11 @@ void CNode::copyStats(CNodeStats &stats)
     X(strSubVer);
     X(fInbound);
     X(nStartingHeight);
+    X(nKnownHeight);
+    X(nSendBytes);
+    X(nRecvBytes);
     X(nMisbehavior);
+    stats.fSyncNode = (this == pnodeSync);
 
     // It is common for nodes with good ping times to suddenly become lagged,
     // due to a new block arriving or other large transfer.
@@ -619,6 +773,8 @@ void SocketSendData(CNode *pnode)
         int nBytes = send(pnode->hSocket, &data[pnode->nSendOffset], data.size() - pnode->nSendOffset, MSG_NOSIGNAL | MSG_DONTWAIT);
         if (nBytes > 0) {
             pnode->nLastSend = GetTime();
+            pnode->nSendBytes += nBytes;
+            CNode::RecordBytesSent(nBytes);
             pnode->nSendOffset += nBytes;
             if (pnode->nSendOffset == data.size()) {
                 pnode->nSendOffset = 0;
@@ -796,6 +952,7 @@ void ThreadSocketHandler()
             SOCKET hSocket = accept(hListenSocket, (struct sockaddr*)&sockaddr, &len);
             CAddress addr;
             int nInbound = 0;
+            int nInboundSameIP = 0;
 
             if (hSocket != INVALID_SOCKET)
                 if (!addr.SetSockAddr((const struct sockaddr*)&sockaddr))
@@ -805,7 +962,11 @@ void ThreadSocketHandler()
                 LOCK(cs_vNodes);
                 BOOST_FOREACH(CNode* pnode, vNodes)
                     if (pnode->fInbound)
+                    {
                         nInbound++;
+                        if ((CNetAddr)pnode->addr == (CNetAddr)addr)
+                            nInboundSameIP++;
+                    }
             }
 
             if (hSocket == INVALID_SOCKET)
@@ -821,6 +982,13 @@ void ThreadSocketHandler()
             else if (CNode::IsBanned(addr))
             {
                 printf("connection from %s dropped (banned)\n", addr.ToString().c_str());
+                closesocket(hSocket);
+            }
+            else if (nInboundSameIP >= MAX_INBOUND_PER_IP && !addr.IsLocal())
+            {
+                // One address could otherwise take every inbound slot. Two
+                // wallets behind one internet connection still both fit.
+                printf("connection from %s dropped (already %d from this address)\n", addr.ToString().c_str(), nInboundSameIP);
                 closesocket(hSocket);
             }
             else
@@ -873,7 +1041,11 @@ void ThreadSocketHandler()
                         {
                             if (!pnode->ReceiveMsgBytes(pchBuf, nBytes))
                                  pnode->CloseSocketDisconnect();
+                            else if (!pnode->vRecvMsg.empty() && pnode->vRecvMsg.back().complete())
+                                WakeMessageHandler();   // a whole message is waiting
                             pnode->nLastRecv = GetTime();
+                            pnode->nRecvBytes += nBytes;
+                            CNode::RecordBytesRecv(nBytes);
                         }
                         else if (nBytes == 0)
                         {
@@ -973,16 +1145,25 @@ void ThreadMapPort()
     int error = 0;
     devlist = upnpDiscover(2000, multicastif, minissdpdpath, 0, 0, &error);
 #else
-    /* miniupnpc 1.9.20150730 */
+    /* miniupnpc 1.9.20150730: the last number before &error is the TTL, how
+       many router hops the discovery search may cross. Older miniupnpc used 2
+       internally; 4 also finds routers behind an extra router (some double-router
+       and mesh setups). */
     int error = 0;
-    devlist = upnpDiscover(2000, multicastif, minissdpdpath, 0, 0, 2, &error);
+    devlist = upnpDiscover(2000, multicastif, minissdpdpath, 0, 0, 4, &error);
 #endif
 
     struct UPNPUrls urls;
     struct IGDdatas data;
     int r;
 
+#if MINIUPNPC_API_VERSION >= 18
+    /* miniupnpc 2.2.8 added a WAN address out-parameter */
+    char wanaddr[64];
+    r = UPNP_GetValidIGD(devlist, &urls, &data, lanaddr, sizeof(lanaddr), wanaddr, sizeof(wanaddr));
+#else
     r = UPNP_GetValidIGD(devlist, &urls, &data, lanaddr, sizeof(lanaddr));
+#endif
     if (r == 1)
     {
         if (fDiscover) {
@@ -1024,7 +1205,7 @@ void ThreadMapPort()
                 MilliSleep(20*60*1000); // Refresh every 20 minutes
             }
         }
-        catch (boost::thread_interrupted)
+        catch (const boost::thread_interrupted&)
         {
             r = UPNP_DeletePortMapping(urls.controlURL, data.first.servicetype, port.c_str(), "TCP", 0);
             printf("UPNP_DeletePortMapping() returned : %d\n", r);
@@ -1193,7 +1374,8 @@ void ThreadOpenConnections()
         //
         CAddress addrConnect;
 
-        // Only connect out to one peer per network group (/16 for IPv4).
+        // Only connect out to one peer per network group (/16 for IPv4) and
+        // peer port (see OutboundGroupKey).
         // Do this here so we don't have to critsect vNodes inside mapAddresses critsect.
         int nOutbound = 0;
         set<vector<unsigned char> > setConnected;
@@ -1201,7 +1383,7 @@ void ThreadOpenConnections()
             LOCK(cs_vNodes);
             BOOST_FOREACH(CNode* pnode, vNodes) {
                 if (!pnode->fInbound) {
-                    setConnected.insert(pnode->addr.GetGroup());
+                    setConnected.insert(OutboundGroupKey(pnode->addr));
                     nOutbound++;
                 }
             }
@@ -1216,7 +1398,7 @@ void ThreadOpenConnections()
             CAddress addr = addrman.Select();
 
             // if we selected an invalid address, restart
-            if (!addr.IsValid() || setConnected.count(addr.GetGroup()) || IsLocal(addr))
+            if (!addr.IsValid() || setConnected.count(OutboundGroupKey(addr)) || IsLocal(addr))
                 break;
 
             nTries++;
@@ -1230,8 +1412,8 @@ void ThreadOpenConnections()
             if (nANow - addr.nLastTry < 600 && nTries < 30)
                 continue;
 
-            // do not allow non-default ports, unless after 50 invalid addresses selected already
-            if (addr.GetPort() != Params().GetDefaultPort() && nTries < 50)
+            // do not allow non-standard ports, unless after 50 invalid addresses selected already
+            if (!IsStandardPeerPort(addr.GetPort()) && nTries < 50)
                 continue;
 
             addrConnect = addr;
@@ -1326,10 +1508,17 @@ bool OpenNetworkConnection(const CAddress& addrConnect, CSemaphoreGrant *grantOu
     //
     boost::this_thread::interruption_point();
     if (!strDest)
+    {
+        // At most two connections with one IP address, and a second only to a
+        // standard peer port: two wallets behind the same internet connection
+        // (one on each port) can both be reached
+        int nSameIP = CountNodesWithIP(addrConnect);
         if (IsLocal(addrConnect) ||
-            FindNode((CNetAddr)addrConnect) || CNode::IsBanned(addrConnect) ||
+            FindNode((CService)addrConnect) || CNode::IsBanned(addrConnect) ||
+            nSameIP >= 2 || (nSameIP == 1 && !IsStandardPeerPort(addrConnect.GetPort())) ||
             FindNode(addrConnect.ToStringIPPort().c_str()))
             return false;
+    }
     if (strDest && FindNode(strDest))
         return false;
 
@@ -1347,40 +1536,229 @@ bool OpenNetworkConnection(const CAddress& addrConnect, CSemaphoreGrant *grantOu
     return true;
 }
 
-// for now, use a very simple selection metric: the node from which we received
-// most recently
-static int64_t NodeSyncScore(const CNode *pnode) {
-    return pnode->nLastRecv;
+// Client version a peer announced in its sub-version, e.g.
+// "/FlapX-Starhopper:2.9.0.5/" gives 2090005 (major, minor, revision, build as
+// two digits each); 0 if it can't be read. It's only what the peer says: used
+// as a preference (a threshold), never trusted for anything else.
+static int PeerClientVersion(const CNode *pnode) {
+    const std::string& s = pnode->strSubVer;
+    size_t pos = s.rfind(':');
+    if (pos == std::string::npos)
+        return 0;
+    int nMajor = 0, nMinor = 0, nRevision = 0, nBuild = 0;
+    if (sscanf(s.c_str() + pos + 1, "%d.%d.%d.%d", &nMajor, &nMinor, &nRevision, &nBuild) < 2)
+        return 0;
+    return nMajor * 1000000 + nMinor * 10000 + nRevision * 100 + nBuild;
 }
 
-void static StartSync(const vector<CNode*> &vNodes) {
-    CNode *pnodeNewSync = NULL;
-    int64_t nBestScore = 0;
+// Is this peer new enough that we prefer to download from it? A threshold, not
+// "highest wins": every peer at or above MIN_SYNC_PEER_VERSION counts the same,
+// so claiming a made-up higher version gains nothing.
+static bool IsPreferredSyncVersion(const CNode *pnode) {
+    return PeerClientVersion(pnode) >= MIN_SYNC_PEER_VERSION;
+}
 
+// Preferred-version peers first (bigger batches); among equals, the one we
+// heard from most recently
+static int64_t NodeSyncScore(const CNode *pnode) {
+    int64_t nScore = pnode->nLastRecv;
+    if (IsPreferredSyncVersion(pnode))
+        nScore += (int64_t)1 << 40;   // outranks any difference in nLastRecv
+    return nScore;
+}
+
+bool fCatchingUp = false;
+
+// Wakes the message handler as soon as new data arrives, instead of letting
+// it finish a 100 ms nap: during sync, blocks arrive one by one and each one
+// used to wait up to 100 ms before being processed.
+static boost::mutex mutexMsgProc;
+static boost::condition_variable condMsgProc;
+static bool fMsgProcWake = false;
+
+static void WakeMessageHandler()
+{
+    {
+        boost::lock_guard<boost::mutex> lock(mutexMsgProc);
+        fMsgProcWake = true;
+    }
+    condMsgProc.notify_one();
+}
+
+bool IsSyncNode(const CNode* pnode) {
+    return pnode == pnodeSync;
+}
+
+// The highest height a peer could honestly have right now. A peer's height
+// starts as the number it sends when it connects and nothing proves it, so a
+// peer could claim any height. Blocks can't be made much faster than the target
+// spacing, so a claim is capped at our tip plus the blocks that could have been
+// made since our tip's time (at a quarter of the target spacing), plus a
+// little slack. Once we're synced (tip a few minutes old) the cap sits just
+// above our own height, so made-up heights can't make us think we're behind.
+static const int64_t PLAUSIBLE_BLOCK_SECONDS = 15;
+static const int PLAUSIBLE_HEIGHT_SLACK = 100;
+
+static int MaxPlausibleHeight() {
+    int nHeight = nBestHeightUI;          // atomics: safe from any thread
+    int64_t nTipTime = nBestTimeUI;
+    if (nHeight < 0)
+        return std::numeric_limits<int>::max();
+    int64_t nElapsed = std::max((int64_t)0, GetAdjustedTime() - nTipTime);
+    int64_t nMax = (int64_t)nHeight + nElapsed / PLAUSIBLE_BLOCK_SECONDS + PLAUSIBLE_HEIGHT_SLACK;
+    return (int)std::min(nMax, (int64_t)std::numeric_limits<int>::max());
+}
+
+// A peer's height as far as we believe it
+static int PeerHeight(const CNode *pnode) {
+    return std::min(pnode->nKnownHeight, MaxPlausibleHeight());
+}
+
+static int AgreedPeerHeight(const vector<CNode*> &vNodes, bool fUseAvoided, int64_t nNow);
+
+// The chain height our peers agree on (see AgreedPeerHeight), for the GUI
+int GetBestPeerHeight() {
+    LOCK(cs_vNodes);
+    int nAgreed = AgreedPeerHeight(vNodes, false, GetTime());
+    if (nAgreed < 0)
+        nAgreed = AgreedPeerHeight(vNodes, true, GetTime());
+    return nAgreed;
+}
+
+void ReleaseSyncNode(CNode* pnode, int64_t nSeconds) {
+    pnode->nSyncAvoidUntil = GetTime() + nSeconds;
+    pnode->ResetBlockPrefetch();
+    if (pnode == pnodeSync)
+        pnodeSync = NULL;   // ThreadMessageHandler picks a new one
+}
+
+// Can we download blocks from this peer at all?
+static bool CanSyncFrom(const CNode *pnode) {
+    return !pnode->fClient && !pnode->fOneShot &&
+           !pnode->fDisconnect && pnode->fSuccessfullyConnected &&
+           (pnode->nVersion < NOBLKS_VERSION_START || pnode->nVersion >= NOBLKS_VERSION_END);
+}
+
+// The chain height our peers agree on: the tallest height that at least two
+// usable peers in different network groups (/16s) report, within
+// SYNC_HEIGHT_SLACK of each other. A lone peer far above everyone else is
+// usually on its own fork, and several connections from one network are
+// probably one operator, so neither counts on its own. With one usable peer,
+// that peer's height. Heights are capped at what's plausible (PeerHeight).
+static int AgreedPeerHeight(const vector<CNode*> &vNodes, bool fUseAvoided, int64_t nNow) {
+    std::vector<std::pair<int, std::vector<unsigned char> > > vHeights;
+    BOOST_FOREACH(CNode* pnode, vNodes) {
+        if (!CanSyncFrom(pnode) || (pnode->nSyncAvoidUntil > nNow) != fUseAvoided)
+            continue;
+        vHeights.push_back(std::make_pair(PeerHeight(pnode), pnode->addr.GetGroup()));
+    }
+    if (vHeights.empty())
+        return -1;
+    std::sort(vHeights.begin(), vHeights.end(),
+              [](const std::pair<int, std::vector<unsigned char> >& a,
+                 const std::pair<int, std::vector<unsigned char> >& b) { return a.first > b.first; });
+    if (vHeights.size() == 1)
+        return vHeights[0].first;
+    for (size_t i = 0; i < vHeights.size(); i++)
+        for (size_t j = i + 1; j < vHeights.size() && vHeights[i].first - vHeights[j].first <= SYNC_HEIGHT_SLACK; j++)
+            if (vHeights[j].second != vHeights[i].second)
+                return vHeights[i].first;
+    return vHeights[1].first;   // no two networks agree: don't trust the tallest alone
+}
+
+// Is this peer's height believable next to the others (not a lone outlier)?
+static bool HeightAgreed(const CNode *pnode, int nAgreed) {
+    return PeerHeight(pnode) <= nAgreed + SYNC_HEIGHT_SLACK;
+}
+
+// Pick the peer to download blocks from. Height comes first: only peers within
+// SYNC_HEIGHT_SLACK blocks of the height peers agree on are considered, so a new
+// node neither latches onto a node that is itself still syncing nor follows a
+// lone peer on a much taller fork. Among those, 2.9+ peers win (bigger
+// batches), then the one we heard from most recently.
+void static StartSync(const vector<CNode*> &vNodes) {
     // fImporting and fReindex are accessed out of cs_main here, but only
     // as an optimization - they are checked again in SendMessages.
     if (fReindex)
         return;
 
-    // Iterate over all nodes
-    BOOST_FOREACH(CNode* pnode, vNodes) {
-        // check preconditions for allowing a sync
-        if (!pnode->fClient && !pnode->fOneShot &&
-            !pnode->fDisconnect && pnode->fSuccessfullyConnected &&
-            (pnode->nStartingHeight > (nBestHeight - 144)) &&
-            (pnode->nVersion < NOBLKS_VERSION_START || pnode->nVersion >= NOBLKS_VERSION_END)) {
-            // if ok, compare node's score with the best so far
+    // Peers we recently gave up on (see ReleaseSyncNode) are only used if
+    // there's no one else.
+    int64_t nNow = GetTime();
+    for (int nPass = 0; nPass < 2; nPass++) {
+        bool fUseAvoided = (nPass == 1);
+
+        int nMaxHeight = AgreedPeerHeight(vNodes, fUseAvoided, nNow);
+        if (nMaxHeight <= nBestHeight - 144)
+            continue;
+
+        CNode *pnodeNewSync = NULL;
+        int64_t nBestScore = 0;
+        BOOST_FOREACH(CNode* pnode, vNodes) {
+            if (!CanSyncFrom(pnode) || (pnode->nSyncAvoidUntil > nNow) != fUseAvoided)
+                continue;
+            if (PeerHeight(pnode) <= nBestHeight - 144 ||
+                PeerHeight(pnode) < nMaxHeight - SYNC_HEIGHT_SLACK ||
+                !HeightAgreed(pnode, nMaxHeight))
+                continue;
             int64_t nScore = NodeSyncScore(pnode);
             if (pnodeNewSync == NULL || nScore > nBestScore) {
                 pnodeNewSync = pnode;
                 nBestScore = nScore;
             }
         }
+        if (pnodeNewSync) {
+            printf("sync: downloading from %s (%s) height %d, agreed peer height %d, us %d\n",
+                   pnodeNewSync->addrName.c_str(), pnodeNewSync->strSubVer.c_str(),
+                   pnodeNewSync->nKnownHeight, nMaxHeight, nBestHeight);
+            pnodeNewSync->fStartSync = true;
+            pnodeSync = pnodeNewSync;
+            return;
+        }
     }
-    // if a new sync candidate was found, start sync!
-    if (pnodeNewSync) {
-        pnodeNewSync->fStartSync = true;
-        pnodeSync = pnodeNewSync;
+}
+
+// The sync peer has sent every block it is known to have. If another usable
+// peer is clearly further ahead, move to it now rather than waiting for the
+// stall watchdog (which takes a couple of minutes to give up).
+// The sync peer is older than MIN_SYNC_PEER_VERSION (small batches) but a
+// preferred-version peer at the agreed height is available: switch to it.
+// Only ever from old to new, so it can't flip back and forth.
+void static UpgradeSyncNodeIfOld(const vector<CNode*> &vNodes) {
+    if (fReindex || pnodeSync == NULL || IsPreferredSyncVersion(pnodeSync))
+        return;
+    int64_t nNow = GetTime();
+    int nAgreed = AgreedPeerHeight(vNodes, false, nNow);
+    BOOST_FOREACH(CNode* pnode, vNodes) {
+        if (pnode == pnodeSync || !CanSyncFrom(pnode) || pnode->nSyncAvoidUntil > nNow ||
+            !IsPreferredSyncVersion(pnode) || !HeightAgreed(pnode, nAgreed) ||
+            PeerHeight(pnode) <= nBestHeight)
+            continue;
+        printf("sync: %s (%s) is older than the preferred version, switching to %s (%s)\n",
+               pnodeSync->addrName.c_str(), pnodeSync->strSubVer.c_str(),
+               pnode->addrName.c_str(), pnode->strSubVer.c_str());
+        ReleaseSyncNode(pnodeSync, 10 * 60);
+        StartSync(vNodes);
+        return;
+    }
+}
+
+void static SwitchIfSyncNodeExhausted(const vector<CNode*> &vNodes) {
+    if (fReindex || pnodeSync == NULL || PeerHeight(pnodeSync) > nBestHeight)
+        return;
+    int64_t nNow = GetTime();
+    int nAgreed = AgreedPeerHeight(vNodes, false, nNow);
+    BOOST_FOREACH(CNode* pnode, vNodes) {
+        if (pnode == pnodeSync || !CanSyncFrom(pnode) || pnode->nSyncAvoidUntil > nNow ||
+            !HeightAgreed(pnode, nAgreed))
+            continue;
+        if (PeerHeight(pnode) >= nBestHeight + SYNC_SWITCH_MARGIN) {
+            printf("sync: %s has no more blocks for us (height %d), %s is at %d, switching\n",
+                   pnodeSync->addrName.c_str(), nBestHeight, pnode->addrName.c_str(), pnode->nKnownHeight);
+            ReleaseSyncNode(pnodeSync, 10 * 60);
+            StartSync(vNodes);
+            return;
+        }
     }
 }
 
@@ -1405,6 +1783,26 @@ void ThreadMessageHandler()
 
         if (!fHaveSyncNode)
             StartSync(vNodesCopy);
+        else
+        {
+            SwitchIfSyncNodeExhausted(vNodesCopy);
+            UpgradeSyncNodeIfOld(vNodesCopy);
+        }
+
+        // Catching up: well behind the height our peers agree on. If every
+        // peer is at about our height (or we have none), we're not. A node
+        // whose newest block is under an hour old is never far behind, so it
+        // always keeps handing out blocks, whatever heights peers claim.
+        {
+            int nAgreed = AgreedPeerHeight(vNodesCopy, false, GetTime());
+            bool fTipOld = nBestTimeUI < GetAdjustedTime() - 60 * 60;
+            bool fNow = fTipOld && nAgreed >= 0 && nBestHeight < nAgreed - CATCHING_UP_BLOCKS;
+            if (fNow != fCatchingUp)
+                printf(fNow ? "Catching up: not handing out blocks until we're synced (us %d, peers %d)\n"
+                            : "Caught up: handing out blocks again (us %d, peers %d)\n",
+                       nBestHeight, nAgreed);
+            fCatchingUp = fNow;
+        }
 
         // Poll the connected nodes for messages
         CNode* pnodeTrickle = NULL;
@@ -1453,11 +1851,16 @@ void ThreadMessageHandler()
                 pnode->Release();
         }
 
-        // Wait and allow messages to bunch up.
-        // Reduce vnThreadsRunning so StopNode has permission to exit while
-        // we're sleeping, but we must always check fShutdown after doing this.
+        // Nothing to do: wait up to 100 ms, but wake as soon as a complete
+        // message arrives (WakeMessageHandler). The wait is an interruption
+        // point, so shutdown still stops this thread promptly.
         if (fSleep)
-            MilliSleep(100);
+        {
+            boost::unique_lock<boost::mutex> lock(mutexMsgProc);
+            if (!fMsgProcWake)
+                condMsgProc.wait_for(lock, boost::chrono::milliseconds(100));
+            fMsgProcWake = false;
+        }
     }
 }
 

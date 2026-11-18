@@ -5,6 +5,7 @@
 
 #include <boost/assign/list_of.hpp>
 #include "wallet.h"
+#include "stakereport.h"
 #include "walletdb.h"
 #include "bitcoinrpc.h"
 #include "init.h"
@@ -64,25 +65,47 @@ string AccountFromValue(const Value& value)
 }
 // Litecoin: Return average network hashes per second based on last number of blocks.
 Value GetNetworkHashPS(int lookup) {
+    // FlapX is a PoW/PoS hybrid, so only proof-of-work blocks represent
+    // hashing. Estimate the hash rate from the last `lookup` PoW blocks: the
+    // work they contain (each at its own difficulty) divided by the time
+    // between the oldest and newest of them.
     if (pindexBest == NULL)
-        return 0;
+        return (boost::int64_t)0;
 
-    // If lookup is -1, then use blocks since last difficulty change.
+    // -1 (or 0) used to mean "since the last difficulty change"; FlapX
+    // retargets every block, so fall back to the default window instead.
     if (lookup <= 0)
-        lookup = pindexBest->nHeight % 2016 + 1;
+        lookup = 120;
 
-    // If lookup is larger than chain, then set it to chain length.
-    if (lookup > pindexBest->nHeight)
-        lookup = pindexBest->nHeight;
+    // Don't walk the whole chain if PoW blocks have become rare.
+    static const int MAX_BLOCKS_SCANNED = 20000;
 
-    CBlockIndex* pindexPrev = pindexBest;
-    for (int i = 0; i < lookup; i++)
-        pindexPrev = pindexPrev->pprev;
+    const CBlockIndex* pindexNewest = NULL;
+    const CBlockIndex* pindexOldest = NULL;
+    double dWork = 0;
+    int nPoWBlocks = 0;
+    int nScanned = 0;
+    for (const CBlockIndex* pindex = pindexBest;
+         pindex && nPoWBlocks <= lookup && nScanned < MAX_BLOCKS_SCANNED;
+         pindex = pindex->pprev, nScanned++)
+    {
+        if (!pindex->IsProofOfWork())
+            continue;
+        if (pindexOldest) // work of every block except the oldest is inside the time span
+            dWork += GetDifficulty(pindexOldest) * pow(2.0, 32);
+        if (!pindexNewest)
+            pindexNewest = pindex;
+        pindexOldest = pindex;
+        nPoWBlocks++;
+    }
 
-    double timeDiff = pindexBest->GetBlockTime() - pindexPrev->GetBlockTime();
-    double timePerBlock = timeDiff / lookup;
+    if (nPoWBlocks < 2)
+        return (boost::int64_t)0;
+    int64_t nTimeSpan = pindexNewest->GetBlockTime() - pindexOldest->GetBlockTime();
+    if (nTimeSpan <= 0)
+        return (boost::int64_t)0;
 
-    return (boost::int64_t)(((double)GetDifficulty() * pow(2.0, 32)) / timePerBlock);
+    return (boost::int64_t)(dWork / nTimeSpan);
 }
 
 Value getnetworkhashps(const Array& params, bool fHelp)
@@ -262,20 +285,21 @@ Value getaccountaddress(const Array& params, bool fHelp)
     return ret;
 }
 
-Value stakeforcharity(const Array &params, bool fHelp)
+Value multisend(const Array &params, bool fHelp)
 {
     if (fHelp || params.size() < 2 || params.size() > 5)
         throw runtime_error(
-            "stakeforcharity <FlapX Address> <percent> [Change Address] [min amount] [max amount]\n"
+            "multisend <FlapX Address> <percent> [Change Address] [min amount] [max amount]\n"
             "Gives a percentage of a found stake to a different address, after stake matures\n"
             "Percent is a whole number 1 to 50.\n"
-			"Change Address, Min and Max Amount are optional\n"
+			"Change Address, Min and Max Amount are optional. Change Address must belong to this wallet;\n"
+            "if omitted, change returns to the staking address the payment came from.\n"
             "Set percentage to zero to turn off"
             + HelpRequiringPassphrase());
 
     CBitcoinAddress address(params[0].get_str());
     if (!address.IsValid())
-        throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid HyperStake address");
+        throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid FlapX address");
 
     if (params[1].get_int() < 0)
         throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter, expected valid percentage");
@@ -294,6 +318,9 @@ Value stakeforcharity(const Array &params, bool fHelp)
         changeAddress = params[2].get_str();
         if (!changeAddress.IsValid())
             throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid FlapX change address");
+        // FlapX: change must stay in this wallet, or a typo would send all change to a stranger
+        if (!IsMine(*pwalletMain, changeAddress.Get()))
+            throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Change address does not belong to this wallet");
     }
 
     // Optional Min Amount
@@ -326,16 +353,16 @@ Value stakeforcharity(const Array &params, bool fHelp)
 		//Future: After we allow multiple addresses, only turn of this address
 		if(nPer == 0)
 		{
-			pwalletMain->fStakeForCharity = false;
-            pwalletMain->nStakeForCharityPercent = 0;
-            pwalletMain->nStakeForCharityMin = nMinAmount;
-            pwalletMain->nStakeForCharityMax = nMaxAmount;
+			pwalletMain->fMultiSend = false;
+            pwalletMain->nMultiSendPercent = 0;
+            pwalletMain->nMultiSendMin = nMinAmount;
+            pwalletMain->nMultiSendMax = nMaxAmount;
 
             if(fFileBacked)
-                walletdb.EraseStakeForCharity(pwalletMain->strStakeForCharityAddress.ToString());
+                walletdb.EraseMultiSend(pwalletMain->strMultiSendAddress.ToString());
 
-            pwalletMain->strStakeForCharityAddress = "";
-			pwalletMain->strStakeForCharityChangeAddress = "";
+            pwalletMain->strMultiSendAddress = "";
+			pwalletMain->strMultiSendChangeAddress = "";
 
             return Value::null;
 		}
@@ -344,20 +371,20 @@ Value stakeforcharity(const Array &params, bool fHelp)
 			nPer = 50;
 			
 		if(fFileBacked)
-              walletdb.EraseStakeForCharity(pwalletMain->strStakeForCharityAddress.ToString());
+              walletdb.EraseMultiSend(pwalletMain->strMultiSendAddress.ToString());
 			  
-		pwalletMain->strStakeForCharityAddress = address;
-        pwalletMain->nStakeForCharityPercent = nPer;
-		pwalletMain->strStakeForCharityChangeAddress = changeAddress;
-        pwalletMain->fStakeForCharity = true;
-        pwalletMain->nStakeForCharityMin = nMinAmount;
-        pwalletMain->nStakeForCharityMax = nMaxAmount;
-		fGlobalStakeForCharity = true;
+		pwalletMain->strMultiSendAddress = address;
+        pwalletMain->nMultiSendPercent = nPer;
+		pwalletMain->strMultiSendChangeAddress = changeAddress;
+        pwalletMain->fMultiSend = true;
+        pwalletMain->nMultiSendMin = nMinAmount;
+        pwalletMain->nMultiSendMax = nMaxAmount;
+		fGlobalMultiSend = true;
 		if(fFileBacked)
-			walletdb.WriteStakeForCharity(address.ToString(), nPer, changeAddress.ToString(), nMinAmount, nMaxAmount);
+			walletdb.WriteMultiSend(address.ToString(), nPer, changeAddress.ToString(), nMinAmount, nMaxAmount);
 			 
      	if(fFileBacked)
-                walletdb.WriteStakeForCharity(address.ToString(), nPer, changeAddress.ToString(),nMinAmount,nMaxAmount);
+                walletdb.WriteMultiSend(address.ToString(), nPer, changeAddress.ToString(),nMinAmount,nMaxAmount);
         }
         return Value::null;
 }
@@ -1516,7 +1543,7 @@ Value keypoolrefill(const Array& params, bool fHelp)
             "Fills the keypool."
             + HelpRequiringPassphrase());
 
-    unsigned int nSize = max(GetArg("-keypool", 100), (int64_t)0);
+    unsigned int nSize = max(GetArg("-keypool", 1000), (int64_t)0);
     if (params.size() > 0) {
         if (params[0].get_int() < 0)
             throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid parameter, expected valid size");
@@ -1971,3 +1998,41 @@ Value makekeypair(const Array& params, bool fHelp)
     return result;
 }
 
+
+// getstakereport: this wallet's staking earnings per day and per period
+static Object StakePeriodToJSON(const StakePeriod& p, bool fWithDate)
+{
+    Object o;
+    if (fWithDate)
+        o.push_back(Pair("date", p.strName));
+    o.push_back(Pair("amount", ValueFromAmount(p.nAmount)));
+    o.push_back(Pair("stakes", p.nCount));
+    return o;
+}
+
+Value getstakereport(const Array& params, bool fHelp)
+{
+    if (fHelp || params.size() != 0)
+        throw runtime_error(
+            "getstakereport\n"
+            "This wallet's staking earnings: per day for the last 30 days (local time,\n"
+            "today first) and over the last 24 hours, 7, 30 and 365 days. Amounts are\n"
+            "the net reward to this wallet, including stakes that are still maturing.");
+
+    StakeReport report;
+    GetStakeReport(pwalletMain, report, false);
+
+    Object result;
+    BOOST_FOREACH(const StakePeriod& p, report.vTotals)
+        result.push_back(Pair(p.strName, StakePeriodToJSON(p, false)));
+    Array days;
+    BOOST_FOREACH(const StakePeriod& p, report.vDays)
+        days.push_back(StakePeriodToJSON(p, true));
+    result.push_back(Pair("days", days));
+    result.push_back(Pair("latesttime", report.nLatestTime ? DateTimeStrFormat(report.nLatestTime) : string("never")));
+    result.push_back(Pair("latestamount", ValueFromAmount(report.nLatestAmount)));
+    result.push_back(Pair("maturingamount", ValueFromAmount(report.nMaturingAmount)));
+    result.push_back(Pair("maturingstakes", report.nMaturingCount));
+    result.push_back(Pair("stakescounted", report.nStakesCounted));
+    return result;
+}

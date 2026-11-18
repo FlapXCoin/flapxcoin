@@ -167,7 +167,7 @@ void RandAddSeedPerfmon()
         RAND_add(pdata, nSize, nSize/100.0);
         // memset(pdata, 0, nSize);
         OPENSSL_cleanse(pdata, nSize);
-        printf("RandAddSeed() %d bytes\n", nSize);
+        printf("RandAddSeed() %lu bytes\n", (unsigned long)nSize);
     }
 #endif
 }
@@ -1080,7 +1080,7 @@ const boost::filesystem::path &GetDataDir(bool fNetSpecific)
 boost::filesystem::path GetConfigFile()
 {
     boost::filesystem::path pathConfigFile(GetArg("-conf", "flapx.conf"));
-    if (!pathConfigFile.is_complete()) pathConfigFile = GetDataDir(false) / pathConfigFile;
+    if (!pathConfigFile.is_absolute()) pathConfigFile = GetDataDir(false) / pathConfigFile;
     return pathConfigFile;
 }
 
@@ -1138,7 +1138,7 @@ void ReadConfigFile(map<string, string>& mapSettingsRet,
 boost::filesystem::path GetPidFile()
 {
     boost::filesystem::path pathPidFile(GetArg("-pid", "flapxd.pid"));
-    if (!pathPidFile.is_complete()) pathPidFile = GetDataDir() / pathPidFile;
+    if (!pathPidFile.is_absolute()) pathPidFile = GetDataDir() / pathPidFile;
     return pathPidFile;
 }
 

@@ -58,12 +58,18 @@ public:
     double hardnessPrevious;
     double hardnessPrevious2;
 
+protected:
+    /** Re-applies theme touches set in code (the staking line's outline) on theme changes */
+    void changeEvent(QEvent *e);
+
 public slots:
     void setBalance(qint64 balance, qint64 stake, qint64 unconfirmedBalance, qint64 immatureBalance);
     void setNumTransactions(int count);
     void setStatistics(ClientModel *modelStatistics);
     void lockWalletToggle();
     void updateStatistics();
+    void showSyncing();
+    void updateLiveHeight();
     void updatePrevious(int, int, int, double, double, double, double, QString, int, int);
 
 signals:
@@ -100,7 +106,7 @@ private slots:
     void on_unlockWalletActionNew_clicked();
 
 signals:
-    void stakeForCharitySignal();
+    void multiSendSignal();
 };
 
 #endif // OVERVIEWPAGE_H

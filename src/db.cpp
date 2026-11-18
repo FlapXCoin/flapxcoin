@@ -44,7 +44,7 @@ void CDBEnv::EnvShutdown()
     if (ret != 0)
         printf("EnvShutdown exception: %s (%d)\n", DbEnv::strerror(ret), ret);
     if (!fMockDb)
-        DbEnv(0).remove(strPath.c_str(), 0);
+        DbEnv((u_int32_t)0).remove(strPath.c_str(), 0); // cast: newer BDB also has DbEnv(DB_ENV*)
 }
 
 CDBEnv::CDBEnv() : dbenv(DB_CXX_NO_EXCEPTIONS)
@@ -71,11 +71,11 @@ bool CDBEnv::Open(boost::filesystem::path pathEnv_)
     boost::this_thread::interruption_point();
 
     pathEnv = pathEnv_;
-    filesystem::path pathDataDir = pathEnv;
+    boost::filesystem::path pathDataDir = pathEnv;
     strPath = pathDataDir.string();
-    filesystem::path pathLogDir = pathDataDir / "database";
-    filesystem::create_directory(pathLogDir);
-    filesystem::path pathErrorFile = pathDataDir / "db.log";
+    boost::filesystem::path pathLogDir = pathDataDir / "database";
+    boost::filesystem::create_directory(pathLogDir);
+    boost::filesystem::path pathErrorFile = pathDataDir / "db.log";
     printf("dbenv.open LogDir=%s ErrorFile=%s\n", pathLogDir.string().c_str(), pathErrorFile.string().c_str());
 
     unsigned int nEnvFlags = 0;
@@ -537,6 +537,9 @@ bool CAddrDB::Write(const CAddrMan& addr)
         fileout << ssPeers;
     }
     catch (std::exception &e) {
+        fileout.fclose();
+        boost::system::error_code ec;
+        boost::filesystem::remove(pathTmp, ec);   // don't leave the temp file behind
         return error("CAddrman::Write() : I/O error");
     }
     FileCommit(fileout);
@@ -544,9 +547,34 @@ bool CAddrDB::Write(const CAddrMan& addr)
 
     // replace existing peers.dat, if any, with new peers.dat.XXXX
     if (!RenameOver(pathTmp, pathAddr))
+    {
+        boost::system::error_code ec;
+        boost::filesystem::remove(pathTmp, ec);
         return error("CAddrman::Write() : Rename-into-place failed");
+    }
 
     return true;
+}
+
+void CAddrDB::RemoveLeftoverTempFiles()
+{
+    // Only names Write() creates: "peers.dat." followed by 4 hex digits
+    try {
+        boost::filesystem::directory_iterator end;
+        for (boost::filesystem::directory_iterator it(GetDataDir()); it != end; ++it)
+        {
+            const std::string name = it->path().filename().string();
+            if (name.size() != 14 || name.compare(0, 10, "peers.dat.") != 0)
+                continue;
+            if (name.find_first_not_of("0123456789abcdef", 10) != std::string::npos)
+                continue;
+            boost::system::error_code ec;
+            if (boost::filesystem::is_regular_file(it->path(), ec) && boost::filesystem::remove(it->path(), ec))
+                printf("Removed leftover %s\n", name.c_str());
+        }
+    } catch (const boost::filesystem::filesystem_error& e) {
+        printf("RemoveLeftoverTempFiles: %s\n", e.what());
+    }
 }
 
 bool CAddrDB::Read(CAddrMan& addr)

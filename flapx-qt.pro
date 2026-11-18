@@ -2,7 +2,7 @@ TEMPLATE = app
 TARGET = flapx-qt
 CONFIG += qt
 QT += gui
-VERSION = 2.5.2
+VERSION = 2.9.1.5
 INCLUDEPATH += src src/json src/qt
 DEFINES += QT_GUI BOOST_THREAD_USE_LIB BOOST_SPIRIT_THREADSAFE
 CONFIG += no_include_pwd
@@ -34,7 +34,9 @@ greaterThan(QT_MAJOR_VERSION, 4) {
 #    BOOST_INCLUDE_PATH, BOOST_LIB_PATH, BDB_INCLUDE_PATH,
 #    BDB_LIB_PATH, OPENSSL_INCLUDE_PATH and OPENSSL_LIB_PATH respectively
 
-win32 {
+# Hand-built C:/deps layout. Builds that get their libraries elsewhere
+# (e.g. the MSYS2 CI build) pass USE_SYSTEM_DEPS=1 to skip these paths.
+win32:!contains(USE_SYSTEM_DEPS, 1) {
     BOOST_LIB_SUFFIX=-mgw49-mt-s-1_55
     BOOST_INCLUDE_PATH=C:/deps/boost_1_55_0
     BOOST_LIB_PATH=C:/deps/boost_1_55_0/stage/lib
@@ -72,7 +74,9 @@ QMAKE_LFLAGS *= -fstack-protector-all --param ssp-buffer-size=1
 # for extra security on Windows: enable ASLR and DEP via GCC linker flags
 win32:QMAKE_LFLAGS *= -Wl,--dynamicbase -Wl,--nxcompat
 win32:QMAKE_LFLAGS += -static-libgcc -static-libstdc++
-win32:QMAKE_LFLAGS *= -Wl,--large-address-aware -static
+win32:QMAKE_LFLAGS *= -static
+# --large-address-aware only exists for 32-bit Windows (64-bit builds always are)
+win32:contains(QT_ARCH, i386):QMAKE_LFLAGS *= -Wl,--large-address-aware
 
 # use: qmake "USE_QRCODE=1"
 # libqrencode (http://fukuchi.org/works/qrencode/index.en.html) must be installed for support
@@ -165,7 +169,7 @@ LIBS += $$PWD/src/leveldb/libleveldb.a $$PWD/src/leveldb/libmemenv.a
 SOURCES += src/txdb-leveldb.cpp
 !win32 {
     # we use QMAKE_CXXFLAGS_RELEASE even without RELEASE=1 because we use RELEASE to indicate linking preferences not -O preferences
-    genleveldb.commands = cd $$PWD/src/leveldb && CC=$$QMAKE_CC CXX=$$QMAKE_CXX $(MAKE) OPT=\"$$QMAKE_CXXFLAGS $$QMAKE_CXXFLAGS_RELEASE\" libleveldb.a libmemenv.a
+    genleveldb.commands = cd $$PWD/src/leveldb && CC=\"$$QMAKE_CC\" CXX=\"$$QMAKE_CXX\" $(MAKE) OPT=\"$$QMAKE_CXXFLAGS $$QMAKE_CXXFLAGS_RELEASE\" libleveldb.a libmemenv.a
 } else {
     # make an educated guess about what the ranlib command is called
     isEmpty(QMAKE_RANLIB) {
@@ -218,13 +222,15 @@ HEADERS += src/qt/bitcoingui.h \
     src/qt/coincontroltreewidget.h \
     src/qt/sendcoinsdialog.h \
     src/qt/addressbookpage.h \
-    src/qt/charitydialog.h \
+    src/qt/multisenddialog.h \
     src/qt/signverifymessagedialog.h \
     src/qt/aboutdialog.h \
     src/qt/editaddressdialog.h \
     src/qt/bitcoinaddressvalidator.h \
     src/qt/intro.h \
     src/qt/calcdialog.h \
+    src/qt/stakereportdialog.h \
+    src/stakereport.h \
     src/alert.h \
     src/addrman.h \
     src/base58.h \
@@ -302,11 +308,12 @@ HEADERS += src/qt/bitcoingui.h \
     src/allocators.h \
     src/ui_interface.h \
     src/qt/rpcconsole.h \
+    src/qt/trafficgraphwidget.h \
     src/version.h \
     src/netbase.h \
     src/clientversion.h \
     src/qt/shoppingpage.h \
-    src/qt/networkpage.h \
+    src/qt/explorerpage.h \
     src/threadsafety.h
 
 SOURCES += src/qt/bitcoin.cpp src/qt/bitcoingui.cpp \
@@ -317,12 +324,13 @@ SOURCES += src/qt/bitcoin.cpp src/qt/bitcoingui.cpp \
     src/qt/coincontroldialog.cpp \
     src/qt/coincontroltreewidget.cpp \
     src/qt/addressbookpage.cpp \
-    src/qt/charitydialog.cpp \
+    src/qt/multisenddialog.cpp \
     src/qt/signverifymessagedialog.cpp \
     src/qt/aboutdialog.cpp \
     src/qt/editaddressdialog.cpp \
     src/qt/bitcoinaddressvalidator.cpp \
     src/qt/calcdialog.cpp \
+    src/qt/stakereportdialog.cpp \
     src/qt/intro.cpp \
     src/alert.cpp \
     src/chainparams.cpp \
@@ -375,8 +383,10 @@ SOURCES += src/qt/bitcoin.cpp src/qt/bitcoingui.cpp \
     src/qt/notificator.cpp \
     src/qt/qtipcserver.cpp \
     src/qt/rpcconsole.cpp \
+    src/qt/trafficgraphwidget.cpp \
     src/noui.cpp \
     src/kernel.cpp \
+    src/stakereport.cpp \
     src/scrypt-arm.S \
     src/scrypt-x86.S \
     src/scrypt-x86_64.S \
@@ -392,8 +402,8 @@ SOURCES += src/qt/bitcoin.cpp src/qt/bitcoingui.cpp \
     src/zerocoin/SerialNumberSignatureOfKnowledge.cpp \
     src/zerocoin/SpendMetaData.cpp \
     src/zerocoin/ZeroTest.cpp \
-    src/qt/networkpage.cpp \
-    src/qt/shoppingpage.cpp
+    src/qt/shoppingpage.cpp \
+    src/qt/explorerpage.cpp
 
 RESOURCES += \
     src/qt/bitcoin.qrc
@@ -412,10 +422,11 @@ FORMS += \
     src/qt/forms/rpcconsole.ui \
     src/qt/forms/optionsdialog.ui \
     src/qt/forms/shoppingpage.ui \
-    src/qt/forms/charitydialog.ui \
+    src/qt/forms/explorerpage.ui \
+    src/qt/forms/multisenddialog.ui \
     src/qt/forms/intro.ui \
     src/qt/forms/calcdialog.ui \
-    src/qt/forms/networkpage.ui
+    src/qt/forms/stakereportdialog.ui
 
 contains(USE_QRCODE, 1) {
 HEADERS += src/qt/qrcodedialog.h
@@ -502,9 +513,12 @@ INCLUDEPATH +=$$UPSTREAM_INCLUDE_PATH $$BOOST_INCLUDE_PATH $$BDB_INCLUDE_PATH $$
 LIBS += $$join(UPSTREAM_LIB_PATH,,-L,) $$join(BOOST_LIB_PATH,,-L,) $$join(BDB_LIB_PATH,,-L,) $$join(OPENSSL_LIB_PATH,,-L,) $$join(QRENCODE_LIB_PATH,,-L,)
 LIBS += -lssl -lcrypto -ldb_cxx$$BDB_LIB_SUFFIX -lz
 # -lgdi32 has to happen after -lcrypto (see  #681)
-windows:LIBS += -lws2_32 -lshlwapi -lmswsock -lole32 -loleaut32 -luuid -lgdi32
-LIBS += -lboost_system$$BOOST_LIB_SUFFIX -lboost_filesystem$$BOOST_LIB_SUFFIX -lboost_program_options$$BOOST_LIB_SUFFIX -lboost_thread$$BOOST_THREAD_LIB_SUFFIX
-windows:LIBS += -lboost_chrono$$BOOST_LIB_SUFFIX
+windows:LIBS += -lws2_32 -lshlwapi -lmswsock -lole32 -loleaut32 -luuid -lgdi32 -lcrypt32 -lbcrypt
+# boost_system is header-only since Boost 1.69 and newer releases no longer ship
+# the stub library; pass NO_BOOST_SYSTEM_LIB=1 when it doesn't exist.
+!contains(NO_BOOST_SYSTEM_LIB, 1):LIBS += -lboost_system$$BOOST_LIB_SUFFIX
+LIBS += -lboost_filesystem$$BOOST_LIB_SUFFIX -lboost_program_options$$BOOST_LIB_SUFFIX -lboost_thread$$BOOST_THREAD_LIB_SUFFIX
+LIBS += -lboost_chrono$$BOOST_LIB_SUFFIX
 
 contains(RELEASE, 1) {
     !windows:!macx {

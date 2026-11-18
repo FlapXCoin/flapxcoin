@@ -12,6 +12,7 @@
 #include <boost/assign/list_of.hpp>
 
 using namespace boost::assign;
+using namespace std;
 
 struct SeedSpec6 {
     uint8_t addr[16];
@@ -54,6 +55,7 @@ public:
         pchMessageStart[3] = 0xdb;
         vAlertPubKey = ParseHex("04ef014b36647e8433a2cedf76f1d6ea0bc5914ba936fadceda90d7472da3cf442469d3a1ab5ee416e7428726761dd3188bda3d0ae163db491f8ca0bdad92a0506");
         nDefaultPort = 60042;
+        nAltPort = 60242;
         nRPCPort = 60142;
         bnProofOfWorkLimit = CBigNum(~uint256(0) >> 20);
 
@@ -84,23 +86,30 @@ public:
 /*
         N/A
 */
-///new seednodes should improve initial connectivity and sync	    
-        vSeeds.push_back(CDNSSeedData("flapx", "flapx000.flapxcoin.com"));
-        vSeeds.push_back(CDNSSeedData("flapx", "flapx001.flapxcoin.com"));
-        vSeeds.push_back(CDNSSeedData("flapx", "flapx002.flapxcoin.com"));
-        vSeeds.push_back(CDNSSeedData("flapx", "flapx003.flapxcoin.com"));
-        vSeeds.push_back(CDNSSeedData("flapx", "flapx004.flapxcoin.com"));
-        vSeeds.push_back(CDNSSeedData("flapx", "flapx005.flapxcoin.com"));
-        vSeeds.push_back(CDNSSeedData("flapx", "flapx006.flapxcoin.com"));
-        vSeeds.push_back(CDNSSeedData("flapx", "flapx007.flapxcoin.com"));
-        vSeeds.push_back(CDNSSeedData("flapx", "flapx008.flapxcoin.com"));
-        vSeeds.push_back(CDNSSeedData("flapx", "flapx009.flapxcoin.com"));
-        vSeeds.push_back(CDNSSeedData("flapx", "flapx010.flapxcoin.com"));
-        vSeeds.push_back(CDNSSeedData("nlabs", "001.nerdlabs.dev"));
-        vSeeds.push_back(CDNSSeedData("nlabs", "002.nerdlabs.dev"));
-        vSeeds.push_back(CDNSSeedData("nlabs", "003.nerdlabs.dev"));
-        vSeeds.push_back(CDNSSeedData("nlabs", "004.nerdlabs.dev"));
-        vSeeds.push_back(CDNSSeedData("nlabs", "005.nerdlabs.dev"));
+        // DNS seeds: flapx00-flapx10 on flapxcoin.com and nerdlabs001.com
+        // (no hardcoded IP seeds)
+        vSeeds.push_back(CDNSSeedData("flapx00", "flapx00.flapxcoin.com"));
+        vSeeds.push_back(CDNSSeedData("flapx01", "flapx01.flapxcoin.com"));
+        vSeeds.push_back(CDNSSeedData("flapx02", "flapx02.flapxcoin.com"));
+        vSeeds.push_back(CDNSSeedData("flapx03", "flapx03.flapxcoin.com"));
+        vSeeds.push_back(CDNSSeedData("flapx04", "flapx04.flapxcoin.com"));
+        vSeeds.push_back(CDNSSeedData("flapx05", "flapx05.flapxcoin.com"));
+        vSeeds.push_back(CDNSSeedData("flapx06", "flapx06.flapxcoin.com"));
+        vSeeds.push_back(CDNSSeedData("flapx07", "flapx07.flapxcoin.com"));
+        vSeeds.push_back(CDNSSeedData("flapx08", "flapx08.flapxcoin.com"));
+        vSeeds.push_back(CDNSSeedData("flapx09", "flapx09.flapxcoin.com"));
+        vSeeds.push_back(CDNSSeedData("flapx10", "flapx10.flapxcoin.com"));
+        vSeeds.push_back(CDNSSeedData("flapx00", "flapx00.nerdlabs001.com"));
+        vSeeds.push_back(CDNSSeedData("flapx01", "flapx01.nerdlabs001.com"));
+        vSeeds.push_back(CDNSSeedData("flapx02", "flapx02.nerdlabs001.com"));
+        vSeeds.push_back(CDNSSeedData("flapx03", "flapx03.nerdlabs001.com"));
+        vSeeds.push_back(CDNSSeedData("flapx04", "flapx04.nerdlabs001.com"));
+        vSeeds.push_back(CDNSSeedData("flapx05", "flapx05.nerdlabs001.com"));
+        vSeeds.push_back(CDNSSeedData("flapx06", "flapx06.nerdlabs001.com"));
+        vSeeds.push_back(CDNSSeedData("flapx07", "flapx07.nerdlabs001.com"));
+        vSeeds.push_back(CDNSSeedData("flapx08", "flapx08.nerdlabs001.com"));
+        vSeeds.push_back(CDNSSeedData("flapx09", "flapx09.nerdlabs001.com"));
+        vSeeds.push_back(CDNSSeedData("flapx10", "flapx10.nerdlabs001.com"));
 
 
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1, 75); //X
@@ -143,16 +152,23 @@ public:
         pchMessageStart[3] = 0xf1;
         bnProofOfWorkLimit = CBigNum(~uint256(0) >> 16);
         vAlertPubKey = ParseHex("0471dc165db490094d35cde15b1f5d755fa6ad6f2b5ed0f340e3f17f57389c3c2af113a8cbcc885bde73305a553b5640c83021128008ddf882e856336269080496");
-        nDefaultPort = 21410;
-        nRPCPort = 21311;
+        nDefaultPort = 60043;
+        nAltPort = 60243;
+        nRPCPort = 60143;
         strDataDir = "testnet";
 
         genesis.nTime    = 1300000000;
         // genesis.nBits  = bnProofOfWorkLimit.GetCompact();
-        genesis.nNonce = 0;
+        // Mined so the genesis block meets its own target (nNonce = 0 did not,
+        // which made reading it back from disk fail the proof-of-work check).
+        // NOTE: this new testnet genesis block still needs verification on a
+        // live testnet. It was only checked locally on a single node (blocks
+        // mined on top of it and re-verified at startup); the matching testnet
+        // stake modifier checkpoint is in kernel.cpp.
+        genesis.nNonce = 522177;
         hashGenesisBlock = genesis.GetHash();
 	// genesis.print();
-        assert(hashGenesisBlock == uint256("0x9ff8786e790c41e6f44a926b8b2c70183eb655e7ef188a4630408164dd13bc6b"));
+        assert(hashGenesisBlock == uint256("0xcc0e6b7fc1e4fa77e38306fd870bd0813178041cf9c1cafb6146c7d7fb8de492"));
         assert(genesis.hashMerkleRoot == uint256("0x9e17be6aefbffc74cf4deab73f93bd050e696008fe28c56de80520a22b05fafb"));
 
         vFixedSeeds.clear();
@@ -189,6 +205,7 @@ public:
         genesis.nNonce = 2;
         hashGenesisBlock = genesis.GetHash();
         nDefaultPort = 18444;
+        nAltPort = 18445;
         strDataDir = "regtest";
         // assert(hashGenesisBlock == uint256("0x523dda6d336047722cbaf1c5dce622298af791bac21b33bf6e2d5048b2a13e3d"));
 

@@ -12,6 +12,10 @@
 #include <QDateTime>
 #include <QTimer>
 
+// Boost 1.73+ no longer puts _1, _2, ... in the global namespace by default
+#include <boost/bind/bind.hpp>
+using namespace boost::placeholders;
+
 static const int64_t nClientStartupTime = GetTime();
 
 ClientModel::ClientModel(OptionsModel *optionsModel, QObject *parent) :

@@ -24,7 +24,7 @@
 #include "Accumulator.h"
 #include "../util.h"
 
-using namespace std;
+
 namespace libzerocoin {
 
 /**A Signature of knowledge on the hash of metadata attesting that the signer knows the values
@@ -65,8 +65,8 @@ private:
 	// this is s_notprime instead of s
 	// because the serialization macros
 	// define something named s and it conflicts
-	vector<Bignum> s_notprime;
-	vector<Bignum> sprime;
+	std::vector<Bignum> s_notprime;
+	std::vector<Bignum> sprime;
 	inline Bignum challengeCalculation(const Bignum& a_exp, const Bignum& b_exp,
 	                                   const Bignum& h_exp) const;
 };

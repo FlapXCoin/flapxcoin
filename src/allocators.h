@@ -185,11 +185,12 @@ struct secure_allocator : public std::allocator<T>
     typedef std::allocator<T> base;
     typedef typename base::size_type size_type;
     typedef typename base::difference_type  difference_type;
-    typedef typename base::pointer pointer;
-    typedef typename base::const_pointer const_pointer;
-    typedef typename base::reference reference;
-    typedef typename base::const_reference const_reference;
-    typedef typename base::value_type value_type;
+    // Defined directly: C++20 removed these from std::allocator.
+    typedef T* pointer;
+    typedef const T* const_pointer;
+    typedef T& reference;
+    typedef const T& const_reference;
+    typedef T value_type;
     secure_allocator() throw() {}
     secure_allocator(const secure_allocator& a) throw() : base(a) {}
     template <typename U>
@@ -201,7 +202,8 @@ struct secure_allocator : public std::allocator<T>
     T* allocate(std::size_t n, const void *hint = 0)
     {
         T *p;
-        p = std::allocator<T>::allocate(n, hint);
+        (void)hint; // the hint overload was removed from std::allocator in C++20
+        p = std::allocator<T>::allocate(n);
         if (p != NULL)
             LockedPageManager::instance.LockRange(p, sizeof(T) * n);
         return p;
@@ -241,11 +243,12 @@ struct zero_after_free_allocator : public std::allocator<T>
     typedef std::allocator<T> base;
     typedef typename base::size_type size_type;
     typedef typename base::difference_type  difference_type;
-    typedef typename base::pointer pointer;
-    typedef typename base::const_pointer const_pointer;
-    typedef typename base::reference reference;
-    typedef typename base::const_reference const_reference;
-    typedef typename base::value_type value_type;
+    // Defined directly: C++20 removed these from std::allocator.
+    typedef T* pointer;
+    typedef const T* const_pointer;
+    typedef T& reference;
+    typedef const T& const_reference;
+    typedef T value_type;
     zero_after_free_allocator() throw() {}
     zero_after_free_allocator(const zero_after_free_allocator& a) throw() : base(a) {}
     template <typename U>

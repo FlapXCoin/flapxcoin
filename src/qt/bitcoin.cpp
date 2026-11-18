@@ -14,6 +14,7 @@
 #include "ui_interface.h"
 #include "qtipcserver.h"
 
+#include <QSettings>
 #include <QApplication>
 #include <QMessageBox>
 #include <QTextCodec>
@@ -152,6 +153,12 @@ int main(int argc, char *argv[])
         app.setApplicationName("FlapX-Qt-testnet");
     else
         app.setApplicationName("FlapX-Qt");
+
+    // All GUI styling: the FlapX palette plus the built-in FlapXCoin theme.
+    // The main window switches to another theme later if one was picked in the Themes menu.
+    GUIUtil::applyFlapXPalette();
+    app.setStyleSheet(GUIUtil::flapxStyleSheet());
+    QSettings().remove("fDarkMode"); // dark mode no longer exists
 
     // ... then GUI settings:
     OptionsModel optionsModel;

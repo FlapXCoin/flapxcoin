@@ -6,15 +6,16 @@
  */
 #include "bitcoingui.h"
 #include "calcdialog.h"
+#include "stakereportdialog.h"
 #include "transactiontablemodel.h"
 #include "addressbookpage.h"
 #include "shoppingpage.h"
-#include "networkpage.h"
+#include "explorerpage.h"
 #include "sendcoinsdialog.h"
 #include "signverifymessagedialog.h"
 #include "optionsdialog.h"
 #include "aboutdialog.h"
-#include "charitydialog.h"
+#include "multisenddialog.h"
 #include "clientmodel.h"
 #include "walletmodel.h"
 #include "editaddressdialog.h"
@@ -28,11 +29,16 @@
 #include "askpassphrasedialog.h"
 #include "notificator.h"
 #include "guiutil.h"
+#include "clientversion.h"
 #include "rpcconsole.h"
 #include "wallet.h"
 #include "bitcoinrpc.h"
 #include "allocators.h"
 #include "init.h"
+#include "util.h"
+#include "main.h"
+#include "net.h"
+#include <algorithm>
 
 #ifdef Q_OS_MAC
 #include "macdockiconhandler.h"
@@ -56,12 +62,12 @@
 #include <QProgressBar>
 #include <QStackedWidget>
 #include <QDateTime>
-#include <QMovie>
 #include <QFile>
 #include <QTextStream>
 #include <QFileDialog>
 #include <QDesktopServices>
 #include <QTimer>
+#include <QPainter>
 #include <QDragEnterEvent>
 #if QT_VERSION < 0x050000
 #include <QUrl>
@@ -70,9 +76,14 @@
 #include <QMimeData>
 #include <QSignalMapper>
 #include <QActionGroup>
+#include <QDir>
+#include <QSettings>
+#include <QPaintEvent>
+#include <QRadialGradient>
 #include <QString>
 
 #include <iostream>
+#include <cmath>
 
 extern CWallet* pwalletMain;
 extern int64_t nLastCoinStakeSearchInterval;
@@ -94,8 +105,12 @@ BitcoinGUI::BitcoinGUI(QWidget *parent):
     nWeight(0)
 {
 
-    resize(700, 500);
-    setWindowTitle(tr("FlapX-Starhopper") + " - " + tr("2.3"));
+    // Wide enough for every toolbar page button to be visible
+    resize(1120, 680);
+    setWindowTitle(tr("FlapX-Starhopper") + " - " + QString("%1.%2.%3.%4")
+                   .arg(CLIENT_VERSION_MAJOR).arg(CLIENT_VERSION_MINOR)
+                   .arg(CLIENT_VERSION_REVISION).arg(CLIENT_VERSION_BUILD)
+                   + " - " + tr("Pre Release"));
 #ifndef Q_OS_MAC
     qApp->setWindowIcon(QIcon(":icons/bitcoin"));
     setWindowIcon(QIcon(":icons/bitcoin"));
@@ -107,7 +122,8 @@ BitcoinGUI::BitcoinGUI(QWidget *parent):
     setAcceptDrops(true);
 
     /* zeewolf: Hot swappable wallet themes */
-    // Discover themes
+    // Discover themes and apply the saved one (FlapXCoin by default)
+    themeActionGroup = 0;
     listThemes(themesList);
     /* /zeewolf: Hot swappable wallet themes */
 
@@ -126,6 +142,7 @@ BitcoinGUI::BitcoinGUI(QWidget *parent):
     // Create tabs
 
     overviewPage = new OverviewPage();
+    stakeReportDialog = new StakeReportDialog(this);
 
     transactionsPage = new QWidget(this);
     QVBoxLayout *vbox = new QVBoxLayout();
@@ -141,24 +158,25 @@ BitcoinGUI::BitcoinGUI(QWidget *parent):
 
     shoppingPage = new ShoppingPage();
 
-    networkPage = new NetworkPage();
+    explorerPage = new ExplorerPage(this);
+
 
     receiveCoinsPage = new AddressBookPage(AddressBookPage::ForEditing, AddressBookPage::ReceivingTab);
 
     sendCoinsPage = new SendCoinsDialog(this);
 
     signVerifyMessageDialog = new SignVerifyMessageDialog(this);
-    stakeForCharityDialog = new StakeForCharityDialog(this);
+    multiSendDialog = new MultiSendDialog(this);
 
     centralWidget = new QStackedWidget(this);
     centralWidget->addWidget(overviewPage);
     centralWidget->addWidget(transactionsPage);
     centralWidget->addWidget(addressBookPage);
     centralWidget->addWidget(shoppingPage);
-    centralWidget->addWidget(networkPage);
+    centralWidget->addWidget(explorerPage);
     centralWidget->addWidget(receiveCoinsPage);
     centralWidget->addWidget(sendCoinsPage);
-    centralWidget->addWidget(stakeForCharityDialog);
+    centralWidget->addWidget(multiSendDialog);
     setCentralWidget(centralWidget);
 
 
@@ -186,6 +204,12 @@ BitcoinGUI::BitcoinGUI(QWidget *parent):
     frameBlocksLayout->addWidget(labelBlocksIcon);
     frameBlocksLayout->addStretch();
 
+    // Staking animation: only runs while the wallet is staking
+    nStakingAnimFrame = 0;
+    stakingAnimTimer = new QTimer(this);
+    stakingAnimTimer->setInterval(150);
+    connect(stakingAnimTimer, SIGNAL(timeout()), this, SLOT(animateStakingIcon()));
+
     if (GetBoolArg("-staking", true))
     {
         QTimer *timerStakingIcon = new QTimer(labelStakingIcon);
@@ -202,18 +226,17 @@ BitcoinGUI::BitcoinGUI(QWidget *parent):
     progressBar->setAlignment(Qt::AlignCenter);
     progressBar->setVisible(false);
 
-    // Override style sheet for progress bar for styles that have a segmented progress bar,
-    // as they make the text unreadable (workaround for issue #1071)
-    // See https://qt-project.org/doc/qt-4.8/gallery.html
-    QString curStyle = qApp->style()->metaObject()->className();
-    if(curStyle == "QWindowsStyle" || curStyle == "QWindowsXPStyle")
-    {
-        progressBar->setStyleSheet("QProgressBar { background-color: #000000; color: white; border: 1px solid grey; border-radius: 7px; padding: 1px; text-align: center; } QProgressBar::chunk { background: QLinearGradient(x1: 0, y1: 0, x2: 1, y2: 0, stop: 0 #ffaa00, stop: 1 orange); border-radius: 7px; margin: 0px; }");
-    }
+    // (the progress bar is styled by the application style sheet, GUIUtil::flapxStyleSheet)
     statusBar()->addWidget(progressBarLabel);
     statusBar()->addWidget(progressBar);
+
+    // Time-left estimate while syncing. Each tick reads two numbers without
+    // waiting on block processing, so it costs next to nothing.
+    syncTargetHeight = -1;
+    syncEstimateTimer = new QTimer(this);
+    connect(syncEstimateTimer, SIGNAL(timeout()), this, SLOT(updateSyncEstimate()));
+    syncEstimateTimer->start(SYNC_ESTIMATE_DELAY);
     statusBar()->addPermanentWidget(frameBlocks);
-    syncIconMovie = new QMovie(":/movies/update_spinner", "mng", this);
 
     // Clicking on a transaction on the overview page simply sends you to transaction history page
     connect(overviewPage, SIGNAL(transactionClicked(QModelIndex)), this, SLOT(gotoHistoryPage()));
@@ -234,11 +257,12 @@ BitcoinGUI::BitcoinGUI(QWidget *parent):
     // Clicking on "Sign Message" in the receive coins page sends you to the sign message tab
     connect(receiveCoinsPage, SIGNAL(signMessage(QString)), this, SLOT(gotoSignMessageTab(QString)));
 
-	// Clicking on stake for charity button in the address book sends you to the S4C page
-    connect(addressBookPage, SIGNAL(stakeForCharitySignal(QString)), this, SLOT(charityClicked(QString)));
+	// Clicking on MultiSend button in the address book sends you to the MultiSend page
+    connect(addressBookPage, SIGNAL(multiSendSignal(QString)), this, SLOT(multiSendClicked(QString)));
 
-    // Clicking on stake for charity button in the Overview Page sends you to the S4C page
-    connect(overviewPage, SIGNAL(stakeForCharitySignal()), this, SLOT(charityClicked()));
+    // Clicking on MultiSend button in the Overview Page sends you to the MultiSend page
+    connect(overviewPage, SIGNAL(multiSendSignal()), this, SLOT(multiSendClicked()));
+    connect(multiSendAction, SIGNAL(triggered()), this, SLOT(multiSendClicked()));
     gotoOverviewPage();
 }
 
@@ -288,15 +312,21 @@ void BitcoinGUI::createActions()
     shoppingAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_6));
     tabGroup->addAction(shoppingAction);
 
-    networkAction = new QAction(QIcon(":/icons/res/icons/stakingTab.png"), tr("&Staking"), this);
-    networkAction->setCheckable(true);
-    networkAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_7));
-    tabGroup->addAction(networkAction);
+    explorerAction = new QAction(QIcon(":/icons/res/icons/stakingTab.png"), tr("&Explorer"), this);
+    explorerAction->setToolTip(tr("Look up blocks and transactions with the built-in block explorer"));
+    explorerAction->setCheckable(true);
+    explorerAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_7));
+    tabGroup->addAction(explorerAction);
 
-    charityAction = new QAction(this);
+    multiSendAction = new QAction(QIcon(":/icons/send"), tr("&Multisend..."), this);
+    multiSendAction->setToolTip(tr("Automatically send part of your stake rewards to another address"));
+    multiSendAction->setCheckable(true);
+    tabGroup->addAction(multiSendAction);
 
-    calcAction = new QAction(QIcon(":/icons/bitcoin"), tr("&PIR Calculator"), this);
-    calcAction->setToolTip(tr("Open PIR Calculator"));
+    calcAction = new QAction(QIcon(":/icons/bitcoin"), tr("&Interest Estimate..."), this);
+    calcAction->setToolTip(tr("Estimate the staking interest on an amount of FLAPX"));
+    stakeReportAction = new QAction(QIcon(":/icons/bitcoin"), tr("&Stake Report..."), this);
+    stakeReportAction->setToolTip(tr("What this wallet has earned from staking, per day and per period"));
 
     connect(overviewAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
     connect(overviewAction, SIGNAL(triggered()), this, SLOT(gotoOverviewPage()));
@@ -310,10 +340,12 @@ void BitcoinGUI::createActions()
     connect(addressBookAction, SIGNAL(triggered()), this, SLOT(gotoAddressBookPage()));
     connect(shoppingAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
     connect(shoppingAction, SIGNAL(triggered()), this, SLOT(gotoShoppingPage()));
-    connect(networkAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
-    connect(networkAction, SIGNAL(triggered()), this, SLOT(gotoNetworkPage()));
+    connect(explorerAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
+    connect(explorerAction, SIGNAL(triggered()), this, SLOT(gotoExplorerPage()));
     connect(calcAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
     connect(calcAction, SIGNAL(triggered()), this, SLOT(calcClicked()));
+    connect(stakeReportAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
+    connect(stakeReportAction, SIGNAL(triggered()), this, SLOT(stakeReportClicked()));
 
 
     quitAction = new QAction(QIcon(":/icons/quit"), tr("E&xit"), this);
@@ -363,22 +395,18 @@ void BitcoinGUI::createActions()
     connect(signMessageAction,       SIGNAL(triggered()), this, SLOT(gotoSignMessageTab()));
     connect(verifyMessageAction,     SIGNAL(triggered()), this, SLOT(gotoVerifyMessageTab()));
     /* zeewolf: Hot swappable wallet themes */
-    if (themesList.count()>0)
+    // One checkable entry per theme; the active one is ticked
+    themeActionGroup = new QActionGroup(this);
+    themeActionGroup->setExclusive(true);
+    foreach (const QString &theme, themesList)
     {
-        QSignalMapper* signalMapper = new QSignalMapper (this) ;
-
-        // Add custom themes (themes directory)
-        for( int i=0; i < themesList.count(); i++ )
-        {
-            QString theme=themesList[i];
-            customActions[i] = new QAction(QIcon(":/icons/options"), theme, this);
-            customActions[i]->setToolTip(QString("Switch to " + theme + " theme"));
-            customActions[i]->setStatusTip(QString("Switch to " + theme + " theme"));
-            signalMapper->setMapping(customActions[i], theme);
-            connect(customActions[i], SIGNAL(triggered()), signalMapper, SLOT (map()));
-        }
-        connect(signalMapper, SIGNAL(mapped(QString)), this, SLOT(changeTheme(QString)));
+        QAction *themeAction = new QAction(theme, themeActionGroup);
+        themeAction->setCheckable(true);
+        themeAction->setData(theme);
+        themeAction->setChecked(theme == selectedTheme);
+        themeAction->setStatusTip(tr("Switch to the %1 theme").arg(theme));
     }
+    connect(themeActionGroup, SIGNAL(triggered(QAction*)), this, SLOT(themeActionTriggered(QAction*)));
     /* /zeewolf: Hot swappable wallet themes */
 
 }
@@ -407,20 +435,18 @@ void BitcoinGUI::createMenuBar()
     settings->addAction(encryptWalletAction);
     settings->addAction(changePassphraseAction);
     settings->addAction(lockWalletAction);
-	settings->addAction(charityAction);
+	settings->addAction(multiSendAction);
     settings->addSeparator();
     settings->addAction(optionsAction);
-    settings->addSeparator();
-    settings->addAction(calcAction);
-    
+
+    // Staking returns: what the wallet has earned, and what an amount would earn
+    QMenu *apr = appMenuBar->addMenu(tr("&APR Tracking"));
+    apr->addAction(stakeReportAction);
+    apr->addAction(calcAction);
+
     /* zeewolf: Hot swappable wallet themes */
-    if (themesList.count()>0)
-    {
-        QMenu *themes = appMenuBar->addMenu(tr("T&hemes"));
-        for (int i = 0; i < themesList.count(); i++) {
-            themes->addAction(customActions[i]);
-        }
-    }
+    QMenu *themes = appMenuBar->addMenu(tr("T&hemes"));
+    themes->addActions(themeActionGroup->actions());
     /* /zeewolf: Hot swappable wallet themes */
 
     QMenu *help = appMenuBar->addMenu(tr("&Help"));
@@ -443,9 +469,7 @@ void BitcoinGUI::createToolBars()
     toolbar->addAction(historyAction);
     toolbar->addAction(addressBookAction);
     toolbar->addAction(shoppingAction);
-    toolbar->addAction(shoppingAction);
-    toolbar->addAction(networkAction);
-    toolbar->addAction(networkAction);
+    toolbar->addAction(explorerAction);
 
     QToolBar *toolbar2 = addToolBar(tr("Actions toolbar"));
     toolbar2->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
@@ -507,11 +531,12 @@ void BitcoinGUI::setWalletModel(WalletModel *walletModel)
         transactionView->setModel(walletModel);
 
         overviewPage->setWalletModel(walletModel);
+        stakeReportDialog->setModel(walletModel);
         addressBookPage->setModel(walletModel->getAddressTableModel());
         receiveCoinsPage->setModel(walletModel->getAddressTableModel());
         sendCoinsPage->setModel(walletModel);
         signVerifyMessageDialog->setModel(walletModel);
-        stakeForCharityDialog->setModel(walletModel);
+        multiSendDialog->setModel(walletModel);
 
         setEncryptionStatus(walletModel->getEncryptionStatus());
         connect(walletModel, SIGNAL(encryptionStatusChanged(int)), this, SLOT(setEncryptionStatus(int)));
@@ -625,11 +650,11 @@ void BitcoinGUI::setNumBlocks(int count)
     int secs = lastBlockDate.secsTo(currentDate);
     tooltip = tr("Processed %1 blocks of transaction history.").arg(count);
 
-    // Set icon state: spinning if catching up, tick otherwise
+    // Set icon state: red bird while catching up, green once up to date
     if(secs < 90*60)
     {
         tooltip = tr("Up to date") + QString(".<br>") + tooltip;
-        labelBlocksIcon->setPixmap(QIcon(":/icons/synced").pixmap(STATUSBAR_ICONSIZE, STATUSBAR_ICONSIZE));
+        labelBlocksIcon->setPixmap(QIcon(":/icons/sync_green").pixmap(STATUSBAR_ICONSIZE, STATUSBAR_ICONSIZE));
 
         overviewPage->showOutOfSyncWarning(false);
 
@@ -666,15 +691,19 @@ void BitcoinGUI::setNumBlocks(int count)
 
         progressBarLabel->setText(tr("Synchronizing with network..."));
         progressBarLabel->setVisible(true);
-        progressBar->setFormat(tr("%1 behind").arg(timeBehindText));
-        progressBar->setMaximum(totalSecs);
-        progressBar->setValue(totalSecs - secs);
+        if (syncTargetHeight > count && !syncEstimateText.isEmpty())
+            applySyncEstimate(count);
+        else
+        {
+            // No estimate yet (just started, or no peer is ahead): how far behind
+            progressBar->setFormat(tr("%1 behind").arg(timeBehindText));
+            progressBar->setMaximum(totalSecs);
+            progressBar->setValue(totalSecs - secs);
+        }
         progressBar->setVisible(true);
 
         tooltip = tr("Catching up...") + QString("<br>") + tooltip;
-        labelBlocksIcon->setMovie(syncIconMovie);
-        if(count != prevBlocks)
-            syncIconMovie->start();
+        labelBlocksIcon->setPixmap(QIcon(":/icons/sync_red").pixmap(STATUSBAR_ICONSIZE, STATUSBAR_ICONSIZE));
         prevBlocks = count;
 
         overviewPage->showOutOfSyncWarning(true);
@@ -682,6 +711,8 @@ void BitcoinGUI::setNumBlocks(int count)
         tooltip += tr("Last received block was generated %1 ago.").arg(timeBehindText);
         tooltip += QString("<br>");
         tooltip += tr("Transactions after this will not yet be visible.");
+        if (!syncRateText.isEmpty())
+            tooltip += QString("<br>") + syncRateText;
     }
 
     // Don't word-wrap this (fixed-width) tooltip
@@ -778,7 +809,7 @@ void BitcoinGUI::incomingTransaction(const QModelIndex & parent, int start, int 
                         .data(Qt::DecorationRole));
 
         notificator->notify(Notificator::Information,
-                            (amount)<0 ? (fS4CNotificator == true ? tr("Sent transaction") : tr("Sent transaction") ):
+                            (amount)<0 ? (fMultiSendNotify == true ? tr("Sent transaction") : tr("Sent transaction") ):
                                          tr("Incoming transaction"),
                               tr("Date: %1\n"
                                  "Amount: %2\n"
@@ -826,10 +857,13 @@ void BitcoinGUI::gotoShoppingPage()
     centralWidget->setCurrentWidget(shoppingPage);
 }
 
-void BitcoinGUI::gotoNetworkPage()
+void BitcoinGUI::gotoExplorerPage()
 {
-    networkAction->setChecked(true);
-    centralWidget->setCurrentWidget(networkPage);
+    explorerAction->setChecked(true);
+    centralWidget->setCurrentWidget(explorerPage);
+
+    exportAction->setEnabled(false);
+    disconnect(exportAction, SIGNAL(triggered()), 0, 0);
 }
 
 void BitcoinGUI::gotoReceiveCoinsPage()
@@ -1046,11 +1080,26 @@ void BitcoinGUI::updateWeight()
 
 void BitcoinGUI::updateStakingIcon()
 {
-    updateWeight();
+    // While the wallet is catching up (newest block over an hour old) it can't
+    // stake, so skip working out the stake weight: it reads every coin's block
+    // from disk and would compete with the block download
+    bool fSyncing = !pindexBest || pindexBest->GetBlockTime() < GetTime() - 60 * 60;
+    uint64_t nNetworkWeight = 0;
+    if (fSyncing)
+        nWeight = 0;
+    else
+    {
+        // Skip this refresh if the core is busy rather than freezing the window
+        TRY_LOCK(cs_main, lockMain);
+        if (!lockMain)
+            return;
+        updateWeight();
+        if (nLastCoinStakeSearchInterval && nWeight)
+            nNetworkWeight = GetPoSKernelPS();
+    }
 
     if (nLastCoinStakeSearchInterval && nWeight)
     {
-        uint64_t nNetworkWeight = GetPoSKernelPS();
         unsigned nEstimateTime = nTargetSpacing * 2 * nNetworkWeight / nWeight;
 
         QString text;
@@ -1070,18 +1119,23 @@ void BitcoinGUI::updateStakingIcon()
         {
             text = tr("%n day(s)", "", nEstimateTime/(60*60*24));
         }
-        labelStakingIcon->setPixmap(QIcon(":/icons/res/icons/staking_on.png").pixmap(STATUSBAR_ICONSIZE,STATUSBAR_ICONSIZE));
+        if (!stakingAnimTimer->isActive())
+        {
+            animateStakingIcon();
+            stakingAnimTimer->start();
+        }
         labelStakingIcon->setToolTip(tr("Staking.<br>Your weight: %1<br>Network weight: %2<br>Expected time to earn reward: %3").arg(nWeight).arg(nNetworkWeight).arg(text));
 
     }
     else
     {
-            labelStakingIcon->setPixmap(QIcon(":/icons/res/icons/staking_off.png").pixmap(STATUSBAR_ICONSIZE,STATUSBAR_ICONSIZE));
+        stakingAnimTimer->stop();
+        labelStakingIcon->setPixmap(QIcon(":/icons/res/icons/staking_off.png").pixmap(STATUSBAR_ICONSIZE,STATUSBAR_ICONSIZE));
         if (pwalletMain && pwalletMain->IsLocked())
             labelStakingIcon->setToolTip(tr("Not staking because wallet is locked"));
         else if (vNodes.empty())
             labelStakingIcon->setToolTip(tr("Not staking because wallet is offline"));
-        else if (IsInitialBlockDownload())
+        else if (fSyncing)
             labelStakingIcon->setToolTip(tr("Not staking because wallet is syncing"));
         else if (!nWeight)
             labelStakingIcon->setToolTip(tr("Not staking because you don't have mature coins"));
@@ -1090,144 +1144,267 @@ void BitcoinGUI::updateStakingIcon()
     }
 }
 
+void BitcoinGUI::paintEvent(QPaintEvent *event)
+{
+    QMainWindow::paintEvent(event);
+
+    // FlappyCoin theme: sky, with clouds, city and bushes just above the status bar
+    if (GUIUtil::isFlappyTheme())
+    {
+        QRect area = rect();
+        if (statusBar() && statusBar()->isVisible())
+            area.setBottom(statusBar()->geometry().top() - 1);
+        QPainter painter(this);
+        GUIUtil::drawFlappyScenery(painter, area);
+        return;
+    }
+
+    // Same as the explorer's background: a navy glow centred above the top edge
+    // (ellipse at 50% -20%), fading into the background 60% of the way to the far corner.
+    // "Lighten" only brightens, so the starfield under it stays visible.
+    const QRectF area = rect();
+    const QPointF centre(area.width() / 2.0, -0.2 * area.height());
+    const double farCorner = std::sqrt(std::pow(area.width() / 2.0, 2) + std::pow(1.2 * area.height(), 2));
+
+    QRadialGradient glow(centre, 0.6 * farCorner);
+    glow.setColorAt(0.0, QColor(24, 40, 74));
+    glow.setColorAt(1.0, QColor(11, 18, 32));
+
+    QPainter painter(this);
+    painter.setCompositionMode(QPainter::CompositionMode_Lighten);
+    painter.fillRect(event->rect(), glow);
+}
+
+void BitcoinGUI::animateStakingIcon()
+{
+    // The staking bird bobs gently up and down (8 frames, 1.2 s per cycle)
+    static const int bob[8] = { 0, -1, -2, -1, 0, 1, 2, 1 };
+    QPixmap bird = QIcon(":/icons/res/icons/staking_on.png").pixmap(STATUSBAR_ICONSIZE, STATUSBAR_ICONSIZE);
+
+    QPixmap frame(STATUSBAR_ICONSIZE, STATUSBAR_ICONSIZE);
+    frame.fill(Qt::transparent);
+    QPainter painter(&frame);
+    painter.drawPixmap(0, bob[nStakingAnimFrame], bird);
+    painter.end();
+    labelStakingIcon->setPixmap(frame);
+
+    nStakingAnimFrame = (nStakingAnimFrame + 1) % 8;
+}
+
 void BitcoinGUI::detectShutdown()
 {
     if (ShutdownRequested())
         QMetaObject::invokeMethod(QCoreApplication::instance(), "quit", Qt::QueuedConnection);
 }
 
-void BitcoinGUI::charityClicked(QString addr)
+void BitcoinGUI::multiSendClicked(QString addr)
 {
-    charityAction->setChecked(true);
-    centralWidget->setCurrentWidget(stakeForCharityDialog);
+    multiSendAction->setChecked(true);
+    centralWidget->setCurrentWidget(multiSendDialog);
 
     if(!addr.isEmpty())
-        stakeForCharityDialog->setAddress(addr);
+        multiSendDialog->setAddress(addr);
 
     exportAction->setEnabled(false);
     disconnect(exportAction, SIGNAL(triggered()), 0, 0);
 }
 
+// Text for a duration, rounded to what's useful for a rough estimate
+static QString FormatTimeLeft(qint64 nSecs)
+{
+    if (nSecs < 60)
+        return QObject::tr("under a minute");
+    if (nSecs < 60 * 60)
+        return QObject::tr("%n min", "", (int)((nSecs + 30) / 60));
+    if (nSecs < 48 * 60 * 60)
+    {
+        int nMins = (int)((nSecs + 30) / 60);
+        return QObject::tr("%1 h %2 min").arg(nMins / 60).arg(nMins % 60);
+    }
+    int nHours = (int)((nSecs + 1800) / 3600);
+    return QObject::tr("%1 days %2 h").arg(nHours / 24).arg(nHours % 24);
+}
+
+void BitcoinGUI::updateSyncEstimate()
+{
+    int nHeight = nBestHeightUI;
+    qint64 nNowMs = GetTimeMillis();
+
+    // Only while catching up (tip more than 90 minutes old, as the bar uses)
+    if (nHeight < 0 || nBestTimeUI >= GetTime() - 90 * 60)
+    {
+        syncSamples.clear();
+        syncEstimateText.clear();
+        syncRateText.clear();
+        syncTargetHeight = -1;
+        return;
+    }
+
+    syncTargetHeight = GetBestPeerHeight();
+
+    // Average the download rate over the last few minutes so short stalls or
+    // bursts don't make the estimate jump around
+    syncSamples.push_back(std::make_pair(nNowMs, nHeight));
+    while (syncSamples.size() > 1 && nNowMs - syncSamples.front().first > SYNC_ESTIMATE_WINDOW_MS)
+        syncSamples.pop_front();
+
+    qint64 nSpanMs = syncSamples.back().first - syncSamples.front().first;
+    int nGained = syncSamples.back().second - syncSamples.front().second;
+    int nLeft = syncTargetHeight - nHeight;
+
+    if (syncTargetHeight <= nHeight)
+    {
+        syncEstimateText.clear();
+        syncRateText.clear();
+    }
+    else if (nSpanMs < 30 * 1000)
+    {
+        syncEstimateText = tr("estimating time left...");
+        syncRateText = tr("%n block(s) to go.", "", nLeft);
+    }
+    else if (nGained <= 0)
+    {
+        syncEstimateText = tr("waiting for blocks...");
+        syncRateText = tr("No blocks received in the last %n minute(s); %1 to go.", "", (int)(nSpanMs / 60000)).arg(nLeft);
+    }
+    else
+    {
+        double dRate = nGained * 1000.0 / nSpanMs;   // blocks per second
+        syncEstimateText = tr("about %1 left").arg(FormatTimeLeft((qint64)(nLeft / dRate)));
+        syncRateText = tr("Downloading %1 blocks a second, %2 blocks to go (highest peer: %3).")
+                       .arg(QString::number(dRate, 'f', dRate < 10 ? 1 : 0)).arg(nLeft).arg(syncTargetHeight);
+    }
+
+    if (progressBar->isVisible() && syncTargetHeight > nHeight && !syncEstimateText.isEmpty())
+        applySyncEstimate(nHeight);
+}
+
+void BitcoinGUI::applySyncEstimate(int count)
+{
+    progressBar->setMaximum(syncTargetHeight);
+    progressBar->setValue(std::min(count, syncTargetHeight));
+    progressBar->setFormat(syncEstimateText);
+}
+
 void BitcoinGUI::calcClicked()
 {
-    calcDialog dlg;
+    calcDialog dlg(this);
     dlg.exec();
 }
 
+void BitcoinGUI::stakeReportClicked()
+{
+    // One window, kept for the session; it refreshes itself while open
+    stakeReportDialog->show();
+    stakeReportDialog->raise();
+    stakeReportDialog->activateWindow();
+}
+
 /* zeewolf: Hot swappable wallet themes */
+// Names of the built-in themes (compiled into the wallet): the default look
+// (res/flapxcoin.qss) and the original 2014 FlappyCoin wallet's look (res/flappycoin.qss)
+static const QString FLAPXCOIN_THEME = "FlapXCoin";
+static const QString FLAPPYCOIN_THEME = "FlappyCoin";
+
+void BitcoinGUI::themeActionTriggered(QAction *action)
+{
+    changeTheme(action->data().toString());
+}
+
 void BitcoinGUI::changeTheme(QString theme)
 {
-    // load Default theme first (if present) to apply default styles
-    loadTheme("Default");
-
-    if (theme != "Default") {
-        loadTheme(theme);
-    }
+    loadTheme(theme);
 }
 
 void BitcoinGUI::loadTheme(QString theme)
 {
-    // template variables : key => value
-    QMap<QString, QString> variables;
+    QString styleSheet;
+    bool fFlappy = (theme == FLAPPYCOIN_THEME);
 
-    // path to selected theme dir - for simpler use, just use $theme-dir in qss : url($theme-dir/image.png)
-    QString themeDir = themesDir + "/" + theme;
-
-    // if theme selected
-    if (theme != "") {
-        QFile qss(themeDir + "/styles.qss");
-        // open qss
-        if (qss.open(QFile::ReadOnly))
-        {
-            // read stylesheet
-            QString styleSheet = QString(qss.readAll());
-            QTextStream in(&qss);
-            // rewind
-            in.seek(0);
-            bool readingVariables = false;
-
-            // seek for variables
-            while(!in.atEnd()) {
-                QString line = in.readLine();
-                // variables starts here
-                if (line == "/** [VARS]") {
-                    readingVariables = true;
-                }
-                // variables end here
-                if (line == "[/VARS] */") {
-                    break;
-                }
-                // if we're reading variables - store them in a map
-                if (readingVariables == true) {
-                    // skip empty lines
-                    if (line.length()>3 && line.contains('=')) {
-                        QStringList fields = line.split("=");
-                        QString var = fields.at(0).trimmed();
-                        QString value = fields.at(1).trimmed();
-                        variables[var] = value;
-                    }
-                }
-            }
-
-            // replace path to themes dir
-            styleSheet.replace("$theme-dir", themeDir);
-            styleSheet.replace("$themes-dir", themesDir);
-
-            QMapIterator<QString, QString> variable(variables);
-            variable.toBack();
-            // iterate backwards to prevent overwriting variables
-            while (variable.hasPrevious()) {
-                variable.previous();
-                // replace variables
-                styleSheet.replace(variable.key(), variable.value());
-            }
-
-            qss.close();
-        }
-    } else {
-        // If not theme name given - clear styles
-        qApp->setStyleSheet(QString(""));
+    if (fFlappy)
+        styleSheet = GUIUtil::flappyStyleSheet();
+    // Extra themes live in <themes dir>/<name>/styles.qss and may use $theme-dir for their own files
+    else if (theme != FLAPXCOIN_THEME && !themesDir.isEmpty())
+    {
+        QString themeDir = themesDir + "/" + theme;
+        styleSheet = GUIUtil::loadStyleSheet(themeDir + "/styles.qss", themeDir);
     }
 
-    // set selected theme and store it in registry
+    // FlapXCoin, or a theme that is missing or unreadable: use the built-in look
+    if (styleSheet.isEmpty())
+    {
+        theme = FLAPXCOIN_THEME;
+        fFlappy = false;
+        styleSheet = GUIUtil::flapxStyleSheet();
+    }
+
+    // FlappyCoin has its own light palette; every other theme sits on the FlapX one.
+    // Set the flag first: widgets read it when the palette-change events reach them.
+    GUIUtil::setFlappyTheme(fFlappy);
+    if (fFlappy)
+        GUIUtil::applyFlappyPalette();
+    else
+        GUIUtil::applyFlapXPalette();
+    qApp->setStyleSheet(styleSheet);
+    update();
+
+    // remember the choice and tick it in the Themes menu
     selectedTheme = theme;
     QSettings settings;
     settings.setValue("Template", selectedTheme);
+
+    if (themeActionGroup)
+    {
+        foreach (QAction *action, themeActionGroup->actions())
+            action->setChecked(action->data().toString() == selectedTheme);
+    }
 }
 
 void BitcoinGUI::listThemes(QStringList& themes)
 {
-    QDir currentDir(qApp->applicationDirPath());
-    // try app dir
-    if (currentDir.cd("themes")) {
-    // got it! (win package)
-    } else if (currentDir.cd("src/qt/res/themes")) {
-        // got it
-    } else if (currentDir.cd("../src/qt/res/themes")) {
-        // got it
-    } else {
-        // themes not found :(
-        return;
-    }
-    themesDir = currentDir.path();
-    currentDir.setFilter(QDir::Dirs);
-    QStringList entries = currentDir.entryList();
-    for( QStringList::ConstIterator entry=entries.begin(); entry!=entries.end(); ++entry )
+    // The built-in themes are always available and always first
+    themes.clear();
+    themes.append(FLAPXCOIN_THEME);
+    themes.append(FLAPPYCOIN_THEME);
+
+    // Extra themes: a "themes" folder in the data directory, next to the wallet,
+    // or in the source tree when running a development build
+    QStringList searchDirs;
+    searchDirs << QString::fromStdString((GetDataDir(false) / "themes").string())
+               << qApp->applicationDirPath() + "/themes"
+               << qApp->applicationDirPath() + "/src/qt/res/themes"
+               << qApp->applicationDirPath() + "/../src/qt/res/themes";
+
+    themesDir.clear();
+    foreach (const QString &dirPath, searchDirs)
     {
-        QString themeName=*entry;
-        if(themeName != tr(".") && themeName != tr(".."))
+        QDir dir(dirPath);
+        if (dir.exists())
         {
-            themes.append(themeName);
+            themesDir = dir.absolutePath();
+            break;
         }
     }
 
-    // get selected theme from registry (if any)
+    if (!themesDir.isEmpty())
+    {
+        QDir dir(themesDir);
+        foreach (const QString &entry, dir.entryList(QDir::Dirs | QDir::NoDotAndDotDot, QDir::Name))
+        {
+            // a theme folder needs a styles.qss, and can't reuse a built-in name
+            if (entry.compare(FLAPXCOIN_THEME, Qt::CaseInsensitive) != 0 &&
+                entry.compare(FLAPPYCOIN_THEME, Qt::CaseInsensitive) != 0 &&
+                QFile::exists(dir.filePath(entry + "/styles.qss")))
+                themes.append(entry);
+        }
+    }
+
+    // Saved theme from settings; old "Default" and unknown names fall back to FlapXCoin
     QSettings settings;
     selectedTheme = settings.value("Template").toString();
-    // or use default theme - Default
-    if (selectedTheme=="") {
-        selectedTheme = "Default";
-    }
+    if (!themes.contains(selectedTheme))
+        selectedTheme = FLAPXCOIN_THEME;
+
     // load it!
     loadTheme(selectedTheme);
 }

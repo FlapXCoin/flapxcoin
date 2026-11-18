@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>ExplorerPage</class>
+ <widget class="QWidget" name="ExplorerPage">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>912</width>
+    <height>612</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Block Explorer</string>
+  </property>
+  <layout class="QVBoxLayout" name="explorerLayout">
+   <item>
+    <widget class="QGroupBox" name="explorerGroup">
+     <property name="title">
+      <string>Block Explorer</string>
+     </property>
+     <layout class="QVBoxLayout" name="explorerGroupLayout">
+      <item>
+       <layout class="QHBoxLayout" name="searchLayout">
+        <item>
+         <widget class="QPushButton" name="backButton">
+          <property name="toolTip">
+           <string>Go back to the previous block or transaction</string>
+          </property>
+          <property name="text">
+           <string>&#8592; Back</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLineEdit" name="searchBox">
+          <property name="placeholderText">
+           <string>Block height, block hash or transaction ID</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="searchButton">
+          <property name="text">
+           <string>Search</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="latestButton">
+          <property name="toolTip">
+           <string>Show the newest block</string>
+          </property>
+          <property name="text">
+           <string>Latest block</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <widget class="QTextBrowser" name="resultView">
+        <property name="openLinks">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

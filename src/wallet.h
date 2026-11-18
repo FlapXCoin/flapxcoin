@@ -26,9 +26,15 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/regex.hpp>
 #include <boost/thread.hpp>
-extern bool fGlobalStakeForCharity;
+extern bool fGlobalMultiSend;
 
 extern bool fWalletUnlockStakingOnly;
+// FlapX: change returns to its source address (see -returnchange)
+extern bool fReturnChangeToSource;
+// FlapX stake auto-balance (see -staketargetmin, -staketargetmax, -stakemaxsplit)
+extern int64_t nStakeTargetMin;
+extern int64_t nStakeTargetMax;
+extern unsigned int nStakeMaxSplitOutputs;
 extern bool fConfChange;
 class CAccountingEntry;
 class CCoinControl;
@@ -105,12 +111,12 @@ public:
 
     bool fFileBacked;
     bool fWalletUnlockStakingOnly;
-    bool fStakeForCharity;
-    int nStakeForCharityPercent;
-    int64_t nStakeForCharityMin;
-    int64_t nStakeForCharityMax;
-    CBitcoinAddress strStakeForCharityAddress;
-    CBitcoinAddress strStakeForCharityChangeAddress;
+    bool fMultiSend;
+    int nMultiSendPercent;
+    int64_t nMultiSendMin;
+    int64_t nMultiSendMax;
+    CBitcoinAddress strMultiSendAddress;
+    CBitcoinAddress strMultiSendChangeAddress;
     std::string strWalletFile;
     int64_t nReserveBalance;
 
@@ -144,12 +150,12 @@ public:
         nOrderPosNext = 0;
         nTimeFirstKey = 0;
         fWalletUnlockStakingOnly = false;
-        fStakeForCharity = false;
-        nStakeForCharityPercent = 0;
-        nStakeForCharityMin = MIN_TXOUT_AMOUNT;
-        nStakeForCharityMax = MAX_MONEY;
-        strStakeForCharityAddress = "";
-        strStakeForCharityChangeAddress = "";
+        fMultiSend = false;
+        nMultiSendPercent = 0;
+        nMultiSendMin = MIN_TXOUT_AMOUNT;
+        nMultiSendMax = MAX_MONEY;
+        strMultiSendAddress = "";
+        strMultiSendChangeAddress = "";
         nReserveBalance = 0;
     }
 
@@ -230,19 +236,19 @@ public:
     int64_t GetImmatureBalance() const;
     int64_t GetStake() const;
     void GetMyWeight() const;
-	bool StakeForCharity();
+	bool MultiSend();
     int64_t GetMyNetworkWeight() const;
     int64_t GetMyTimeToStake() const;
     int64_t GetNewMint() const;
-    bool CreateTransaction(const std::vector<std::pair<CScript, int64_t> >& vecSend, CWalletTx& wtxNew, CReserveKey& reservekey, int64_t& nFeeRet, std::string strTxComment,  bool fAllowS4C=false, const CCoinControl *coinControl=NULL);
-    bool CreateTransaction(CScript scriptPubKey, int64_t nValue, CWalletTx& wtxNew, CReserveKey& reservekey, int64_t& nFeeRet, std::string strTxComment, bool fAllowS4C=false, const CCoinControl *coinControl=NULL);
+    bool CreateTransaction(const std::vector<std::pair<CScript, int64_t> >& vecSend, CWalletTx& wtxNew, CReserveKey& reservekey, int64_t& nFeeRet, std::string strTxComment,  bool fAllowMultiSend=false, const CCoinControl *coinControl=NULL);
+    bool CreateTransaction(CScript scriptPubKey, int64_t nValue, CWalletTx& wtxNew, CReserveKey& reservekey, int64_t& nFeeRet, std::string strTxComment, bool fAllowMultiSend=false, const CCoinControl *coinControl=NULL);
     bool CommitTransaction(CWalletTx& wtxNew, CReserveKey& reservekey);
 
     bool GetStakeWeight(const CKeyStore& keystore, uint64_t& nMinWeight, uint64_t& nMaxWeight, uint64_t& nWeight);
     bool CreateCoinStake(const CKeyStore& keystore, unsigned int nBits, int64_t nSearchInterval, int64_t nFees, CTransaction& txNew, unsigned int& nTxTime, CKey& key);
 
-    std::string SendMoney(CScript scriptPubKey, int64_t nValue, CWalletTx& wtxNew, bool fAskFee=false, std::string strTxComment="", bool fAllowS4C=false);
-    std::string SendMoneyToDestination(const CTxDestination &address, int64_t nValue, CWalletTx& wtxNew, bool fAskFee=false, std::string strTxComment="", bool fAllowS4C=false);
+    std::string SendMoney(CScript scriptPubKey, int64_t nValue, CWalletTx& wtxNew, bool fAskFee=false, std::string strTxComment="", bool fAllowMultiSend=false);
+    std::string SendMoneyToDestination(const CTxDestination &address, int64_t nValue, CWalletTx& wtxNew, bool fAskFee=false, std::string strTxComment="", bool fAllowMultiSend=false);
 
     bool NewKeyPool();
     bool TopUpKeyPool(unsigned int nSize = 0);

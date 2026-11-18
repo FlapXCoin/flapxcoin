@@ -42,7 +42,15 @@ CNode* FindNode(const CNetAddr& ip);
 CNode* FindNode(const std::string& addrName);
 CNode* FindNode(const CService& ip);
 CNode* ConnectNode(CAddress addrConnect, const char *strDest = NULL);
+bool OpenNetworkConnection(const CAddress& addrConnect, CSemaphoreGrant *grantOutbound = NULL, const char *strDest = NULL, bool fOneShot = false);
 void MapPort(bool fUseUPnP);
+/** Is this the peer we're downloading the chain from? */
+bool IsSyncNode(const CNode* pnode);
+/** True while we are well behind the height our peers agree on (set by the
+ *  message handler thread). We don't serve blocks then. */
+extern bool fCatchingUp;
+/** Stop downloading from this peer and pick another (it's skipped for nSeconds) */
+void ReleaseSyncNode(CNode* pnode, int64_t nSeconds);
 unsigned short GetListenPort();
 bool BindListenPort(const CService &bindAddr, std::string& strError=REF(std::string()));
 void StartNode(boost::thread_group& threadGroup);
@@ -64,6 +72,7 @@ enum
     LOCAL_IF,     // address a local interface listens on
     LOCAL_BIND,   // address explicit bound to
     LOCAL_UPNP,   // address reported by UPnP
+    LOCAL_PEER,   // address that several outbound peers agree they see us at
     LOCAL_MANUAL, // address explicitly specified (-externalip=)
 
     LOCAL_MAX
@@ -71,6 +80,8 @@ enum
 
 bool IsPeerAddrLocalGood(CNode *pnode);
 void AdvertizeLocal(CNode *pnode);
+bool LearnLocalFromPeer(CNode *pnode);
+bool TakeLocalAddressChanged();
 void SetLimited(enum Network net, bool fLimited = true);
 bool IsLimited(enum Network net);
 bool IsLimited(const CNetAddr& addr);
@@ -97,6 +108,8 @@ extern CAddrMan addrman;
 
 extern std::vector<CNode*> vNodes;
 extern CCriticalSection cs_vNodes;
+/** Highest block height any connected peer is known to have (-1 if none) */
+int GetBestPeerHeight();
 extern std::map<CInv, CDataStream> mapRelay;
 extern std::deque<std::pair<int64_t, CInv> > vRelayExpiration;
 extern CCriticalSection cs_mapRelay;
@@ -157,6 +170,10 @@ public:
     std::string strSubVer;
     bool fInbound;
     int nStartingHeight;
+    int nKnownHeight;
+    bool fSyncNode;
+    uint64_t nSendBytes;
+    uint64_t nRecvBytes;
     int nMisbehavior;
     double dPingTime;
     double dPingWait;
@@ -185,6 +202,8 @@ public:
     int64_t nLastSend;
     int64_t nLastRecv;
     int64_t nTimeConnected;
+    uint64_t nSendBytes;        // bytes sent to / received from this peer
+    uint64_t nRecvBytes;
     CAddress addr;
     std::string addrName;
     CService addrLocal;
@@ -207,12 +226,29 @@ protected:
     static CCriticalSection cs_setBanned;
     int nMisbehavior;
 
+    // Network traffic totals over all peers since startup
+    static CCriticalSection cs_totalBytes;
+    static uint64_t nTotalBytesRecv;
+    static uint64_t nTotalBytesSent;
+
 public:
 
     uint256 hashContinue;
     CBlockIndex* pindexLastGetBlocksBegin;
     uint256 hashLastGetBlocksEnd;
+    int64_t nLastGetBlocksTime; // when we last sent this peer a getblocks request
+    // Sync look-ahead (see PushGetBlocksAfter in main.cpp): the last block of
+    // each batch this peer announced whose blocks we haven't finished
+    // processing, oldest first, and the block we last asked it to continue from
+    std::deque<uint256> vSyncBatchEnds;
+    uint256 hashPrefetchFrom;
+    void ResetBlockPrefetch() { vSyncBatchEnds.clear(); hashPrefetchFrom = 0; }
+    int nSyncStalls;            // stall watchdog firings in a row at the same height
+    int nSyncStallHeight;       // our height at the last firing
+    int64_t nSyncAvoidUntil;    // don't pick this peer to sync from before this time
     int nStartingHeight;
+    int nKnownHeight;           // highest block height this peer is known to have:
+                                // its version height, raised by blocks it sends or announces
     bool fStartSync;
 
     // flood relay
@@ -246,6 +282,8 @@ public:
         nLastSend = 0;
         nLastRecv = 0;
         nTimeConnected = GetTime();
+        nSendBytes = 0;
+        nRecvBytes = 0;
         addr = addrIn;
         addrName = addrNameIn == "" ? addr.ToStringIPPort() : addrNameIn;
         nVersion = 0;
@@ -262,7 +300,13 @@ public:
         hashContinue = 0;
         pindexLastGetBlocksBegin = 0;
         hashLastGetBlocksEnd = 0;
+        nLastGetBlocksTime = 0;
+        hashPrefetchFrom = 0;
+        nSyncStalls = 0;
+        nSyncStallHeight = -1;
+        nSyncAvoidUntil = 0;
         nStartingHeight = -1;
+        nKnownHeight = -1;
         fStartSync = false;
         fGetAddr = false;
         nMisbehavior = 0;
@@ -627,6 +671,11 @@ public:
     static bool IsBanned(CNetAddr ip);
     bool Misbehaving(int howmuch); // 1 == a little, 100 == a lot
     void copyStats(CNodeStats &stats);
+
+    static void RecordBytesRecv(uint64_t bytes);
+    static void RecordBytesSent(uint64_t bytes);
+    static uint64_t GetTotalBytesRecv();
+    static uint64_t GetTotalBytesSent();
 };
 
 inline void RelayInventory(const CInv& inv)

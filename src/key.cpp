@@ -12,6 +12,128 @@
 
 #include "key.h"
 
+// Read r and s from a DER-ish ECDSA signature the way Bitcoin does
+// (ecdsa_signature_parse_der_lax, from libsecp256k1's contrib): lengths and
+// tags are checked only as far as needed to find the two numbers, leading
+// zeroes are skipped, and anything after them is ignored. A number longer
+// than 32 bytes gives r = s = 0, which never verifies. Returns false only if
+// the two numbers can't be found at all.
+static bool ParseDERSignatureLax(const std::vector<unsigned char>& vchSig, unsigned char *r32, unsigned char *s32)
+{
+    const unsigned char *input = vchSig.empty() ? NULL : &vchSig[0];
+    size_t inputlen = vchSig.size();
+    size_t rpos, rlen, spos, slen;
+    size_t pos = 0;
+    size_t lenbyte;
+    bool fOverflow = false;
+
+    memset(r32, 0, 32);
+    memset(s32, 0, 32);
+
+    // Sequence tag byte
+    if (pos == inputlen || input[pos] != 0x30)
+        return false;
+    pos++;
+
+    // Sequence length bytes
+    if (pos == inputlen)
+        return false;
+    lenbyte = input[pos++];
+    if (lenbyte & 0x80) {
+        lenbyte -= 0x80;
+        if (lenbyte > inputlen - pos)
+            return false;
+        pos += lenbyte;
+    }
+
+    // Integer tag byte for R
+    if (pos == inputlen || input[pos] != 0x02)
+        return false;
+    pos++;
+
+    // Integer length for R
+    if (pos == inputlen)
+        return false;
+    lenbyte = input[pos++];
+    if (lenbyte & 0x80) {
+        lenbyte -= 0x80;
+        if (lenbyte > inputlen - pos)
+            return false;
+        while (lenbyte > 0 && input[pos] == 0) {
+            pos++;
+            lenbyte--;
+        }
+        if (lenbyte >= sizeof(size_t))
+            return false;
+        rlen = 0;
+        while (lenbyte > 0) {
+            rlen = (rlen << 8) + input[pos];
+            pos++;
+            lenbyte--;
+        }
+    } else {
+        rlen = lenbyte;
+    }
+    if (rlen > inputlen - pos)
+        return false;
+    rpos = pos;
+    pos += rlen;
+
+    // Integer tag byte for S
+    if (pos == inputlen || input[pos] != 0x02)
+        return false;
+    pos++;
+
+    // Integer length for S
+    if (pos == inputlen)
+        return false;
+    lenbyte = input[pos++];
+    if (lenbyte & 0x80) {
+        lenbyte -= 0x80;
+        if (lenbyte > inputlen - pos)
+            return false;
+        while (lenbyte > 0 && input[pos] == 0) {
+            pos++;
+            lenbyte--;
+        }
+        if (lenbyte >= sizeof(size_t))
+            return false;
+        slen = 0;
+        while (lenbyte > 0) {
+            slen = (slen << 8) + input[pos];
+            pos++;
+            lenbyte--;
+        }
+    } else {
+        slen = lenbyte;
+    }
+    if (slen > inputlen - pos)
+        return false;
+    spos = pos;
+
+    // Ignore leading zeroes in R and S
+    while (rlen > 0 && input[rpos] == 0) {
+        rlen--;
+        rpos++;
+    }
+    while (slen > 0 && input[spos] == 0) {
+        slen--;
+        spos++;
+    }
+
+    // Copy R and S, right-aligned in 32 bytes
+    if (rlen > 32 || slen > 32)
+        fOverflow = true;
+    if (!fOverflow) {
+        memcpy(r32 + 32 - rlen, input + rpos, rlen);
+        memcpy(s32 + 32 - slen, input + spos, slen);
+    } else {
+        memset(r32, 0, 32);   // an invalid signature, not a parse failure
+        memset(s32, 0, 32);
+    }
+    return true;
+}
+
 // anonymous namespace with local implementation code (OpenSSL interaction)
 namespace {
 
@@ -76,6 +198,11 @@ int ECDSA_SIG_recover_key_GFp(EC_KEY *eckey, ECDSA_SIG *ecsig, const unsigned ch
     int n = 0;
     int i = recid / 2;
 
+    // ECDSA_SIG is opaque since OpenSSL 1.1; read r and s through the accessor
+    const BIGNUM *sig_r = NULL;
+    const BIGNUM *sig_s = NULL;
+    ECDSA_SIG_get0(ecsig, &sig_r, &sig_s);
+
     const EC_GROUP *group = EC_KEY_get0_group(eckey);
     if ((ctx = BN_CTX_new()) == NULL) { ret = -1; goto err; }
     BN_CTX_start(ctx);
@@ -84,7 +211,7 @@ int ECDSA_SIG_recover_key_GFp(EC_KEY *eckey, ECDSA_SIG *ecsig, const unsigned ch
     x = BN_CTX_get(ctx);
     if (!BN_copy(x, order)) { ret=-1; goto err; }
     if (!BN_mul_word(x, i)) { ret=-1; goto err; }
-    if (!BN_add(x, x, ecsig->r)) { ret=-1; goto err; }
+    if (!BN_add(x, x, sig_r)) { ret=-1; goto err; }
     field = BN_CTX_get(ctx);
     if (!EC_GROUP_get_curve_GFp(group, field, NULL, NULL, ctx)) { ret=-2; goto err; }
     if (BN_cmp(x, field) >= 0) { ret=0; goto err; }
@@ -102,12 +229,12 @@ int ECDSA_SIG_recover_key_GFp(EC_KEY *eckey, ECDSA_SIG *ecsig, const unsigned ch
     if (!BN_bin2bn(msg, msglen, e)) { ret=-1; goto err; }
     if (8*msglen > n) BN_rshift(e, e, 8-(n & 7));
     zero = BN_CTX_get(ctx);
-    if (!BN_zero(zero)) { ret=-1; goto err; }
+    BN_zero(zero); // returns void since OpenSSL 1.1
     if (!BN_mod_sub(e, zero, e, order, ctx)) { ret=-1; goto err; }
     rr = BN_CTX_get(ctx);
-    if (!BN_mod_inverse(rr, ecsig->r, order, ctx)) { ret=-1; goto err; }
+    if (!BN_mod_inverse(rr, sig_r, order, ctx)) { ret=-1; goto err; }
     sor = BN_CTX_get(ctx);
-    if (!BN_mod_mul(sor, ecsig->s, rr, order, ctx)) { ret=-1; goto err; }
+    if (!BN_mod_mul(sor, sig_s, rr, order, ctx)) { ret=-1; goto err; }
     eor = BN_CTX_get(ctx);
     if (!BN_mod_mul(eor, e, rr, order, ctx)) { ret=-1; goto err; }
     if (!EC_POINT_mul(group, Q, eor, R, sor, ctx)) { ret=-2; goto err; }
@@ -151,13 +278,14 @@ public:
     }
 
     ~CECKey() {
-        /*       EC_KEY_free(pkey);
-    pkey = EC_KEY_new_by_curve_name(NID_secp256k1);
-    if (pkey == NULL)
-        throw key_error("CKey::CKey() : EC_KEY_new_by_curve_name failed");
-    fSet = false;
- */
+        // Free the OpenSSL key. Without this every CECKey leaked ~1.9 KB, and
+        // one is created for every signature verification.
+        EC_KEY_free(pkey);
     }
+
+    // CECKey owns pkey, so copying it would free the same key twice.
+    CECKey(const CECKey&) = delete;
+    CECKey& operator=(const CECKey&) = delete;
     /*
 CKey::CKey()
 {
@@ -183,11 +311,16 @@ CKey::CKey(const CKey& b)
 }
 */
     void SetSecretBytes(const unsigned char vch[32]) {
-        BIGNUM bn;
-        BN_init(&bn);
-        assert(BN_bin2bn(vch, 32, &bn));
-        assert(EC_KEY_regenerate_key(pkey, &bn));
-        BN_clear_free(&bn);
+        // BIGNUM is opaque since OpenSSL 1.1, so it must be heap-allocated.
+        // The calls are kept outside assert() so they still run if NDEBUG is set.
+        BIGNUM *bn = BN_new();
+        assert(bn);
+        BIGNUM *res = BN_bin2bn(vch, 32, bn);
+        assert(res);
+        int ok = EC_KEY_regenerate_key(pkey, bn);
+        assert(ok);
+        (void)res; (void)ok;
+        BN_clear_free(bn);
     }
     /*
 CKey& CKey::operator=(const CKey& b)
@@ -268,9 +401,16 @@ bool CKey::IsCompressed() const
         BIGNUM *halforder = BN_CTX_get(ctx);
         EC_GROUP_get_order(group, order, ctx);
         BN_rshift1(halforder, order);
-        if (BN_cmp(sig->s, halforder) > 0) {
+        const BIGNUM *sig_r = NULL;
+        const BIGNUM *sig_s = NULL;
+        ECDSA_SIG_get0(sig, &sig_r, &sig_s);
+        if (BN_cmp(sig_s, halforder) > 0) {
             // enforce low S values, by negating the value (modulo the order) if above order/2.
-            BN_sub(sig->s, order, sig->s);
+            // ECDSA_SIG is opaque since OpenSSL 1.1, so build the new s and hand it back.
+            BIGNUM *new_r = BN_dup(sig_r);
+            BIGNUM *new_s = BN_new();
+            BN_sub(new_s, order, sig_s);
+            ECDSA_SIG_set0(sig, new_r, new_s);
         }
         BN_CTX_end(ctx);
         BN_CTX_free(ctx);
@@ -284,10 +424,29 @@ bool CKey::IsCompressed() const
     }
 
     bool Verify(const uint256 &hash, const std::vector<unsigned char>& vchSig) {
-        // -1 = error, 0 = bad sig, 1 = good
-        if (ECDSA_verify(0, (unsigned char*)&hash, sizeof(hash), &vchSig[0], vchSig.size(), pkey) != 1)
+        // OpenSSL 1.0.1k and later reject signatures that aren't encoded in
+        // strict DER, but signatures in blocks don't have to be (strict
+        // encoding is only a relay rule here), and wallets built on older
+        // OpenSSL accept them. Checking them strictly would let one such
+        // signature split new wallets from old ones (as in Bitcoin's
+        // CVE-2014-8275). So read r and s with the same lenient parser
+        // Bitcoin uses, and verify those.
+        unsigned char r32[32], s32[32];
+        if (!ParseDERSignatureLax(vchSig, r32, s32))
             return false;
-        return true;
+        ECDSA_SIG *sig = ECDSA_SIG_new();
+        BIGNUM *r = BN_bin2bn(r32, 32, NULL);
+        BIGNUM *s = BN_bin2bn(s32, 32, NULL);
+        if (sig == NULL || r == NULL || s == NULL || !ECDSA_SIG_set0(sig, r, s)) {
+            BN_free(r);
+            BN_free(s);
+            ECDSA_SIG_free(sig);
+            return false;
+        }
+        // -1 = error, 0 = bad sig, 1 = good
+        bool fOk = ECDSA_do_verify((unsigned char*)&hash, sizeof(hash), sig, pkey) == 1;
+        ECDSA_SIG_free(sig);
+        return fOk;
     }
 
     bool SignCompact(const uint256 &hash, unsigned char *p64, int &rec) {
@@ -296,8 +455,11 @@ bool CKey::IsCompressed() const
         if (sig==NULL)
             return false;
         memset(p64, 0, 64);
-        int nBitsR = BN_num_bits(sig->r);
-        int nBitsS = BN_num_bits(sig->s);
+        const BIGNUM *sig_r = NULL;
+        const BIGNUM *sig_s = NULL;
+        ECDSA_SIG_get0(sig, &sig_r, &sig_s);
+        int nBitsR = BN_num_bits(sig_r);
+        int nBitsS = BN_num_bits(sig_s);
         if (nBitsR <= 256 && nBitsS <= 256) {
             CPubKey pubkey;
             GetPubKey(pubkey, true);
@@ -314,8 +476,8 @@ bool CKey::IsCompressed() const
                 }
             }
             assert(fOk);
-            BN_bn2bin(sig->r,&p64[32-(nBitsR+7)/8]);
-            BN_bn2bin(sig->s,&p64[64-(nBitsS+7)/8]);
+            BN_bn2bin(sig_r,&p64[32-(nBitsR+7)/8]);
+            BN_bn2bin(sig_s,&p64[64-(nBitsS+7)/8]);
         }
         ECDSA_SIG_free(sig);
         return fOk;
@@ -327,11 +489,18 @@ bool CKey::IsCompressed() const
     // (the signature is a valid signature of the given data for that key)
     bool Recover(const uint256 &hash, const unsigned char *p64, int rec)
     {
-        if (rec<0 || rec>=3)
+        if (rec<0 || rec>=4) // recovery ids are 0-3
             return false;
         ECDSA_SIG *sig = ECDSA_SIG_new();
-        BN_bin2bn(&p64[0],  32, sig->r);
-        BN_bin2bn(&p64[32], 32, sig->s);
+        // ECDSA_SIG is opaque since OpenSSL 1.1; set0 takes ownership of r and s
+        BIGNUM *sig_r = BN_bin2bn(&p64[0],  32, NULL);
+        BIGNUM *sig_s = BN_bin2bn(&p64[32], 32, NULL);
+        if (sig == NULL || sig_r == NULL || sig_s == NULL || !ECDSA_SIG_set0(sig, sig_r, sig_s)) {
+            BN_free(sig_r);
+            BN_free(sig_s);
+            ECDSA_SIG_free(sig);
+            return false;
+        }
         bool ret = ECDSA_SIG_recover_key_GFp(pkey, sig, (unsigned char*)&hash, sizeof(hash), rec, 0) == 1;
         ECDSA_SIG_free(sig);
         return ret;
@@ -523,9 +692,16 @@ bool EnsureLowS(std::vector<unsigned char>& vchSig) {
     BIGNUM *order = BN_bin2bn(vchOrder, sizeof(vchOrder), NULL);
     BIGNUM *halforder = BN_bin2bn(vchHalfOrder, sizeof(vchHalfOrder), NULL);
 
-    if (BN_cmp(sig->s, halforder) > 0) {
+    const BIGNUM *sig_r = NULL;
+    const BIGNUM *sig_s = NULL;
+    ECDSA_SIG_get0(sig, &sig_r, &sig_s);
+    if (BN_cmp(sig_s, halforder) > 0) {
         // enforce low S values, by negating the value (modulo the order) if above order/2.
-        BN_sub(sig->s, order, sig->s);
+        // ECDSA_SIG is opaque since OpenSSL 1.1, so build the new s and hand it back.
+        BIGNUM *new_r = BN_dup(sig_r);
+        BIGNUM *new_s = BN_new();
+        BN_sub(new_s, order, sig_s);
+        ECDSA_SIG_set0(sig, new_r, new_s);
     }
 
     BN_free(halforder);

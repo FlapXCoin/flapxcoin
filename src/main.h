@@ -10,6 +10,7 @@
 #define BITCOIN_MAIN_H
 
 #include <stdint.h>
+#include <atomic>
 
 #include "core.h"
 #include "bignum.h"
@@ -22,6 +23,8 @@
 #include "zerocoin/Zerocoin.h"
 
 #include <list>
+
+#include <boost/filesystem/path.hpp>
 
 class CWallet;
 class CBlock;
@@ -40,6 +43,9 @@ static const unsigned int MAX_TX_COMMENT_LEN = 140;
 
 static const unsigned int MAX_BLOCK_SIZE = 1000000;
 static const unsigned int MAX_BLOCK_SIZE_GEN = MAX_BLOCK_SIZE/2;
+/** Start a new blkNNNN.dat file once the current one reaches this size (25 MiB).
+ *  Existing larger files keep working; only where new blocks go changes. */
+static const unsigned int MAX_BLOCKFILE_SIZE = 25 * 1024 * 1024;
 static const unsigned int DEFAULT_BLOCK_MAX_SIZE = 500000;
 static const unsigned int DEFAULT_BLOCK_PRIORITY_SIZE = 17000;
 static const unsigned int MAX_STANDARD_TX_SIZE = 100000;
@@ -52,6 +58,29 @@ static const unsigned int MAX_ORPHAN_TRANSACTIONS = MAX_BLOCK_SIZE/100;
 /** Default for -maxorphanblocksmib, maximum number of memory to keep orphan blocks */
 static const unsigned int DEFAULT_MAX_ORPHAN_BLOCKS = 40;
 static const unsigned int MAX_INV_SZ = 50000;
+/** Default number of blocks announced per getblocks request (-blockbatchsize) */
+static const int DEFAULT_BLOCK_BATCH_SIZE = 500;
+/** Seconds without a new block (while a peer is ahead of us) before sync asks again */
+static const int64_t SYNC_STALL_TIMEOUT = 60;
+/** Stall watchdog firings in a row (at the same height) before switching to another sync peer */
+static const int SYNC_STALLS_BEFORE_SWITCH = 2;
+/** Peers within this many blocks of the tallest peer all count as tall enough to sync from */
+static const int SYNC_HEIGHT_SLACK = 1000;
+/** Move off a sync peer that has run out of blocks when another peer is at least this far ahead */
+static const int SYNC_SWITCH_MARGIN = 100;
+/** Oldest client version we prefer to download blocks from: 2.9.0.5 (major,
+ *  minor, revision, build as 2.09.00.05). These send 500-block batches; 2.3.x
+ *  sends 50. Raise this when a newer release should be preferred. Older peers
+ *  are still used when no peer this new is available. */
+static const int MIN_SYNC_PEER_VERSION = 2090005;
+/** While we are this many blocks behind the height our peers agree on, we
+ *  don't hand out blocks (getblocks), so our own download goes faster */
+static const int CATCHING_UP_BLOCKS = 144;
+/** An announcement of at least this many blocks from the sync peer is a
+ *  download batch (the answer to getblocks), not news of a new block */
+static const unsigned int SYNC_PREFETCH_MIN_BATCH = 10;
+/** Default -dbcache for the block index (txleveldb) database, in megabytes */
+static const int64_t DEFAULT_TXDB_CACHE_MB = 100;
 static const int64_t MIN_TX_FEE = 1000000;
 static const int64_t MIN_RELAY_TX_FEE = MIN_TX_FEE;
 static const int64_t DUST_SOFT_LIMIT = 100000000;
@@ -131,6 +160,10 @@ extern int nCoinstakeMaturity;
 
 extern CBlockIndex* pindexGenesisBlock;
 extern int nBestHeight;
+// Copies of the tip's height and time the GUI can read at any moment without
+// waiting for cs_main (which block processing holds almost constantly while syncing)
+extern std::atomic<int> nBestHeightUI;
+extern std::atomic<int64_t> nBestTimeUI;
 extern uint256 nBestChainTrust;
 extern uint256 nBestInvalidTrust;
 extern uint256 hashBestChain;
@@ -185,6 +218,10 @@ void PushGetBlocks(CNode* pnode, CBlockIndex* pindexBegin, uint256 hashEnd);
 bool ProcessBlock(CNode* pfrom, CBlock* pblock);
 bool CheckDiskSpace(uint64_t nAdditionalBytes=0);
 FILE* OpenBlockFile(unsigned int nFile, unsigned int nBlockPos, const char* pszMode="rb");
+boost::filesystem::path GetBlockFileDir();
+boost::filesystem::path BlockFilePath(unsigned int nFile);
+/** Create the block file directory and move block files from older versions into it */
+bool MigrateBlockFiles(std::string& strError);
 FILE* AppendBlockFile(unsigned int& nFileRet);
 bool LoadBlockIndex(bool fAllowNew=true);
 void PrintBlockTree();
@@ -696,7 +733,7 @@ public:
  * in the block is a special one that creates a new coin owned by the creator
  * of the block.
  *
- * Blocks are appended to blk0001.dat files on disk.  Their location on disk
+ * Blocks are appended to chain/blk0001.dat files on disk.  Their location on disk
  * is indexed by CBlockIndex objects in memory.
  */
 class CBlock
@@ -719,6 +756,11 @@ public:
 
     // memory only
     mutable std::vector<uint256> vMerkleTree;
+
+    // memory only: last scrypt result and the block hash it belongs to (see GetPoWHash)
+    mutable uint256 hashPoWCacheKey;
+    mutable uint256 hashPoWCache;
+    mutable bool fPoWCached;
 
     // Denial-of-service detection:
     mutable int nDoS;
@@ -768,6 +810,7 @@ public:
         vtx.clear();
         vchBlockSig.clear();
         vMerkleTree.clear();
+        fPoWCached = false;
         nDoS = 0;
     }
 
@@ -783,8 +826,22 @@ public:
 
     uint256 GetPoWHash() const
     {
+        // scrypt is slow and a new block is checked several times (CheckBlock in
+        // ProcessBlock, AcceptBlock, CheckBlock again in ConnectBlock), each time
+        // over the same 80 header bytes. GetHash() covers exactly those 80 bytes
+        // (nVersion..nNonce), so if it still matches, the header is unchanged and
+        // the saved scrypt result is the right one. Any header change (e.g. a new
+        // nonce while mining) changes GetHash() and scrypt runs again.
+        const uint256 hashHeader = GetHash();
+        if (fPoWCached && hashPoWCacheKey == hashHeader)
+            return hashPoWCache;
+
         uint256 thash;
         scrypt_1024_1_1_256(BEGIN(nVersion), BEGIN(thash));
+
+        hashPoWCacheKey = hashHeader;
+        hashPoWCache = thash;
+        fPoWCached = true;
         return thash;
     }
 
@@ -1330,6 +1387,12 @@ public:
     CBlockLocator(const std::vector<uint256>& vHaveIn)
     {
         vHave = vHaveIn;
+    }
+
+    /** Put a block in front of the list: the first block the peer should look for */
+    void PushFront(const uint256& hashBlock)
+    {
+        vHave.insert(vHave.begin(), hashBlock);
     }
 
     IMPLEMENT_SERIALIZE

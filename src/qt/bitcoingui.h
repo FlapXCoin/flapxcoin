@@ -5,23 +5,27 @@
 #include <QSystemTrayIcon>
 
 #include <stdint.h>
+#include <deque>
+#include <utility>
 
 class TransactionTableModel;
 class ClientModel;
 class WalletModel;
 class TransactionView;
 class OverviewPage;
+class StakeReportDialog;
 class AddressBookPage;
 class ShoppingPage;
-class NetworkPage;
+class ExplorerPage;
 class SendCoinsDialog;
 class SignVerifyMessageDialog;
 class Notificator;
 class RPCConsole;
-class StakeForCharityDialog;
+class MultiSendDialog;
 
 QT_BEGIN_NAMESPACE
 class QLabel;
+class QTimer;
 class QLineEdit;
 class QTableView;
 class QAbstractItemModel;
@@ -29,6 +33,7 @@ class QModelIndex;
 class QProgressBar;
 class QStackedWidget;
 class QActionGroup;
+class QPaintEvent;
 class QUrl;
 QT_END_NAMESPACE
 
@@ -58,6 +63,8 @@ protected:
     void closeEvent(QCloseEvent *event);
     void dragEnterEvent(QDragEnterEvent *event);
     void dropEvent(QDropEvent *event);
+    /** Soft navy glow at the top of the window, over the starfield (matches the explorer) */
+    void paintEvent(QPaintEvent *event);
 
 private:
     ClientModel *clientModel;
@@ -66,14 +73,15 @@ private:
     QStackedWidget *centralWidget;
 
     OverviewPage *overviewPage;
+    StakeReportDialog *stakeReportDialog;
     QWidget *transactionsPage;
     AddressBookPage *addressBookPage;
     ShoppingPage *shoppingPage;
-    NetworkPage *networkPage;
+    ExplorerPage *explorerPage;
     AddressBookPage *receiveCoinsPage;
     SendCoinsDialog *sendCoinsPage;
     SignVerifyMessageDialog *signVerifyMessageDialog;
-    StakeForCharityDialog *stakeForCharityDialog;
+    MultiSendDialog *multiSendDialog;
 
     QLabel *labelEncryptionIcon;
     QLabel *labelStakingIcon;
@@ -89,7 +97,7 @@ private:
     QAction *sendCoinsAction;
     QAction *addressBookAction;
     QAction *shoppingAction;
-    QAction *networkAction;
+    QAction *explorerAction;
     QAction *signMessageAction;
     QAction *verifyMessageAction;
     QAction *aboutAction;
@@ -105,30 +113,44 @@ private:
     QAction *aboutQtAction;
     QAction *themeCustomAction;
     QAction *openRPCConsoleAction;
-    QAction *charityAction;
+    QAction *multiSendAction;
     QAction *calcAction;
+    QAction *stakeReportAction;
 
     QSystemTrayIcon *trayIcon;
     Notificator *notificator;
     TransactionView *transactionView;
     RPCConsole *rpcConsole;
-    QMovie *syncIconMovie;
+    /** Bobs the staking icon up and down while the wallet is staking */
+    QTimer *stakingAnimTimer;
+    int nStakingAnimFrame;
     /** Keep track of previous number of blocks, to detect progress */
     int prevBlocks;
 
+    /** Time-left estimate while syncing: (ms timestamp, height) samples from
+        the last few minutes, the tallest peer's height and the text shown */
+    QTimer *syncEstimateTimer;
+    std::deque<std::pair<qint64, int> > syncSamples;
+    int syncTargetHeight;
+    QString syncEstimateText;
+    QString syncRateText;
+    /** Put the current estimate on the progress bar (block-based) */
+    void applySyncEstimate(int count);
+
     uint64_t nWeight;
 
-	bool fStakeForCharity;
-	bool fS4CNotificator;
-	int nCharityPercent;
-	QString strCharityAddress;
+	bool fMultiSend;
+	bool fMultiSendNotify;
+	int nMultiSendPercent;
+	QString strMultiSendAddress;
 
     /* Themes support */
     QString selectedTheme;
+    // FlapXCoin (built in) first, then any folders found in the themes directory
     QStringList themesList;
-    // Path to directory where all themes are (usable for some common images?...)
+    // Directory holding extra themes, one folder per theme with a styles.qss (empty if none)
     QString themesDir;
-    QAction *customActions[100];
+    QActionGroup *themeActionGroup;
     /* /Themes support */
 
     /** Create the main UI actions. */
@@ -165,6 +187,8 @@ public slots:
     void handleURI(QString strURI);
 
 private slots:
+    /** Recompute the time-left estimate (every few seconds, cheap) */
+    void updateSyncEstimate();
     /** Switch to overview (home) page */
     void gotoOverviewPage();
     /** Switch to history (transactions) page */
@@ -173,8 +197,8 @@ private slots:
     void gotoAddressBookPage();
     /** Switch to shopping page */
     void gotoShoppingPage();
-    /** Switch to network page */
-    void gotoNetworkPage();
+    /** Switch to the built-in block explorer page */
+    void gotoExplorerPage();
     /** Switch to receive coins page */
     void gotoReceiveCoinsPage();
     /** Switch to send coins page */
@@ -191,6 +215,8 @@ private slots:
     void aboutClicked();
     /** Show Stake Calculator Dialog */
     void calcClicked();
+    /** Show the APR Tracking > Stake Report window */
+    void stakeReportClicked();
 #ifndef Q_OS_MAC
     /** Handle tray icon clicked */
     void trayIconActivated(QSystemTrayIcon::ActivationReason reason);
@@ -218,16 +244,19 @@ private slots:
 
     void updateWeight();
     void updateStakingIcon();
+    /** Draws the next frame of the staking animation */
+    void animateStakingIcon();
 
     /** called by a timer to check if fRequestShutdown has been set **/
     void detectShutdown();
 
-    void charityClicked(QString addr = "");
+    void multiSendClicked(QString addr = "");
 
-    /** Load external QSS stylesheet */
+    /** Themes: FlapXCoin is built in and the default; more can be added in a themes folder */
     void changeTheme(QString theme);
     void loadTheme(QString theme);
     void listThemes(QStringList& themes);
+    void themeActionTriggered(QAction *action);
     void keyPressEvent(QKeyEvent * e);
 };
 

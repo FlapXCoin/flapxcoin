@@ -3,6 +3,11 @@
 
 /* Milliseconds between model updates */
 static const int MODEL_UPDATE_DELAY = 250;
+/* Block height display refresh while syncing, in milliseconds (10 times a second) */
+static const int LIVE_HEIGHT_DELAY = 100;
+/* Sync time-left estimate: recompute every 5 seconds, averaging the download rate over the last 3 minutes */
+static const int SYNC_ESTIMATE_DELAY = 5000;
+static const int SYNC_ESTIMATE_WINDOW_MS = 3 * 60 * 1000;
 
 /* AskPassphraseDialog -- Maximum passphrase length */
 static const int MAX_PASSPHRASE_SIZE = 1024;
@@ -11,14 +16,18 @@ static const int MAX_PASSPHRASE_SIZE = 1024;
 static const int STATUSBAR_ICONSIZE = 24;
 
 /* Invalid field background style */
-#define STYLE_INVALID "background:#FF8080"
+#define STYLE_INVALID "background:#3a1622; border:1px solid #ff6b81; color:#ffffff;"
 
-/* Transaction list -- unconfirmed transaction */
-#define COLOR_UNCONFIRMED QColor(128, 128, 128)
+/* Transaction list colours; they follow the active theme (see GUIUtil::themeColor,
+   needs guiutil.h) */
+/* Transaction list -- unconfirmed transaction (muted) */
+#define COLOR_UNCONFIRMED GUIUtil::themeColor(GUIUtil::TC_MUTED)
 /* Transaction list -- negative amount */
-#define COLOR_NEGATIVE QColor(255, 0, 0)
-/* Transaction list -- bare address (without label) */
-#define COLOR_BAREADDRESS QColor(140, 140, 140)
+#define COLOR_NEGATIVE GUIUtil::themeColor(GUIUtil::TC_NEGATIVE_AMOUNT)
+/* Transaction list -- positive amount */
+#define COLOR_POSITIVE GUIUtil::themeColor(GUIUtil::TC_POSITIVE)
+/* Transaction list -- bare address (without label) (muted) */
+#define COLOR_BAREADDRESS GUIUtil::themeColor(GUIUtil::TC_MUTED)
 
 /* Tooltips longer than this (in characters) are converted into rich text,
    so that they can be word-wrapped.

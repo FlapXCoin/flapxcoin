@@ -1,0 +1,219 @@
+# 32-bit Windows GUI wallet (flapx-qt-win32.exe), for older PCs running 32-bit
+# Windows 7 or newer.
+#
+# MSYS2 (used for the 64-bit Windows build) is dropping its 32-bit packages, so
+# this cross-compiles on Ubuntu with the i686 MinGW-w64 compiler and builds the
+# libraries itself: Qt 5 (static), Boost, OpenSSL, Berkeley DB, miniupnpc and
+# qrencode. They're cached by version, so only the first run is slow (Qt takes
+# the longest). Bump "-v1" in the cache key after changing how they're built.
+
+name: Build Windows 32-bit
+
+on:
+  push:
+    branches: [ master, modern-linux-build, win32-build ]
+    tags: [ 'v*' ]
+    paths-ignore: [ '**.md', 'doc/**', 'README', 'COPYING', 'INSTALL' ]
+  pull_request:
+    paths-ignore: [ '**.md', 'doc/**', 'README', 'COPYING', 'INSTALL' ]
+  workflow_dispatch:
+
+concurrency:
+  group: build-win32-${{ github.ref }}
+  cancel-in-progress: ${{ !startsWith(github.ref, 'refs/tags/') }}
+
+permissions:
+  contents: read
+
+env:
+  HOST: i686-w64-mingw32
+  QT_TAG: v5.15.16-lts-lgpl
+  OPENSSL_TAG: openssl-3.0.15
+  BOOST_VERSION: 1.84.0
+  BDB_TAG: v5.3.28
+  MINIUPNPC_TAG: miniupnpc_2_2_8
+  QRENCODE_TAG: v4.1.1
+  ZLIB_TAG: v1.3.1
+  CCACHE_COMPILERCHECK: content
+  CCACHE_MAXSIZE: 500M
+
+jobs:
+  windows-qt-32bit:
+    name: Windows GUI (32-bit)
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      # GitHub's preset Azure mirror for Ubuntu packages can be unreachable
+      # (DNS failures), so use Ubuntu's own servers; time out and retry
+      # rather than hang for the whole job
+      - name: Install the cross compiler
+        timeout-minutes: 30
+        run: |
+          echo "http://archive.ubuntu.com/ubuntu/" | sudo tee /etc/apt/apt-mirrors.txt
+          sudo sed -i 's#http://azure.archive.ubuntu.com/ubuntu#http://archive.ubuntu.com/ubuntu#g' /etc/apt/sources.list
+          APT="sudo apt-get -o Acquire::Retries=3 -o Acquire::http::Timeout=20 -o Acquire::https::Timeout=20"
+          for i in 1 2 3; do
+            timeout -k 15 300 $APT update -o APT::Update::Error-Mode=any \
+              && timeout -k 15 900 $APT install -y g++-mingw-w64-i686 mingw-w64-tools cmake ccache \
+                   qttools5-dev-tools perl python3 pkg-config file \
+              && break
+            echo "apt attempt $i failed, retrying"; sleep 20
+          done
+          command -v i686-w64-mingw32-g++-posix || { echo "cross compiler not installed"; exit 1; }
+          # The "posix" thread model (needed for C++11 threads in Qt and Boost)
+          sudo update-alternatives --set i686-w64-mingw32-gcc /usr/bin/i686-w64-mingw32-gcc-posix
+          sudo update-alternatives --set i686-w64-mingw32-g++ /usr/bin/i686-w64-mingw32-g++-posix
+          i686-w64-mingw32-g++ --version | head -n1
+
+      # Two caches, each saved as soon as it's built, so a later failure
+      # doesn't throw away a finished library or Qt build
+      - uses: actions/cache/restore@v4
+        id: libcache
+        with:
+          path: ${{ runner.temp }}/w32
+          key: win32-libs-${{ env.OPENSSL_TAG }}-boost${{ env.BOOST_VERSION }}-bdb${{ env.BDB_TAG }}-${{ env.MINIUPNPC_TAG }}-qr${{ env.QRENCODE_TAG }}-z${{ env.ZLIB_TAG }}-v2
+
+      - uses: actions/cache/restore@v4
+        id: qtcache
+        with:
+          path: ${{ runner.temp }}/w32-qt5
+          key: win32-qt-${{ env.QT_TAG }}-${{ env.OPENSSL_TAG }}-v1
+
+      - name: Build the libraries (OpenSSL, Boost, Berkeley DB, miniupnpc, qrencode, zlib)
+        if: steps.libcache.outputs.cache-hit != 'true'
+        run: |
+          set -e
+          P="$RUNNER_TEMP/w32"; S="$RUNNER_TEMP/src"; mkdir -p "$P" "$S"
+          cat > "$S/toolchain.cmake" <<EOF
+          set(CMAKE_SYSTEM_NAME Windows)
+          set(CMAKE_SYSTEM_PROCESSOR i686)
+          set(CMAKE_C_COMPILER $HOST-gcc)
+          set(CMAKE_CXX_COMPILER $HOST-g++)
+          set(CMAKE_RC_COMPILER $HOST-windres)
+          set(CMAKE_FIND_ROOT_PATH $P)
+          set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
+          set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
+          set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
+          EOF
+
+          # OpenSSL
+          git -c advice.detachedHead=false clone -q --depth 1 --branch "$OPENSSL_TAG" https://github.com/openssl/openssl.git "$S/openssl"
+          (cd "$S/openssl" && ./Configure mingw --cross-compile-prefix=$HOST- no-shared no-tests \
+              --prefix="$P" --libdir=lib && make -j"$(nproc)" build_sw && make install_sw)
+
+          # Boost (only the libraries FlapX uses), named with the -mt suffix the .pro expects
+          B="boost_$(echo "$BOOST_VERSION" | tr . _)"
+          curl -sSfL -o "$S/boost.tar.gz" "https://archives.boost.io/release/$BOOST_VERSION/source/$B.tar.gz"
+          tar -xzf "$S/boost.tar.gz" -C "$S"
+          (cd "$S/$B" && ./bootstrap.sh --with-libraries=system,filesystem,program_options,thread,chrono \
+            && echo "using gcc : mingw : $HOST-g++ ;" > user-config.jam \
+            && ./b2 -j"$(nproc)" --user-config=user-config.jam toolset=gcc-mingw target-os=windows \
+                 address-model=32 architecture=x86 threadapi=win32 link=static runtime-link=static \
+                 threading=multi variant=release --layout=system --prefix="$P" install)
+          for f in "$P"/lib/libboost_*.a; do cp "$f" "${f%.a}-mt.a"; done
+
+          # Berkeley DB 5.3 (as in the 64-bit Windows build)
+          git -c advice.detachedHead=false clone -q --depth 1 --branch "$BDB_TAG" https://github.com/berkeleydb/libdb.git "$S/bdb"
+          sed -i 's/__atomic_compare_exchange/__atomic_compare_exchange_db/g' "$S/bdb/src/dbinc/atomic.h"
+          # Windows ignores letter case in header names; the Linux cross
+          # compiler's Windows headers are lower case
+          sed -i 's/<WinIoCtl.h>/<winioctl.h>/' "$S/bdb/src/dbinc/win_db.h"
+          (cd "$S/bdb/build_unix" && CFLAGS="-O2 -std=gnu17 -Wno-incompatible-pointer-types -Wno-int-conversion -Wno-implicit-function-declaration" \
+            ../dist/configure --host=$HOST --enable-mingw --enable-cxx --disable-shared --disable-replication --prefix="$P" \
+            && make -j"$(nproc)" libdb.a libdb_cxx.a && make install_lib install_include)
+
+          # miniupnpc
+          git -c advice.detachedHead=false clone -q --depth 1 --branch "$MINIUPNPC_TAG" https://github.com/miniupnp/miniupnp.git "$S/miniupnp"
+          cmake -S "$S/miniupnp/miniupnpc" -B "$S/upnpbuild" -DCMAKE_TOOLCHAIN_FILE="$S/toolchain.cmake" \
+            -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="$P" -DUPNPC_BUILD_STATIC=ON -DUPNPC_BUILD_SHARED=OFF \
+            -DUPNPC_BUILD_TESTS=OFF -DUPNPC_BUILD_SAMPLE=OFF
+          cmake --build "$S/upnpbuild" -j"$(nproc)" && cmake --install "$S/upnpbuild"
+
+          # qrencode
+          git -c advice.detachedHead=false clone -q --depth 1 --branch "$QRENCODE_TAG" https://github.com/fukuchi/libqrencode.git "$S/qrencode"
+          cmake -S "$S/qrencode" -B "$S/qrbuild" -DCMAKE_TOOLCHAIN_FILE="$S/toolchain.cmake" -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_INSTALL_PREFIX="$P" -DBUILD_SHARED_LIBS=OFF -DWITH_TOOLS=NO -DWITH_TESTS=NO -DCMAKE_POLICY_VERSION_MINIMUM=3.5
+          cmake --build "$S/qrbuild" -j"$(nproc)" && cmake --install "$S/qrbuild"
+
+          # zlib
+          git -c advice.detachedHead=false clone -q --depth 1 --branch "$ZLIB_TAG" https://github.com/madler/zlib.git "$S/zlib"
+          make -C "$S/zlib" -f win32/Makefile.gcc PREFIX=$HOST- libz.a
+          cp "$S/zlib/libz.a" "$P/lib/" && cp "$S/zlib/zlib.h" "$S/zlib/zconf.h" "$P/include/"
+
+          ls "$P/lib"
+
+      - uses: actions/cache/save@v4
+        if: steps.libcache.outputs.cache-hit != 'true'
+        with:
+          path: ${{ runner.temp }}/w32
+          key: ${{ steps.libcache.outputs.cache-primary-key }}
+
+      - name: Build Qt 5 (static, 32-bit Windows)
+        if: steps.qtcache.outputs.cache-hit != 'true'
+        run: |
+          set -e
+          P="$RUNNER_TEMP/w32"; S="$RUNNER_TEMP/src"; mkdir -p "$S"
+          git -c advice.detachedHead=false clone -q --depth 1 --branch "$QT_TAG" https://github.com/qt/qtbase.git "$S/qtbase"
+          cd "$S/qtbase"
+          ./configure -xplatform win32-g++ -device-option CROSS_COMPILE=$HOST- \
+            -prefix "$RUNNER_TEMP/w32-qt5" -static -release -opensource -confirm-license \
+            -nomake examples -nomake tests -no-opengl -no-icu -no-dbus \
+            -qt-zlib -qt-libpng -qt-libjpeg -qt-pcre -qt-harfbuzz -qt-freetype \
+            -openssl-linked -I "$P/include" -L "$P/lib" \
+            OPENSSL_LIBS="-lssl -lcrypto -lws2_32 -lcrypt32 -luser32 -ladvapi32"
+          make -j"$(nproc)" > "$RUNNER_TEMP/qt-build.log" 2>&1 || { tail -80 "$RUNNER_TEMP/qt-build.log"; exit 1; }
+          make install > /dev/null
+          ls "$RUNNER_TEMP/w32-qt5/bin"
+
+      - uses: actions/cache/save@v4
+        if: steps.qtcache.outputs.cache-hit != 'true'
+        with:
+          path: ${{ runner.temp }}/w32-qt5
+          key: ${{ steps.qtcache.outputs.cache-primary-key }}
+
+      - uses: actions/cache@v4
+        with:
+          path: ${{ runner.temp }}/ccache
+          key: ccache-windows-qt-32bit-${{ github.sha }}
+          restore-keys: ccache-windows-qt-32bit-
+
+      - name: Build LevelDB
+        run: |
+          export CCACHE_DIR="$RUNNER_TEMP/ccache"
+          cd src/leveldb
+          make TARGET_OS=NATIVE_WINDOWS -j"$(nproc)" CC="ccache $HOST-gcc" CXX="ccache $HOST-g++" AR=$HOST-ar \
+            libleveldb.a libmemenv.a
+
+      - name: Build flapx-qt-win32.exe
+        run: |
+          set -e
+          P="$RUNNER_TEMP/w32"
+          export CCACHE_DIR="$RUNNER_TEMP/ccache"
+          "$RUNNER_TEMP/w32-qt5/bin/qmake" USE_SYSTEM_DEPS=1 USE_UPNP=1 USE_QRCODE=1 \
+            "QMAKE_CC=ccache $HOST-gcc" "QMAKE_CXX=ccache $HOST-g++" "QMAKE_LINK=$HOST-g++" \
+            "QMAKE_LRELEASE=/usr/lib/qt5/bin/lrelease" \
+            "BOOST_INCLUDE_PATH=$P/include" "BOOST_LIB_PATH=$P/lib" \
+            "BDB_INCLUDE_PATH=$P/include" "BDB_LIB_PATH=$P/lib" \
+            "OPENSSL_INCLUDE_PATH=$P/include" "OPENSSL_LIB_PATH=$P/lib" \
+            "MINIUPNPC_INCLUDE_PATH=$P/include" "MINIUPNPC_LIB_PATH=$P/lib" \
+            "QRENCODE_INCLUDE_PATH=$P/include" "QRENCODE_LIB_PATH=$P/lib" flapx-qt.pro
+          make -j"$(nproc)"
+          $HOST-strip release/flapx-qt.exe
+          mv release/flapx-qt.exe release/flapx-qt-win32.exe
+          ccache -s
+
+      # Must be a 32-bit Windows program that needs only DLLs that come with Windows
+      - name: Check the binary
+        run: |
+          file release/flapx-qt-win32.exe
+          file release/flapx-qt-win32.exe | grep -q 'PE32 executable.*Intel 80386' || { echo "not a 32-bit Windows exe"; exit 1; }
+          DLLS="$($HOST-objdump -p release/flapx-qt-win32.exe | awk '/DLL Name/ {print tolower($3)}' | sort -u)"
+          echo "$DLLS"
+          BAD="$(echo "$DLLS" | grep -v -x -E 'kernel32.dll|user32.dll|gdi32.dll|advapi32.dll|shell32.dll|ole32.dll|oleaut32.dll|comdlg32.dll|ws2_32.dll|mswsock.dll|crypt32.dll|iphlpapi.dll|shlwapi.dll|winmm.dll|imm32.dll|uxtheme.dll|dwmapi.dll|version.dll|netapi32.dll|userenv.dll|winspool.drv|mpr.dll|msvcrt.dll|rpcrt4.dll|wtsapi32.dll|comctl32.dll|bcrypt.dll|secur32.dll|dnsapi.dll|api-ms-win-.*' || true)"
+          if [ -n "$BAD" ]; then echo "needs non-Windows DLLs: $BAD"; exit 1; fi
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: flapx-qt-windows-x86-32bit
+          path: release/flapx-qt-win32.exe

@@ -22,7 +22,6 @@
 
 #include <boost/filesystem.hpp>
 #include <boost/filesystem/fstream.hpp>
-#include <boost/filesystem/convenience.hpp>
 #include <boost/interprocess/sync/file_lock.hpp>
 #include <boost/algorithm/string/predicate.hpp>
 #include <openssl/crypto.h>
@@ -238,6 +237,12 @@ bool AppInit(int argc, char* argv[])
         delete detectShutdownThread;
         detectShutdownThread = NULL;
     }
+    // Wait for the worker threads (networking, staking, wallet flush) to
+    // actually stop before Shutdown() deletes the wallet and the process
+    // exits; otherwise a thread still running could use the freed wallet or
+    // a destroyed mutex and crash during shutdown.
+    threadGroup.interrupt_all();
+    threadGroup.join_all();
     Shutdown();
 
     return fRet;
@@ -296,7 +301,7 @@ std::string HelpMessage()
         "  -gen                   " + _("Generate coins") + "\n" +
         "  -gen=0                 " + _("Don't generate coins") + "\n" +
         "  -datadir=<dir>         " + _("Specify data directory") + "\n" +
-        "  -dbcache=<n>           " + _("Set database cache size in megabytes (default: 25)") + "\n" +
+        "  -dbcache=<n>           " + _("Set database cache size in megabytes (default: 100)") + "\n" +
         "  -dblogsize=<n>         " + _("Set database disk log size in megabytes (default: 100)") + "\n" +
         "  -timeout=<n>           " + _("Specify connection timeout (in milliseconds)") + "\n" +
         "  -proxy=<ip:port>       " + _("Connect through socks proxy") + "\n" +
@@ -304,6 +309,7 @@ std::string HelpMessage()
         "  -tor=<ip:port>         " + _("Use proxy to reach tor hidden services (default: same as -proxy)") + "\n"
         "  -dns                   " + _("Allow DNS lookups for -addnode, -seednode and -connect") + "\n" +
         "  -port=<port>           " + _("Listen for connections on <port> (default: 60042 or testnet: 60043)") + "\n" +
+        "  -altport               " + _("Listen for connections on the second peer port (60242, or 60243 on testnet): use it for a second wallet behind the same internet connection") + "\n" +
         "  -maxconnections=<n>    " + _("Maintain at most <n> connections to peers (default: 125)") + "\n" +
         "  -addnode=<ip>          " + _("Add a node to connect to and attempt to keep the connection open") + "\n" +
         "  -connect=<ip>          " + _("Connect only to the specified node(s)") + "\n" +
@@ -324,6 +330,8 @@ std::string HelpMessage()
         "  -bantime=<n>           " + _("Number of seconds to keep misbehaving peers from reconnecting (default: 86400)") + "\n" +
         "  -maxreceivebuffer=<n>  " + _("Maximum per-connection receive buffer, <n>*1000 bytes (default: 5000)") + "\n" +
         "  -maxsendbuffer=<n>     " + _("Maximum per-connection send buffer, <n>*1000 bytes (default: 1000)") + "\n" +
+        "  -blockbatchsize=<n>    " + _("Number of blocks to send a syncing peer per request, 1-5000 (default: 500)") + "\n" +
+        "  -printblocktiming      " + _("Log how long each received block took to check and store (two lines per block)") + "\n" +
 #ifdef USE_UPNP
 #if USE_UPNP
         "  -upnp                  " + _("Use UPnP to map the listening port (default: 1 when listening)") + "\n" +
@@ -364,7 +372,11 @@ std::string HelpMessage()
         // "  -enforcecanonical      " + _("Enforce transaction scripts to use canonical PUSH operators (default: 1)") + "\n" +
         "  -alertnotify=<cmd>     " + _("Execute command when a relevant alert is received (%s in cmd is replaced by message)") + "\n" +
         "  -upgradewallet         " + _("Upgrade wallet to latest format") + "\n" +
-        "  -keypool=<n>           " + _("Set key pool size to <n> (default: 100)") + "\n" +
+        "  -keypool=<n>           " + _("Set key pool size to <n> (default: 1000)") + "\n" +
+        "  -returnchange          " + _("Send change back to the address it came from instead of a new address, so wallet backups always cover change (default: 1)") + "\n" +
+        "  -staketargetmin=<amt>  " + _("Stake auto-balance: combine small inputs up to this size (default: 100000)") + "\n" +
+        "  -staketargetmax=<amt>  " + _("Stake auto-balance: split stakes larger than this into pieces of at least -staketargetmin (default: 200000)") + "\n" +
+        "  -stakemaxsplit=<n>     " + _("Stake auto-balance: most pieces one stake may be split into (default: 50)") + "\n" +
         "  -rescan                " + _("Rescan the block chain for missing wallet transactions") + "\n" +
         "  -salvagewallet         " + _("Attempt to recover private keys from a corrupt wallet.dat") + "\n" +
         "  -checkblocks=<n>       " + _("How many blocks to check at startup (default: 2500, 0 = all)") + "\n" +
@@ -568,7 +580,8 @@ bool AppInit2(boost::thread_group& threadGroup)
     std::string strWalletFileName = GetArg("-wallet", "wallet.dat");
 
     // strWalletFileName must be a plain filename without a directory
-    if (strWalletFileName != boost::filesystem::basename(strWalletFileName) + boost::filesystem::extension(strWalletFileName))
+    // (basename()/extension() and convenience.hpp were removed in Boost 1.85)
+    if (strWalletFileName != boost::filesystem::path(strWalletFileName).filename().string())
         return InitError(strprintf(_("Wallet %s resides outside data directory %s."), strWalletFileName.c_str(), strDataDir.c_str()));
 
     // Make sure only a single FlapX process is using the data directory.
@@ -651,7 +664,7 @@ bool AppInit2(boost::thread_group& threadGroup)
             return false;
     }
 
-    if (filesystem::exists(GetDataDir() / strWalletFileName))
+    if (boost::filesystem::exists(GetDataDir() / strWalletFileName))
     {
         CDBEnv::VerifyResult r = bitdb.Verify(strWalletFileName, CWalletDB::Recover);
         if (r == CDBEnv::RECOVER_OK)
@@ -767,6 +780,23 @@ bool AppInit2(boost::thread_group& threadGroup)
         }
     }
 
+    // FlapX: change and stake auto-balance settings
+    fReturnChangeToSource = GetBoolArg("-returnchange", true);
+
+    if (mapArgs.count("-staketargetmin"))
+    {
+        if (!ParseMoney(mapArgs["-staketargetmin"], nStakeTargetMin) || nStakeTargetMin <= 0)
+            return InitError(_("Invalid amount for -staketargetmin=<amount>"));
+    }
+    if (mapArgs.count("-staketargetmax"))
+    {
+        if (!ParseMoney(mapArgs["-staketargetmax"], nStakeTargetMax))
+            return InitError(_("Invalid amount for -staketargetmax=<amount>"));
+    }
+    if (nStakeTargetMax < 2 * nStakeTargetMin)
+        return InitError(_("-staketargetmax must be at least twice -staketargetmin"));
+    nStakeMaxSplitOutputs = (unsigned int)max((int64_t)1, min((int64_t)200, GetArg("-stakemaxsplit", 50)));
+
     if (mapArgs.count("-checkpointkey")) // ppcoin: checkpoint master priv key
     {
         if (!Checkpoints::SetCheckpointPrivKey(GetArg("-checkpointkey", "")))
@@ -777,6 +807,12 @@ bool AppInit2(boost::thread_group& threadGroup)
         AddOneShot(strDest);
 
     // ********************************************************* Step 7: load blockchain
+
+    {
+        std::string strBlockFileError;
+        if (!MigrateBlockFiles(strBlockFileError))
+            return InitError(strBlockFileError);
+    }
 
     if (!bitdb.Open(GetDataDir()))
     {
@@ -919,7 +955,7 @@ bool AppInit2(boost::thread_group& threadGroup)
     }
     if (pindexBest != pindexRescan && pindexBest && pindexRescan && pindexBest->nHeight > pindexRescan->nHeight)
     {
-        uiInterface.InitMessage(_("Flapping The Fappin Blocks....Please Hold"));
+        uiInterface.InitMessage(_("Flapping The Flappin Blocks....Please Hold"));
         printf("Rescanning last %i blocks (from block %i)...\n", pindexBest->nHeight - pindexRescan->nHeight, pindexRescan->nHeight);
         nStart = GetTimeMillis();
         pwalletMain->ScanForWalletTransactions(pindexRescan, true);
@@ -943,21 +979,21 @@ bool AppInit2(boost::thread_group& threadGroup)
         exit(0);
     }
 
-    filesystem::path pathBootstrap = GetDataDir() / "bootstrap.dat";
-    if (filesystem::exists(pathBootstrap)) {
+    boost::filesystem::path pathBootstrap = GetDataDir() / "bootstrap.dat";
+    if (boost::filesystem::exists(pathBootstrap)) {
         uiInterface.InitMessage(_("Importing bootstrap blockchain data file."));
 
         FILE *file = fopen(pathBootstrap.string().c_str(), "rb");
         if (file) {
-            filesystem::path pathBootstrapOld = GetDataDir() / "bootstrap.dat.old";
+            boost::filesystem::path pathBootstrapOld = GetDataDir() / "bootstrap.dat.old";
             LoadExternalBlockFile(file);
             RenameOver(pathBootstrap, pathBootstrapOld);
         }
     }
 
     // FlapX: import PoW blockchain
-    filesystem::path pathOldblockchain = GetDataDir() / "blocks";
-    if (filesystem::exists(pathOldblockchain)) {
+    boost::filesystem::path pathOldblockchain = GetDataDir() / "blocks";
+    if (boost::filesystem::exists(pathOldblockchain)) {
         uiInterface.InitMessage(_("Importing blockchain from PoW wallet..."));
 
         FILE *file = fopen((pathOldblockchain / "blk00000.dat").string().c_str(), "rb");
@@ -970,18 +1006,19 @@ bool AppInit2(boost::thread_group& threadGroup)
         }
 #if BOOST_VERSION >= 105000
         boost::system::error_code errcode;
-        filesystem::remove_all(pathOldblockchain, errcode);
-        filesystem::copy_file(GetDataDir() / "wallet.dat", GetDataDir() / "wallet.dat.old", errcode);
+        boost::filesystem::remove_all(pathOldblockchain, errcode);
+        boost::filesystem::copy_file(GetDataDir() / "wallet.dat", GetDataDir() / "wallet.dat.old", errcode);
 #else
-        filesystem::remove_all(pathOldblockchain);
-        filesystem::copy_file(GetDataDir() / "wallet.dat", GetDataDir() / "wallet.dat.old");
+        boost::filesystem::remove_all(pathOldblockchain);
+        boost::filesystem::copy_file(GetDataDir() / "wallet.dat", GetDataDir() / "wallet.dat.old");
 #endif
     }
 
     // ********************************************************* Step 10: load peers
 
-    uiInterface.InitMessage(_("Final Coundown"));
+    uiInterface.InitMessage(_("Final Countdown"));
     printf("Loading addresses...\n");
+    CAddrDB::RemoveLeftoverTempFiles();
     nStart = GetTimeMillis();
 
     {

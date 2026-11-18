@@ -31,6 +31,7 @@ public:
         DisplayAddresses,  // bool
         Language,          // QString
         CoinControlFeatures, // bool
+        UseAltPort,        // bool
         OptionIDRowCount,
     };
 
