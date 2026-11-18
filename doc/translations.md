@@ -10,6 +10,14 @@ language** (after a restart), or forced with `lang=ru` in `flapx.conf` /
 | English | `src/qt/locale/bitcoin_en.ts` | source language |
 | Russian (Русский) | `src/qt/locale/bitcoin_ru.ts` | complete (861 strings) |
 
+Qt supplies some text itself: the standard dialog buttons (OK, Cancel, Yes,
+No...), the Copy/Paste menu in text boxes, and the scroll bar menus. The
+wallet uses the system's Qt translations for these when it has them, and
+otherwise its own `src/qt/locale/qt_<code>.ts` (built in under
+`/qttranslations`, so it isn't listed as a language). That matters for the
+static Windows build, which has no Qt translations. Only Russian has one so
+far; a new language can add its own `qt_<code>.ts` the same way.
+
 The Russian translation reuses the community translations of Bitcoin
 (0.8.6, 0.9.5) and NovaCoin for the text FlapX inherited from them, with the
 FlapX-specific text translated for FlapX. It uses «кошелёк» for "wallet".

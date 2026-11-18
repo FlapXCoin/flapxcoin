@@ -174,8 +174,11 @@ int main(int argc, char *argv[])
     // - First load the translator for the base language, without territory
     // - Then load the more specific locale translator
 
-    // Load e.g. qt_de.qm
-    if (qtTranslatorBase.load("qt_" + lang, QLibraryInfo::location(QLibraryInfo::TranslationsPath)))
+    // Load e.g. qt_de.qm: Qt's own buttons and menus (OK, Cancel, Copy, Paste...).
+    // From the system's Qt if it has them, otherwise the copy built into the
+    // wallet (the static Windows build has no Qt translations of its own).
+    if (qtTranslatorBase.load("qt_" + lang, QLibraryInfo::location(QLibraryInfo::TranslationsPath)) ||
+        qtTranslatorBase.load("qt_" + lang, ":/qttranslations/"))
         app.installTranslator(&qtTranslatorBase);
 
     // Load e.g. qt_de_DE.qm

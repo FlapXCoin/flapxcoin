@@ -70,6 +70,9 @@
         <file alias="en">locale/bitcoin_en.qm</file>
         <file alias="ru">locale/bitcoin_ru.qm</file>
     </qresource>
+    <qresource prefix="/qttranslations">
+        <file alias="qt_ru">locale/qt_ru.qm</file>
+    </qresource>
     <qresource prefix="/toolTip"/>
     <qresource prefix="/"/>
     <qresource prefix="/themes">
