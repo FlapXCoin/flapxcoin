@@ -1148,14 +1148,18 @@ void BitcoinGUI::paintEvent(QPaintEvent *event)
 {
     QMainWindow::paintEvent(event);
 
-    // FlappyCoin theme: sky, with clouds, city and bushes just above the status bar
-    if (GUIUtil::isFlappyTheme())
+    // FlappyCoin theme: sky, with clouds, city and bushes just above the status bar.
+    // Kosmos theme: space, the Earth, Venus, Soyuz, Venera and Sputnik.
+    if (GUIUtil::themeLook() != GUIUtil::LOOK_FLAPX)
     {
         QRect area = rect();
         if (statusBar() && statusBar()->isVisible())
             area.setBottom(statusBar()->geometry().top() - 1);
         QPainter painter(this);
-        GUIUtil::drawFlappyScenery(painter, area);
+        if (GUIUtil::isFlappyTheme())
+            GUIUtil::drawFlappyScenery(painter, area);
+        else
+            GUIUtil::drawKosmosScenery(painter, area);
         return;
     }
 
@@ -1302,9 +1306,11 @@ void BitcoinGUI::stakeReportClicked()
 
 /* zeewolf: Hot swappable wallet themes */
 // Names of the built-in themes (compiled into the wallet): the default look
-// (res/flapxcoin.qss) and the original 2014 FlappyCoin wallet's look (res/flappycoin.qss)
+// (res/flapxcoin.qss), the original 2014 FlappyCoin wallet's look (res/flappycoin.qss)
+// and the 1970s Soviet space programme (res/kosmos.qss)
 static const QString FLAPXCOIN_THEME = "FlapXCoin";
 static const QString FLAPPYCOIN_THEME = "FlappyCoin";
+static const QString KOSMOS_THEME = QString::fromUtf8("Космос");
 
 void BitcoinGUI::themeActionTriggered(QAction *action)
 {
@@ -1319,10 +1325,18 @@ void BitcoinGUI::changeTheme(QString theme)
 void BitcoinGUI::loadTheme(QString theme)
 {
     QString styleSheet;
-    bool fFlappy = (theme == FLAPPYCOIN_THEME);
+    GUIUtil::ThemeLook look = GUIUtil::LOOK_FLAPX;
 
-    if (fFlappy)
+    if (theme == FLAPPYCOIN_THEME)
+    {
+        look = GUIUtil::LOOK_FLAPPY;
         styleSheet = GUIUtil::flappyStyleSheet();
+    }
+    else if (theme == KOSMOS_THEME)
+    {
+        look = GUIUtil::LOOK_KOSMOS;
+        styleSheet = GUIUtil::kosmosStyleSheet();
+    }
     // Extra themes live in <themes dir>/<name>/styles.qss and may use $theme-dir for their own files
     else if (theme != FLAPXCOIN_THEME && !themesDir.isEmpty())
     {
@@ -1334,15 +1348,18 @@ void BitcoinGUI::loadTheme(QString theme)
     if (styleSheet.isEmpty())
     {
         theme = FLAPXCOIN_THEME;
-        fFlappy = false;
+        look = GUIUtil::LOOK_FLAPX;
         styleSheet = GUIUtil::flapxStyleSheet();
     }
 
-    // FlappyCoin has its own light palette; every other theme sits on the FlapX one.
-    // Set the flag first: widgets read it when the palette-change events reach them.
-    GUIUtil::setFlappyTheme(fFlappy);
-    if (fFlappy)
+    // FlappyCoin and Kosmos have their own palettes; every other theme sits on
+    // the FlapX one. Set the look first: widgets read it when the palette-change
+    // events reach them.
+    GUIUtil::setThemeLook(look);
+    if (look == GUIUtil::LOOK_FLAPPY)
         GUIUtil::applyFlappyPalette();
+    else if (look == GUIUtil::LOOK_KOSMOS)
+        GUIUtil::applyKosmosPalette();
     else
         GUIUtil::applyFlapXPalette();
     qApp->setStyleSheet(styleSheet);
@@ -1366,6 +1383,7 @@ void BitcoinGUI::listThemes(QStringList& themes)
     themes.clear();
     themes.append(FLAPXCOIN_THEME);
     themes.append(FLAPPYCOIN_THEME);
+    themes.append(KOSMOS_THEME);
 
     // Extra themes: a "themes" folder in the data directory, next to the wallet,
     // or in the source tree when running a development build
@@ -1394,6 +1412,8 @@ void BitcoinGUI::listThemes(QStringList& themes)
             // a theme folder needs a styles.qss, and can't reuse a built-in name
             if (entry.compare(FLAPXCOIN_THEME, Qt::CaseInsensitive) != 0 &&
                 entry.compare(FLAPPYCOIN_THEME, Qt::CaseInsensitive) != 0 &&
+                entry.compare(KOSMOS_THEME, Qt::CaseInsensitive) != 0 &&
+                entry.compare("Kosmos", Qt::CaseInsensitive) != 0 &&
                 QFile::exists(dir.filePath(entry + "/styles.qss")))
                 themes.append(entry);
         }

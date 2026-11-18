@@ -1,6 +1,6 @@
 # FlapX wallet themes
 
-The wallet has two built-in themes, compiled in through `bitcoin.qrc`, so they
+The wallet has three built-in themes, compiled in through `bitcoin.qrc`, so they
 are always available:
 
 - **FlapXCoin** (the default): navy with a starfield, cyan and mint, matching the
@@ -9,6 +9,13 @@ are always available:
   sky blue with clouds, city and bushes along the bottom (drawn in code, no
   images), cream panels, green outlines and orange buttons. Style sheet
   `src/qt/res/flappycoin.qss`, palette `GUIUtil::applyFlappyPalette()`.
+- **Космос** (Kosmos): the Soviet space programme of the 1970s, as the retro
+  future saw it. Same layout as FlapXCoin, in cosmic navy with burnt orange,
+  mustard and teal. Behind the window is a picture of Soyuz over the Earth,
+  Sputnik, and a Venera lander parachuting down to a striped Venus
+  (`src/qt/res/images/kosmos.jpg`), scaled to fill the window and anchored to
+  the bottom. Style sheet `src/qt/res/kosmos.qss`, palette
+  `GUIUtil::applyKosmosPalette()`.
 
 All themes are picked from the **Themes** menu, and the choice is remembered.
 

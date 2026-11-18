@@ -72,6 +72,8 @@
     <qresource prefix="/themes">
         <file alias="flapxcoin.qss">res/flapxcoin.qss</file>
         <file alias="flappycoin.qss">res/flappycoin.qss</file>
+        <file alias="kosmos.qss">res/kosmos.qss</file>
+        <file alias="kosmos.jpg">res/images/kosmos.jpg</file>
     </qresource>
     <qresource prefix="/qt/art">
         <file>res/images/art/ccflapx.png</file>

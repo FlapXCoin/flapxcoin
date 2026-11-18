@@ -1,0 +1,465 @@
+/*
+  Kosmos theme - the Soviet space programme of the 1970s, as the retro future
+  saw it: Soyuz, Salyut and Venera.
+
+  Deep cosmic navy, burnt orange and mustard like the posters and magazine
+  covers of the time, with teal for the Earth. Same layout as the FlapXCoin
+  theme; only the colours change. The base colours come from
+  GUIUtil::applyKosmosPalette(); behind the main window is the Kosmos
+  picture (res/images/kosmos.jpg): Soyuz over the Earth, Sputnik, and a
+  Venera lander parachuting down to a striped Venus.
+*/
+
+/** [VARS]
+@space = #0f1430
+@space2 = #161c3e
+@panel = #1d2450
+@border = #3a3f78
+@orange = #ff8c42
+@teal = #2ec4b6
+@mustard = #f2b134
+@cream = #e9dcc4
+@text = #f6ecdc
+@muted = #a99fb6
+@danger = #ff5a5f
+@yellow = #ffd166
+[/VARS] */
+
+/* ---------- window, menus ---------- */
+
+/* The window background (space, planets and spacecraft) is drawn by the main
+   window and the palette, so it isn't set here */
+QMainWindow, QDialog {
+    color: @text;
+}
+
+QMenuBar {
+    background-color: @space2;
+    color: @cream;
+    border-bottom: 1px solid @border;
+    padding: 2px 4px;
+}
+
+QMenuBar::item {
+    background: transparent;
+    padding: 4px 10px;
+    border-radius: 4px;
+}
+
+QMenuBar::item:selected {
+    background-color: rgba(255, 140, 66, 30);
+    color: @orange;
+}
+
+QMenu {
+    background-color: @panel;
+    color: @text;
+    border: 1px solid @border;
+    padding: 4px;
+}
+
+QMenu::item {
+    padding: 5px 24px 5px 24px;
+    border-radius: 4px;
+}
+
+QMenu::item:selected {
+    background-color: rgba(255, 140, 66, 35);
+    color: @orange;
+}
+
+QMenu::separator {
+    height: 1px;
+    background: @border;
+    margin: 4px 8px;
+}
+
+/* ---------- toolbar (page buttons) ---------- */
+
+QToolBar {
+    background-color: @space;
+    border: none;
+    border-bottom: 1px solid @border;
+    padding: 6px;
+    spacing: 6px;
+}
+
+QToolBar QToolButton {
+    color: @cream;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 7px;
+    padding: 5px 12px 5px 8px;
+}
+
+QToolBar QToolButton:hover {
+    background-color: rgba(255, 140, 66, 20);
+    color: @orange;
+}
+
+QToolBar QToolButton:checked {
+    background-color: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 rgba(255, 140, 66, 56), stop:1 rgba(46, 196, 182, 31));
+    border: 1px solid @orange;
+    color: #ffffff;
+    font-weight: bold;
+}
+
+/* ---------- panels ---------- */
+
+QGroupBox {
+    background-color: @panel;
+    border: 1px solid @border;
+    border-radius: 10px;
+    margin-top: 14px;
+    padding: 18px 10px 8px 10px;
+    color: @text;
+    font-weight: bold;
+}
+
+QGroupBox::title {
+    subcontrol-origin: margin;
+    subcontrol-position: top left;
+    left: 10px;
+    padding: 3px 10px;
+    color: @text;
+    background-color: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #2b2f63, stop:1 #232861);
+    border: 1px solid @border;
+    border-radius: 6px;
+}
+
+QGroupBox QLabel {
+    font-weight: normal;
+    color: @muted;
+}
+
+QLabel {
+    color: @text;
+    background: transparent;
+}
+
+QFrame[frameShape="4"], QFrame[frameShape="5"] {
+    color: @border;
+}
+
+/* ---------- overview page ---------- */
+
+QLabel#labelOverviewTitle {
+    color: #ffffff;
+}
+
+QGroupBox QLabel#labelBalance, QGroupBox QLabel#labelStake, QGroupBox QLabel#labelUnconfirmed,
+QGroupBox QLabel#labelImmature, QGroupBox QLabel#heightBox, QGroupBox QLabel#rewardBox,
+QGroupBox QLabel#volumeBox, QGroupBox QLabel#diffBox, QGroupBox QLabel#diffBox2,
+QGroupBox QLabel#pawrateBox, QGroupBox QLabel#connectionBox {
+    color: @text;
+    font-weight: bold;
+}
+
+QGroupBox QLabel#labelTotal {
+    color: @orange;
+    font-weight: bold;
+    font-size: 15px;
+}
+
+QGroupBox QLabel#labelInterest {
+    color: @teal;
+    font-weight: bold;
+}
+
+/* Staking status line: Flappy Bird yellow */
+QLabel#labelMyWeight {
+    color: @yellow;
+}
+
+QLabel#labelAlerts {
+    background-color: rgba(255, 90, 95, 30);
+    color: @text;
+    border: 1px solid @danger;
+    border-radius: 6px;
+    padding: 4px 8px;
+}
+
+QLabel#labelTransactionsStatus {
+    color: @danger;
+}
+
+/* ---------- lists & tables ---------- */
+
+QListView, QTableView, QTreeView {
+    background-color: @panel;
+    alternate-background-color: #1a2049;
+    color: @text;
+    border: 1px solid @border;
+    border-radius: 8px;
+    gridline-color: @border;
+    selection-background-color: rgba(255, 140, 66, 50);
+    selection-color: #ffffff;
+    outline: 0;
+}
+
+QListView::item:hover, QTableView::item:hover, QTreeView::item:hover {
+    background-color: rgba(255, 140, 66, 20);
+}
+
+QHeaderView {
+    background-color: @space2;
+    border: none;
+}
+
+QHeaderView::section {
+    background-color: @space2;
+    color: @mustard;
+    font-weight: bold;
+    padding: 6px 8px;
+    border: none;
+    border-right: 1px solid @border;
+    border-bottom: 1px solid @orange;
+}
+
+QTableCornerButton::section {
+    background-color: @space2;
+    border: none;
+}
+
+/* ---------- inputs ---------- */
+
+QLineEdit, QTextEdit, QPlainTextEdit, QComboBox, QSpinBox, QDoubleSpinBox, QDateTimeEdit {
+    background-color: @space2;
+    color: @text;
+    border: 1px solid @border;
+    border-radius: 6px;
+    padding: 4px 6px;
+    selection-background-color: rgba(255, 140, 66, 90);
+    selection-color: #ffffff;
+}
+
+QLineEdit:focus, QTextEdit:focus, QPlainTextEdit:focus, QComboBox:focus,
+QSpinBox:focus, QDoubleSpinBox:focus, QDateTimeEdit:focus {
+    border: 1px solid @orange;
+}
+
+QLineEdit:disabled, QComboBox:disabled, QSpinBox:disabled, QDoubleSpinBox:disabled {
+    color: @muted;
+    background-color: @space;
+}
+
+QComboBox::drop-down {
+    border: none;
+    width: 20px;
+}
+
+QComboBox QAbstractItemView {
+    background-color: @panel;
+    color: @text;
+    border: 1px solid @border;
+    selection-background-color: rgba(255, 140, 66, 50);
+    selection-color: #ffffff;
+}
+
+/* ---------- buttons ---------- */
+
+QPushButton {
+    background-color: transparent;
+    color: @orange;
+    border: 1px solid @orange;
+    border-radius: 7px;
+    padding: 6px 14px;
+    font-weight: bold;
+}
+
+QPushButton:hover {
+    background-color: rgba(255, 140, 66, 30);
+    color: #ffffff;
+}
+
+QPushButton:pressed {
+    background-color: rgba(255, 140, 66, 60);
+}
+
+QPushButton:disabled {
+    color: @muted;
+    border-color: @border;
+}
+
+QPushButton:default, QPushButton#startButton, QPushButton#sendButton {
+    background-color: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 @orange, stop:1 @teal);
+    color: @space;
+    border: none;
+}
+
+QPushButton:default:hover, QPushButton#startButton:hover, QPushButton#sendButton:hover {
+    background-color: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #ffab73, stop:1 #5fd8cc);
+    color: @space;
+}
+
+QPushButton:default:disabled, QPushButton#startButton:disabled, QPushButton#sendButton:disabled {
+    background-color: @border;
+    color: @muted;
+}
+
+QToolButton {
+    color: @cream;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    padding: 3px;
+}
+
+QToolButton:hover {
+    border: 1px solid @border;
+    background-color: rgba(255, 140, 66, 20);
+}
+
+/* ---------- tabs ---------- */
+
+QTabWidget::pane {
+    background-color: @panel;
+    border: 1px solid @border;
+    border-radius: 8px;
+    top: -1px;
+}
+
+QTabBar::tab {
+    background-color: @space2;
+    color: @cream;
+    border: 1px solid @border;
+    border-bottom: none;
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+    padding: 6px 14px;
+    margin-right: 2px;
+}
+
+QTabBar::tab:selected {
+    background-color: @panel;
+    color: @orange;
+    font-weight: bold;
+}
+
+QTabBar::tab:hover:!selected {
+    color: @orange;
+}
+
+/* ---------- check boxes & radio buttons ---------- */
+
+QCheckBox, QRadioButton {
+    color: @text;
+    spacing: 6px;
+    background: transparent;
+}
+
+QCheckBox::indicator, QRadioButton::indicator {
+    width: 14px;
+    height: 14px;
+    background-color: @space2;
+    border: 1px solid @border;
+}
+
+QCheckBox::indicator {
+    border-radius: 3px;
+}
+
+QRadioButton::indicator {
+    border-radius: 8px;
+}
+
+QCheckBox::indicator:checked, QRadioButton::indicator:checked {
+    background-color: @orange;
+    border: 1px solid @orange;
+}
+
+QCheckBox::indicator:hover, QRadioButton::indicator:hover {
+    border: 1px solid @orange;
+}
+
+/* ---------- status bar & progress ---------- */
+
+QStatusBar {
+    background-color: #0a0d22;
+    color: @muted;
+    border-top: 1px solid @border;
+}
+
+QStatusBar::item {
+    border: none;
+}
+
+QStatusBar QLabel {
+    color: @muted;
+}
+
+/* Sync bar: dark bold text, readable on both the gradient and the steel track */
+QProgressBar {
+    background-color: @mustard;
+    color: #000000;
+    border: 1px solid @border;
+    border-radius: 6px;
+    text-align: center;
+    font-weight: bold;
+    min-height: 20px;
+    min-width: 260px;
+}
+
+QProgressBar::chunk {
+    background-color: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 @orange, stop:1 @teal);
+    border-radius: 4px;
+}
+
+/* ---------- scroll bars ---------- */
+
+QScrollBar:vertical {
+    background: @space;
+    width: 10px;
+    margin: 0;
+}
+
+QScrollBar:horizontal {
+    background: @space;
+    height: 10px;
+    margin: 0;
+}
+
+QScrollBar::handle:vertical, QScrollBar::handle:horizontal {
+    background: @border;
+    border-radius: 5px;
+    min-height: 24px;
+    min-width: 24px;
+}
+
+QScrollBar::handle:vertical:hover, QScrollBar::handle:horizontal:hover {
+    background: @mustard;
+}
+
+QScrollBar::add-line, QScrollBar::sub-line {
+    width: 0;
+    height: 0;
+}
+
+QScrollBar::add-page, QScrollBar::sub-page {
+    background: none;
+}
+
+/* ---------- tooltips & splitters ---------- */
+
+QToolTip {
+    background-color: @space2;
+    color: @text;
+    border: 1px solid @orange;
+    padding: 4px;
+}
+
+QSplitter::handle {
+    background-color: @border;
+}
+
+/* ---------- debug window ---------- */
+
+QLabel#trafficNote {
+    color: @muted;
+}
+
+/* ---------- message boxes ---------- */
+
+QMessageBox QLabel {
+    color: @text;
+}

@@ -136,8 +136,19 @@ namespace GUIUtil
     /** Draw the FlappyCoin scenery (clouds, city, bushes) along the bottom of rect */
     void drawFlappyScenery(QPainter &painter, const QRect &rect);
 
-    /** Which built-in look is active, for colours set in code */
-    void setFlappyTheme(bool fFlappy);
+    /** The built-in Kosmos theme (res/kosmos.qss): the 1970s Soviet space programme */
+    QString kosmosStyleSheet();
+    /** Deep-space palette for the Kosmos theme */
+    void applyKosmosPalette();
+    /** Draw the Kosmos background picture in rect (Soyuz, Sputnik, Venera, the Earth and
+        Venus), filling it and anchored to the bottom; a drawn version if the picture is missing */
+    void drawKosmosScenery(QPainter &painter, const QRect &rect);
+
+    /** Which built-in look is active, for colours set in code. Themes loaded from a
+        themes folder use the FlapX look underneath. */
+    enum ThemeLook { LOOK_FLAPX, LOOK_FLAPPY, LOOK_KOSMOS };
+    void setThemeLook(ThemeLook look);
+    ThemeLook themeLook();
     bool isFlappyTheme();
 
     enum ThemeColor { TC_POSITIVE, TC_NEGATIVE, TC_NEGATIVE_AMOUNT, TC_MUTED, TC_ACCENT, TC_ACCENT2,
