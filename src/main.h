@@ -68,6 +68,17 @@ static const int SYNC_STALLS_BEFORE_SWITCH = 2;
 static const int SYNC_HEIGHT_SLACK = 1000;
 /** Move off a sync peer that has run out of blocks when another peer is at least this far ahead */
 static const int SYNC_SWITCH_MARGIN = 100;
+/** Oldest client version we prefer to download blocks from: 2.9.0.5 (major,
+ *  minor, revision, build as 2.09.00.05). These send 500-block batches; 2.3.x
+ *  sends 50. Raise this when a newer release should be preferred. Older peers
+ *  are still used when no peer this new is available. */
+static const int MIN_SYNC_PEER_VERSION = 2090005;
+/** While we are this many blocks behind the height our peers agree on, we
+ *  don't hand out blocks (getblocks), so our own download goes faster */
+static const int CATCHING_UP_BLOCKS = 144;
+/** An announcement of at least this many blocks from the sync peer is a
+ *  download batch (the answer to getblocks), not news of a new block */
+static const unsigned int SYNC_PREFETCH_MIN_BATCH = 10;
 /** Default -dbcache for the block index (txleveldb) database, in megabytes */
 static const int64_t DEFAULT_TXDB_CACHE_MB = 100;
 static const int64_t MIN_TX_FEE = 1000000;
@@ -1376,6 +1387,12 @@ public:
     CBlockLocator(const std::vector<uint256>& vHaveIn)
     {
         vHave = vHaveIn;
+    }
+
+    /** Put a block in front of the list: the first block the peer should look for */
+    void PushFront(const uint256& hashBlock)
+    {
+        vHave.insert(vHave.begin(), hashBlock);
     }
 
     IMPLEMENT_SERIALIZE

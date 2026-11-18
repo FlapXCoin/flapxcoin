@@ -138,11 +138,11 @@ OverviewPage::OverviewPage(QWidget *parent) :
         timerMyWeight->start(30 * 1000);
         updateMyWeight();
     }
-    QAction *stakeForCharityAction = new QAction(ui->startButton->text(), this);
+    QAction *multiSendAction = new QAction(ui->startButton->text(), this);
 
     contextMenu = new QMenu();
-    contextMenu->addAction(stakeForCharityAction);
-    connect(stakeForCharityAction, SIGNAL(triggered()), this, SLOT(on_startButton_clicked()));
+    contextMenu->addAction(multiSendAction);
+    connect(multiSendAction, SIGNAL(triggered()), this, SLOT(on_startButton_clicked()));
 
     // Recent transactions
     ui->listTransactions->setItemDelegate(txdelegate);
@@ -267,7 +267,7 @@ void OverviewPage::updateMyWeight()
 
 void OverviewPage::on_startButton_clicked()
 {
-    return stakeForCharitySignal();
+    return multiSendSignal();
 }
 
 // void OverviewPage::setModel(WalletModel *model)

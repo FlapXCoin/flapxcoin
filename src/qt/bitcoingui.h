@@ -13,6 +13,7 @@ class ClientModel;
 class WalletModel;
 class TransactionView;
 class OverviewPage;
+class StakeReportDialog;
 class AddressBookPage;
 class ShoppingPage;
 class ExplorerPage;
@@ -20,7 +21,7 @@ class SendCoinsDialog;
 class SignVerifyMessageDialog;
 class Notificator;
 class RPCConsole;
-class StakeForCharityDialog;
+class MultiSendDialog;
 
 QT_BEGIN_NAMESPACE
 class QLabel;
@@ -72,6 +73,7 @@ private:
     QStackedWidget *centralWidget;
 
     OverviewPage *overviewPage;
+    StakeReportDialog *stakeReportDialog;
     QWidget *transactionsPage;
     AddressBookPage *addressBookPage;
     ShoppingPage *shoppingPage;
@@ -79,7 +81,7 @@ private:
     AddressBookPage *receiveCoinsPage;
     SendCoinsDialog *sendCoinsPage;
     SignVerifyMessageDialog *signVerifyMessageDialog;
-    StakeForCharityDialog *stakeForCharityDialog;
+    MultiSendDialog *multiSendDialog;
 
     QLabel *labelEncryptionIcon;
     QLabel *labelStakingIcon;
@@ -111,8 +113,9 @@ private:
     QAction *aboutQtAction;
     QAction *themeCustomAction;
     QAction *openRPCConsoleAction;
-    QAction *charityAction;
+    QAction *multiSendAction;
     QAction *calcAction;
+    QAction *stakeReportAction;
 
     QSystemTrayIcon *trayIcon;
     Notificator *notificator;
@@ -136,10 +139,10 @@ private:
 
     uint64_t nWeight;
 
-	bool fStakeForCharity;
-	bool fS4CNotificator;
-	int nCharityPercent;
-	QString strCharityAddress;
+	bool fMultiSend;
+	bool fMultiSendNotify;
+	int nMultiSendPercent;
+	QString strMultiSendAddress;
 
     /* Themes support */
     QString selectedTheme;
@@ -212,6 +215,8 @@ private slots:
     void aboutClicked();
     /** Show Stake Calculator Dialog */
     void calcClicked();
+    /** Show the APR Tracking > Stake Report window */
+    void stakeReportClicked();
 #ifndef Q_OS_MAC
     /** Handle tray icon clicked */
     void trayIconActivated(QSystemTrayIcon::ActivationReason reason);
@@ -245,7 +250,7 @@ private slots:
     /** called by a timer to check if fRequestShutdown has been set **/
     void detectShutdown();
 
-    void charityClicked(QString addr = "");
+    void multiSendClicked(QString addr = "");
 
     /** Themes: FlapXCoin is built in and the default; more can be added in a themes folder */
     void changeTheme(QString theme);

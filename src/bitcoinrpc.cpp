@@ -260,6 +260,8 @@ static const CRPCCommand vRPCCommands[] =
     { "ping",                   &ping,                   true,   false },
     { "addnode",                &addnode,                true,   false },
     { "getaddednodeinfo",       &getaddednodeinfo,       true,   false },
+    { "disconnectnode",         &disconnectnode,         true,   false },
+    { "getstakereport",         &getstakereport,         false,  false },
     { "getdifficulty",          &getdifficulty,          true,   false },
     { "getinfo",                &getinfo,                true,   false },
     { "getmininginfo",          &getmininginfo,          true,   false },
@@ -324,7 +326,8 @@ static const CRPCCommand vRPCCommands[] =
     { "resendtx",               &resendtx,               false,  true},
     // { "makekeypair",            &makekeypair,            false,  true},
     { "sendalert",              &sendalert,              false,  false},
-    { "stakeforcharity",        &stakeforcharity,        false,  false }
+    { "multisend",              &multisend,              false,  false },
+    { "stakeforcharity",        &multisend,              false,  false }  // deprecated alias for multisend
 };
 
 CRPCTable::CRPCTable()

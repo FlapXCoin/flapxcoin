@@ -26,11 +26,19 @@
 using namespace std;
 
 
-// The following split & combine thresholds are important to security
-// Should not be adjusted if you don't understand the consequences
-unsigned int nStakeSplitAge = (60 * 60 * 16); // (16 Hours) If you find a POS block with coins aged less than this, it assumes you are staking well over the nStakeCombineThreshold and are finding blocks too quickly (
-// ( probably have a very high value compared to the network). It will split the payout back to you into two blocks, to give other people a better chance to stake.
-int64_t nStakeCombineThreshold = 202000 * COIN;   //When appending coins to submit as a POS block, no further coins are added if this total is achieved
+// FlapX stake auto-balance.
+// The PIR reward curve peaks at 100,000 coins per stake (22%) and stays near
+// the top up to 200,000. A wallet that stays running keeps its stakes in that
+// band by itself: small inputs are combined up to nStakeTargetMin without
+// passing nStakeTargetMax, and any stake larger than nStakeTargetMax is paid
+// back as pieces of at least nStakeTargetMin. Wallet-only: no consensus change.
+int64_t nStakeTargetMin = 100000 * COIN;
+int64_t nStakeTargetMax = 200000 * COIN;
+unsigned int nStakeMaxSplitOutputs = 50;
+
+// FlapX: send change back to the address it came from rather than a new key,
+// so a wallet backup always covers change. Turn off with -returnchange=0.
+bool fReturnChangeToSource = true;
 
 //////////////////////////////////////////////////////////////////////////////
 //
@@ -1287,49 +1295,87 @@ int64_t CWallet::GetNewMint() const
 }
 
 
-bool fGlobalStakeForCharity = false;
-int nPrevS4CHeight = 0;
+bool fGlobalMultiSend = false;
+int nPrevMultiSendHeight = 0;
 
-bool CWallet::StakeForCharity()
+bool CWallet::MultiSend()
 {
+    // FlapX MultiSend (formerly Stake For Charity): when a stake matures, send a
+    // percentage of its reward to the chosen address.
+    //
+    // The payment is funded only from that stake's own outputs (never from the
+    // rest of the wallet, so other staking inputs keep their coin age), and the
+    // change goes back to the staking address unless a change address is set.
+    // Earlier versions sent the change to a brand-new key every time, which a
+    // wallet backup made before that stake did not contain.
 
     if ( IsInitialBlockDownload() || IsLocked() ){ return false; }
 
-    CWalletTx wtx;
-    int64_t nNet = 0;
+    if (nBestHeight <= nPrevMultiSendHeight)
+        return false;
+
+    LOCK2(cs_main, cs_wallet);
 
     for (map<uint256, CWalletTx>::const_iterator it = mapWallet.begin(); it != mapWallet.end(); ++it)
     {
         const CWalletTx* pcoin = &(*it).second;
 
-        //if the coin is a stake coin, and the coin it mature, and the coin stake is deep enough in the chain to be considered as
-        //mature stake, then we can calculate and send the S4E
-        if (pcoin->IsCoinStake() && pcoin->GetBlocksToMaturity() == 0  && pcoin->GetDepthInMainChain() == nCoinstakeMaturity+20)
+        // only a coin stake that has just become mature
+        if (!(pcoin->IsCoinStake() && pcoin->GetBlocksToMaturity() == 0 && pcoin->GetDepthInMainChain() == nCoinstakeMaturity+20))
+            continue;
+
+        int64_t nNet = ( ( pcoin->GetCredit() - pcoin->GetDebit() ) * nMultiSendPercent )/100;
+
+        // skip this stake if the amount is too low (earlier versions stopped checking every other stake too)
+        if (nNet < nMultiSendMin)
+            continue;
+        if (nNet > nMultiSendMax)
+            nNet = nMultiSendMax;
+
+        // Fund the payment from this stake's own outputs only, smallest first, until the
+        // payment plus a fee margin is covered. A stake split by auto-balance keeps its
+        // other pieces untouched.
+        vector<pair<int64_t, unsigned int> > vOuts;
+        for (unsigned int i = 0; i < pcoin->vout.size(); i++)
+            if (!pcoin->IsSpent(i) && IsMine(pcoin->vout[i]) && pcoin->vout[i].nValue > 0)
+                vOuts.push_back(make_pair(pcoin->vout[i].nValue, i));
+        sort(vOuts.begin(), vOuts.end());
+
+        CCoinControl coinControl;
+        int64_t nSelected = 0;
+        for (unsigned int k = 0; k < vOuts.size() && nSelected < nNet + COIN; k++)
         {
-            // Calculate Amount for Charity
-            nNet = ( ( pcoin->GetCredit() - pcoin->GetDebit() ) * nStakeForCharityPercent )/100;
-
-            // Do not send if amount is too low
-            if (nNet < nStakeForCharityMin ) {
-                return false;
-            }
-            // Truncate to max if amount is too great
-            if (nNet > nStakeForCharityMax ) {
-                nNet = nStakeForCharityMax;
-            }
-
-            if (nBestHeight <= nPrevS4CHeight ) {
-                printf("StakeForCharity: Warning! nBestHeight %d less or equal to nPreveS4CHeight %d.\n",
-                       nBestHeight,
-                       nPrevS4CHeight);
-                return false;
-            }
-            else
-            {
-                SendMoneyToDestination(strStakeForCharityAddress.Get(), nNet, wtx, false, "", true);
-                nPrevS4CHeight = nBestHeight;
-            }
+            COutPoint outpt(pcoin->GetHash(), vOuts[k].second);
+            coinControl.Select(outpt);
+            nSelected += vOuts[k].first;
         }
+        if (!coinControl.HasSelected())
+            continue;
+
+        // change: the configured change address if set, otherwise back to the staking address
+        CTxDestination destChange;
+        if (strMultiSendChangeAddress.IsValid())
+            coinControl.destChange = strMultiSendChangeAddress.Get();
+        else if (ExtractDestination(pcoin->vout[vOuts[0].second].scriptPubKey, destChange))
+            coinControl.destChange = destChange;
+
+        CScript scriptPubKey;
+        scriptPubKey.SetDestination(strMultiSendAddress.Get());
+
+        CWalletTx wtx;
+        CReserveKey reservekey(this);
+        int64_t nFeeRequired = 0;
+        if (!CreateTransaction(scriptPubKey, nNet, wtx, reservekey, nFeeRequired, "", true, &coinControl))
+        {
+            printf("MultiSend: could not create payment for stake %s\n", pcoin->GetHash().ToString().c_str());
+            continue;
+        }
+        if (!CommitTransaction(wtx, reservekey))
+        {
+            printf("MultiSend: payment for stake %s was rejected\n", pcoin->GetHash().ToString().c_str());
+            continue;
+        }
+        nPrevMultiSendHeight = nBestHeight;
     }
 
     return true;
@@ -1497,7 +1543,7 @@ bool CWallet::SelectCoinsSimple(int64_t nTargetValue, int nMinConf, set<pair<con
     return true;
 }
 
-bool CWallet::CreateTransaction(const vector<pair<CScript, int64_t> >& vecSend, CWalletTx& wtxNew, CReserveKey& reservekey, int64_t& nFeeRet, std::string strTxComment, bool fAllowS4C, const CCoinControl* coinControl)
+bool CWallet::CreateTransaction(const vector<pair<CScript, int64_t> >& vecSend, CWalletTx& wtxNew, CReserveKey& reservekey, int64_t& nFeeRet, std::string strTxComment, bool fAllowMultiSend, const CCoinControl* coinControl)
 {
     int64_t nValue = 0;
     BOOST_FOREACH (const PAIRTYPE(CScript, int64_t)& s, vecSend)
@@ -1562,14 +1608,23 @@ bool CWallet::CreateTransaction(const vector<pair<CScript, int64_t> >& vecSend, 
                     // TODO: pass in scriptChange instead of reservekey so
                     // change transaction isn't always pay-to-bitcoin-address
                     CScript scriptChange;
+                    CTxDestination destReturn;
 
-                    // Stake For Charity: send change to custom address
-                    if (fAllowS4C && strStakeForCharityChangeAddress.IsValid()) {
-                            scriptChange.SetDestination(strStakeForCharityChangeAddress.Get());
+                    // MultiSend: send change to custom address
+                    if (fAllowMultiSend && strMultiSendChangeAddress.IsValid()) {
+                            scriptChange.SetDestination(strMultiSendChangeAddress.Get());
                     }
                     // coin control: send change to custom address
                     else if (coinControl && !boost::get<CNoDestination>(&coinControl->destChange)) {
                         scriptChange.SetDestination(coinControl->destChange);
+                    }
+                    // FlapX: send change back to the address it came from, so wallet
+                    // backups always hold the key for change (-returnchange=0 to disable)
+                    else if (fReturnChangeToSource && !setCoins.empty() &&
+                             ExtractDestination(setCoins.begin()->first->vout[setCoins.begin()->second].scriptPubKey, destReturn) &&
+                             ::IsMine(*this, destReturn))
+                    {
+                        scriptChange.SetDestination(destReturn);
                     }
                     // no coin control: send change to newly generated address
                     else
@@ -1633,11 +1688,11 @@ bool CWallet::CreateTransaction(const vector<pair<CScript, int64_t> >& vecSend, 
     return true;
 }
 
-bool CWallet::CreateTransaction(CScript scriptPubKey, int64_t nValue, CWalletTx& wtxNew, CReserveKey& reservekey, int64_t& nFeeRet, std::string strTxComment, bool fAllowS4C, const CCoinControl* coinControl)
+bool CWallet::CreateTransaction(CScript scriptPubKey, int64_t nValue, CWalletTx& wtxNew, CReserveKey& reservekey, int64_t& nFeeRet, std::string strTxComment, bool fAllowMultiSend, const CCoinControl* coinControl)
 {
     vector< pair<CScript, int64_t> > vecSend;
     vecSend.push_back(make_pair(scriptPubKey, nValue));
-    return CreateTransaction(vecSend, wtxNew, reservekey, nFeeRet, strTxComment, fAllowS4C, coinControl);
+    return CreateTransaction(vecSend, wtxNew, reservekey, nFeeRet, strTxComment, fAllowMultiSend, coinControl);
 }
 
 // NovaCoin: get current stake weight
@@ -1824,9 +1879,8 @@ bool CWallet::CreateCoinStake(const CKeyStore& keystore, unsigned int nBits, int
                 nCredit += pcoin.first->vout[pcoin.second].nValue;
                 vwtxPrev.push_back(pcoin.first);
                 txNew.vout.push_back(CTxOut(0, scriptPubKeyOut));
-
-                if (GetWeight(block.GetBlockTime(), (int64_t)nTxTime) < nStakeSplitAge)
-                    txNew.vout.push_back(CTxOut(0, scriptPubKeyOut)); //split stake
+                // FlapX: splitting is now decided by stake size after the reward is
+                // known (see "Set output amount" below), not by coin age.
                 if (fDebug && GetBoolArg("-printcoinstake"))
                     printf("CreateCoinStake : added kernel type=%d\n", whichType);
                 fKernelFound = true;
@@ -1864,14 +1918,17 @@ bool CWallet::CreateCoinStake(const CKeyStore& keystore, unsigned int nBits, int
             // Stop adding more inputs if already too many inputs
             if (txNew.vin.size() >= 300)
                 break;
-            // Stop adding more inputs if value is already pretty significant
-            if (nCredit >= nStakeCombineThreshold)
+            // FlapX: stop adding inputs once the stake reaches the target band
+            if (nCredit >= nStakeTargetMin)
                 break;
             // Stop adding inputs if reached reserve limit
             if (nCredit + pcoin.first->vout[pcoin.second].nValue > nBalance - nReserveBalance)
                 break;
-            // Do not add additional significant input
-            if (pcoin.first->vout[pcoin.second].nValue >= nStakeCombineThreshold)
+            // FlapX: do not merge inputs that are already in or above the target band
+            if (pcoin.first->vout[pcoin.second].nValue >= nStakeTargetMin)
+                continue;
+            // FlapX: do not add an input that would push the stake past the top of the band
+            if (nCredit + pcoin.first->vout[pcoin.second].nValue > nStakeTargetMax)
                 continue;
             // Do not add input that is still too young
             if (nTimeWeight < nStakeMinAge)
@@ -1899,13 +1956,25 @@ bool CWallet::CreateCoinStake(const CKeyStore& keystore, unsigned int nBits, int
     }
 
     // Set output amount
-    if (txNew.vout.size() == 3)
+    // FlapX stake auto-balance: a stake larger than nStakeTargetMax is paid back as
+    // pieces of at least nStakeTargetMin (and below nStakeTargetMax), all to the
+    // same key as the kernel, so the PIR rate stays near its peak. At most
+    // nStakeMaxSplitOutputs pieces per stake; very large stakes finish splitting
+    // over their next stakes.
     {
-        txNew.vout[1].nValue = (nCredit / 2 / CENT) * CENT;
-        txNew.vout[2].nValue = nCredit - txNew.vout[1].nValue;
+        int64_t nOutputs = 1;
+        if (nCredit > nStakeTargetMax && nStakeTargetMin > 0)
+            nOutputs = max((int64_t)1, min((int64_t)nStakeMaxSplitOutputs, nCredit / nStakeTargetMin));
+
+        CScript scriptPubKeyOut = txNew.vout[1].scriptPubKey;
+        while (txNew.vout.size() < (size_t)(nOutputs + 1))
+            txNew.vout.push_back(CTxOut(0, scriptPubKeyOut));
+
+        int64_t nPiece = (nCredit / nOutputs / CENT) * CENT;
+        for (unsigned int i = 1; i < txNew.vout.size(); i++)
+            txNew.vout[i].nValue = nPiece;
+        txNew.vout.back().nValue = nCredit - nPiece * (nOutputs - 1);
     }
-    else
-        txNew.vout[1].nValue = nCredit;
 
     // Sign
     int nIn = 0;
@@ -1975,7 +2044,7 @@ bool CWallet::CommitTransaction(CWalletTx& wtxNew, CReserveKey& reservekey)
 }
 
 
-string CWallet::SendMoney(CScript scriptPubKey, int64_t nValue, CWalletTx& wtxNew, bool fAskFee, std::string strTxComment, bool fAllowS4C)
+string CWallet::SendMoney(CScript scriptPubKey, int64_t nValue, CWalletTx& wtxNew, bool fAskFee, std::string strTxComment, bool fAllowMultiSend)
 {
     CReserveKey reservekey(this);
     int64_t nFeeRequired;
@@ -1986,15 +2055,15 @@ string CWallet::SendMoney(CScript scriptPubKey, int64_t nValue, CWalletTx& wtxNe
         printf("SendMoney() : %s", strError.c_str());
         return strError;
     }
-    // stakeforcharity is the only allowable option to send coins when the UnlockStakingOnly flag is set.
-    if (fWalletUnlockStakingOnly && !fAllowS4C)
+    // multisend is the only allowable option to send coins when the UnlockStakingOnly flag is set.
+    if (fWalletUnlockStakingOnly && !fAllowMultiSend)
     {
         string strError = _("Error: Wallet unlocked for staking only, unable to create transaction.");
         printf("SendMoney() : %s", strError.c_str());
         return strError;
     }
 
-    if (!CreateTransaction(scriptPubKey, nValue, wtxNew, reservekey, nFeeRequired, strTxComment, fAllowS4C))
+    if (!CreateTransaction(scriptPubKey, nValue, wtxNew, reservekey, nFeeRequired, strTxComment, fAllowMultiSend))
     {
         string strError;
         if (nValue + nFeeRequired > GetBalance())
@@ -2015,7 +2084,7 @@ string CWallet::SendMoney(CScript scriptPubKey, int64_t nValue, CWalletTx& wtxNe
 }
 
 
-string CWallet::SendMoneyToDestination(const CTxDestination& address, int64_t nValue, CWalletTx& wtxNew, bool fAskFee, std::string strTxComment, bool fAllowS4C)
+string CWallet::SendMoneyToDestination(const CTxDestination& address, int64_t nValue, CWalletTx& wtxNew, bool fAskFee, std::string strTxComment, bool fAllowMultiSend)
 {
     // Check amount
     if (nValue <= 0)
@@ -2027,7 +2096,7 @@ string CWallet::SendMoneyToDestination(const CTxDestination& address, int64_t nV
     CScript scriptPubKey;
     scriptPubKey.SetDestination(address);
 
-    return SendMoney(scriptPubKey, nValue, wtxNew, fAskFee, strTxComment, fAllowS4C);
+    return SendMoney(scriptPubKey, nValue, wtxNew, fAskFee, strTxComment, fAllowMultiSend);
 }
 
 
@@ -2166,7 +2235,7 @@ bool CWallet::NewKeyPool()
         if (IsLocked())
             return false;
 
-        int64_t nKeys = max(GetArg("-keypool", 100), (int64_t)0);
+        int64_t nKeys = max(GetArg("-keypool", 1000), (int64_t)0);
         for (int i = 0; i < nKeys; i++)
         {
             int64_t nIndex = i+1;
@@ -2193,7 +2262,7 @@ bool CWallet::TopUpKeyPool(unsigned int nSize)
         if (nSize > 0)
             nTargetSize = nSize;
         else
-            nTargetSize = max(GetArg("-keypool", 100), (int64_t)0);
+            nTargetSize = max(GetArg("-keypool", 1000), (int64_t)0);
 
         while (setKeyPool.size() < (nTargetSize + 1))
         {

@@ -6,6 +6,7 @@
  */
 #include "bitcoingui.h"
 #include "calcdialog.h"
+#include "stakereportdialog.h"
 #include "transactiontablemodel.h"
 #include "addressbookpage.h"
 #include "shoppingpage.h"
@@ -14,7 +15,7 @@
 #include "signverifymessagedialog.h"
 #include "optionsdialog.h"
 #include "aboutdialog.h"
-#include "charitydialog.h"
+#include "multisenddialog.h"
 #include "clientmodel.h"
 #include "walletmodel.h"
 #include "editaddressdialog.h"
@@ -141,6 +142,7 @@ BitcoinGUI::BitcoinGUI(QWidget *parent):
     // Create tabs
 
     overviewPage = new OverviewPage();
+    stakeReportDialog = new StakeReportDialog(this);
 
     transactionsPage = new QWidget(this);
     QVBoxLayout *vbox = new QVBoxLayout();
@@ -164,7 +166,7 @@ BitcoinGUI::BitcoinGUI(QWidget *parent):
     sendCoinsPage = new SendCoinsDialog(this);
 
     signVerifyMessageDialog = new SignVerifyMessageDialog(this);
-    stakeForCharityDialog = new StakeForCharityDialog(this);
+    multiSendDialog = new MultiSendDialog(this);
 
     centralWidget = new QStackedWidget(this);
     centralWidget->addWidget(overviewPage);
@@ -174,7 +176,7 @@ BitcoinGUI::BitcoinGUI(QWidget *parent):
     centralWidget->addWidget(explorerPage);
     centralWidget->addWidget(receiveCoinsPage);
     centralWidget->addWidget(sendCoinsPage);
-    centralWidget->addWidget(stakeForCharityDialog);
+    centralWidget->addWidget(multiSendDialog);
     setCentralWidget(centralWidget);
 
 
@@ -255,12 +257,12 @@ BitcoinGUI::BitcoinGUI(QWidget *parent):
     // Clicking on "Sign Message" in the receive coins page sends you to the sign message tab
     connect(receiveCoinsPage, SIGNAL(signMessage(QString)), this, SLOT(gotoSignMessageTab(QString)));
 
-	// Clicking on stake for charity button in the address book sends you to the S4C page
-    connect(addressBookPage, SIGNAL(stakeForCharitySignal(QString)), this, SLOT(charityClicked(QString)));
+	// Clicking on MultiSend button in the address book sends you to the MultiSend page
+    connect(addressBookPage, SIGNAL(multiSendSignal(QString)), this, SLOT(multiSendClicked(QString)));
 
-    // Clicking on stake for charity button in the Overview Page sends you to the S4C page
-    connect(overviewPage, SIGNAL(stakeForCharitySignal()), this, SLOT(charityClicked()));
-    connect(charityAction, SIGNAL(triggered()), this, SLOT(charityClicked()));
+    // Clicking on MultiSend button in the Overview Page sends you to the MultiSend page
+    connect(overviewPage, SIGNAL(multiSendSignal()), this, SLOT(multiSendClicked()));
+    connect(multiSendAction, SIGNAL(triggered()), this, SLOT(multiSendClicked()));
     gotoOverviewPage();
 }
 
@@ -316,13 +318,15 @@ void BitcoinGUI::createActions()
     explorerAction->setShortcut(QKeySequence(Qt::ALT + Qt::Key_7));
     tabGroup->addAction(explorerAction);
 
-    charityAction = new QAction(QIcon(":/icons/send"), tr("&Multisend..."), this);
-    charityAction->setToolTip(tr("Automatically send part of your stake rewards to another address"));
-    charityAction->setCheckable(true);
-    tabGroup->addAction(charityAction);
+    multiSendAction = new QAction(QIcon(":/icons/send"), tr("&Multisend..."), this);
+    multiSendAction->setToolTip(tr("Automatically send part of your stake rewards to another address"));
+    multiSendAction->setCheckable(true);
+    tabGroup->addAction(multiSendAction);
 
     calcAction = new QAction(QIcon(":/icons/bitcoin"), tr("&Interest Estimate..."), this);
     calcAction->setToolTip(tr("Estimate the staking interest on an amount of FLAPX"));
+    stakeReportAction = new QAction(QIcon(":/icons/bitcoin"), tr("&Stake Report..."), this);
+    stakeReportAction->setToolTip(tr("What this wallet has earned from staking, per day and per period"));
 
     connect(overviewAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
     connect(overviewAction, SIGNAL(triggered()), this, SLOT(gotoOverviewPage()));
@@ -340,6 +344,8 @@ void BitcoinGUI::createActions()
     connect(explorerAction, SIGNAL(triggered()), this, SLOT(gotoExplorerPage()));
     connect(calcAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
     connect(calcAction, SIGNAL(triggered()), this, SLOT(calcClicked()));
+    connect(stakeReportAction, SIGNAL(triggered()), this, SLOT(showNormalIfMinimized()));
+    connect(stakeReportAction, SIGNAL(triggered()), this, SLOT(stakeReportClicked()));
 
 
     quitAction = new QAction(QIcon(":/icons/quit"), tr("E&xit"), this);
@@ -429,12 +435,15 @@ void BitcoinGUI::createMenuBar()
     settings->addAction(encryptWalletAction);
     settings->addAction(changePassphraseAction);
     settings->addAction(lockWalletAction);
-	settings->addAction(charityAction);
+	settings->addAction(multiSendAction);
     settings->addSeparator();
     settings->addAction(optionsAction);
-    settings->addSeparator();
-    settings->addAction(calcAction);
-    
+
+    // Staking returns: what the wallet has earned, and what an amount would earn
+    QMenu *apr = appMenuBar->addMenu(tr("&APR Tracking"));
+    apr->addAction(stakeReportAction);
+    apr->addAction(calcAction);
+
     /* zeewolf: Hot swappable wallet themes */
     QMenu *themes = appMenuBar->addMenu(tr("T&hemes"));
     themes->addActions(themeActionGroup->actions());
@@ -522,11 +531,12 @@ void BitcoinGUI::setWalletModel(WalletModel *walletModel)
         transactionView->setModel(walletModel);
 
         overviewPage->setWalletModel(walletModel);
+        stakeReportDialog->setModel(walletModel);
         addressBookPage->setModel(walletModel->getAddressTableModel());
         receiveCoinsPage->setModel(walletModel->getAddressTableModel());
         sendCoinsPage->setModel(walletModel);
         signVerifyMessageDialog->setModel(walletModel);
-        stakeForCharityDialog->setModel(walletModel);
+        multiSendDialog->setModel(walletModel);
 
         setEncryptionStatus(walletModel->getEncryptionStatus());
         connect(walletModel, SIGNAL(encryptionStatusChanged(int)), this, SLOT(setEncryptionStatus(int)));
@@ -799,7 +809,7 @@ void BitcoinGUI::incomingTransaction(const QModelIndex & parent, int start, int 
                         .data(Qt::DecorationRole));
 
         notificator->notify(Notificator::Information,
-                            (amount)<0 ? (fS4CNotificator == true ? tr("Sent transaction") : tr("Sent transaction") ):
+                            (amount)<0 ? (fMultiSendNotify == true ? tr("Sent transaction") : tr("Sent transaction") ):
                                          tr("Incoming transaction"),
                               tr("Date: %1\n"
                                  "Amount: %2\n"
@@ -1187,13 +1197,13 @@ void BitcoinGUI::detectShutdown()
         QMetaObject::invokeMethod(QCoreApplication::instance(), "quit", Qt::QueuedConnection);
 }
 
-void BitcoinGUI::charityClicked(QString addr)
+void BitcoinGUI::multiSendClicked(QString addr)
 {
-    charityAction->setChecked(true);
-    centralWidget->setCurrentWidget(stakeForCharityDialog);
+    multiSendAction->setChecked(true);
+    centralWidget->setCurrentWidget(multiSendDialog);
 
     if(!addr.isEmpty())
-        stakeForCharityDialog->setAddress(addr);
+        multiSendDialog->setAddress(addr);
 
     exportAction->setEnabled(false);
     disconnect(exportAction, SIGNAL(triggered()), 0, 0);
@@ -1278,8 +1288,16 @@ void BitcoinGUI::applySyncEstimate(int count)
 
 void BitcoinGUI::calcClicked()
 {
-    calcDialog dlg;
+    calcDialog dlg(this);
     dlg.exec();
+}
+
+void BitcoinGUI::stakeReportClicked()
+{
+    // One window, kept for the session; it refreshes itself while open
+    stakeReportDialog->show();
+    stakeReportDialog->raise();
+    stakeReportDialog->activateWindow();
 }
 
 /* zeewolf: Hot swappable wallet themes */

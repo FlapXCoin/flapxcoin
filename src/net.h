@@ -46,6 +46,9 @@ bool OpenNetworkConnection(const CAddress& addrConnect, CSemaphoreGrant *grantOu
 void MapPort(bool fUseUPnP);
 /** Is this the peer we're downloading the chain from? */
 bool IsSyncNode(const CNode* pnode);
+/** True while we are well behind the height our peers agree on (set by the
+ *  message handler thread). We don't serve blocks then. */
+extern bool fCatchingUp;
 /** Stop downloading from this peer and pick another (it's skipped for nSeconds) */
 void ReleaseSyncNode(CNode* pnode, int64_t nSeconds);
 unsigned short GetListenPort();
@@ -234,6 +237,12 @@ public:
     CBlockIndex* pindexLastGetBlocksBegin;
     uint256 hashLastGetBlocksEnd;
     int64_t nLastGetBlocksTime; // when we last sent this peer a getblocks request
+    // Sync look-ahead (see PushGetBlocksAfter in main.cpp): the last block of
+    // each batch this peer announced whose blocks we haven't finished
+    // processing, oldest first, and the block we last asked it to continue from
+    std::deque<uint256> vSyncBatchEnds;
+    uint256 hashPrefetchFrom;
+    void ResetBlockPrefetch() { vSyncBatchEnds.clear(); hashPrefetchFrom = 0; }
     int nSyncStalls;            // stall watchdog firings in a row at the same height
     int nSyncStallHeight;       // our height at the last firing
     int64_t nSyncAvoidUntil;    // don't pick this peer to sync from before this time
@@ -292,6 +301,7 @@ public:
         pindexLastGetBlocksBegin = 0;
         hashLastGetBlocksEnd = 0;
         nLastGetBlocksTime = 0;
+        hashPrefetchFrom = 0;
         nSyncStalls = 0;
         nSyncStallHeight = -1;
         nSyncAvoidUntil = 0;

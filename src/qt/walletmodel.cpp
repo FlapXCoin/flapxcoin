@@ -360,55 +360,55 @@ bool WalletModel::backupWallet(const QString &filename)
     return BackupWallet(*wallet, filename.toLocal8Bit().data());
 }
 
-void WalletModel::setStakeForCharity(bool fStakeForCharity, int& nStakeForCharityPercent,
-                                     CBitcoinAddress& strStakeForCharityAddress,
-                                     CBitcoinAddress& strStakeForCharityChangeAddress,
-                                     qint64& nStakeForCharityMinAmout,
-                                     qint64& nStakeForCharityMaxAmount)
+void WalletModel::setMultiSend(bool fMultiSend, int& nMultiSendPercent,
+                                     CBitcoinAddress& strMultiSendAddress,
+                                     CBitcoinAddress& strMultiSendChangeAddress,
+                                     qint64& nMultiSendMinAmout,
+                                     qint64& nMultiSendMaxAmount)
 {
     // This function assumes the values were checked before being called
     if (wallet->fFileBacked) // Tranz add option to not save.
     {
         CWalletDB walletdb(wallet->strWalletFile);
-        if (fStakeForCharity) {
-            walletdb.EraseStakeForCharity(wallet->strStakeForCharityAddress.ToString());
-            walletdb.WriteStakeForCharity(strStakeForCharityAddress.ToString(),
-                                          nStakeForCharityPercent,
-                                          strStakeForCharityChangeAddress.ToString(),
-                                          nStakeForCharityMinAmout,
-                                          nStakeForCharityMaxAmount);
+        if (fMultiSend) {
+            walletdb.EraseMultiSend(wallet->strMultiSendAddress.ToString());
+            walletdb.WriteMultiSend(strMultiSendAddress.ToString(),
+                                          nMultiSendPercent,
+                                          strMultiSendChangeAddress.ToString(),
+                                          nMultiSendMinAmout,
+                                          nMultiSendMaxAmount);
         }
         else {
-            walletdb.EraseStakeForCharity(wallet->strStakeForCharityAddress.ToString());
-            walletdb.EraseStakeForCharity(strStakeForCharityAddress.ToString());
+            walletdb.EraseMultiSend(wallet->strMultiSendAddress.ToString());
+            walletdb.EraseMultiSend(strMultiSendAddress.ToString());
         }
 
         if(fDebug)
-          printf("setStakeForCharity: %s %d\n", strStakeForCharityAddress.ToString().c_str(), nStakeForCharityPercent);
+          printf("setMultiSend: %s %d\n", strMultiSendAddress.ToString().c_str(), nMultiSendPercent);
     }
 
     {
         LOCK(wallet->cs_wallet);
-        wallet->fStakeForCharity = fStakeForCharity;
-        wallet->nStakeForCharityPercent = nStakeForCharityPercent;
-        wallet->strStakeForCharityAddress = strStakeForCharityAddress;
-        wallet->strStakeForCharityChangeAddress = strStakeForCharityChangeAddress;
-        wallet->nStakeForCharityMin = nStakeForCharityMinAmout;
-        wallet->nStakeForCharityMax = nStakeForCharityMaxAmount;
+        wallet->fMultiSend = fMultiSend;
+        wallet->nMultiSendPercent = nMultiSendPercent;
+        wallet->strMultiSendAddress = strMultiSendAddress;
+        wallet->strMultiSendChangeAddress = strMultiSendChangeAddress;
+        wallet->nMultiSendMin = nMultiSendMinAmout;
+        wallet->nMultiSendMax = nMultiSendMaxAmount;
     }
 }
 
-void  WalletModel::getStakeForCharity(int& nStakeForCharityPercent,
-                                      CBitcoinAddress& strStakeForCharityAddress,
-                                      CBitcoinAddress& strStakeForCharityChangeAddress,
-                                      qint64& nStakeForCharityMinAmout,
-                                      qint64& nStakeForCharityMaxAmount)
+void  WalletModel::getMultiSend(int& nMultiSendPercent,
+                                      CBitcoinAddress& strMultiSendAddress,
+                                      CBitcoinAddress& strMultiSendChangeAddress,
+                                      qint64& nMultiSendMinAmout,
+                                      qint64& nMultiSendMaxAmount)
 {
-     nStakeForCharityPercent = wallet->nStakeForCharityPercent;
-     strStakeForCharityAddress = wallet->strStakeForCharityAddress;
-     strStakeForCharityChangeAddress = wallet->strStakeForCharityChangeAddress;
-     nStakeForCharityMinAmout = wallet->nStakeForCharityMin;
-     nStakeForCharityMaxAmount =  wallet->nStakeForCharityMax;
+     nMultiSendPercent = wallet->nMultiSendPercent;
+     strMultiSendAddress = wallet->strMultiSendAddress;
+     strMultiSendChangeAddress = wallet->strMultiSendChangeAddress;
+     nMultiSendMinAmout = wallet->nMultiSendMin;
+     nMultiSendMaxAmount =  wallet->nMultiSendMax;
 
 }
 
@@ -492,8 +492,12 @@ WalletModel::UnlockContext::~UnlockContext()
 
 void WalletModel::UnlockContext::CopyFrom(const UnlockContext& rhs)
 {
-    // Transfer context; old object no longer relocks wallet
-    *this = rhs;
+    // Transfer context; old object no longer relocks wallet. (This used to be
+    // "*this = rhs", which calls operator=, which calls CopyFrom again: endless
+    // recursion and a crash on any copy.)
+    wallet = rhs.wallet;
+    valid = rhs.valid;
+    relock = rhs.relock;
     rhs.relock = false;
 }
 

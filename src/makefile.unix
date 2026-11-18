@@ -108,6 +108,7 @@ xLDFLAGS=$(LDHARDENING) $(LDFLAGS)
 
 OBJS= \
     obj/kernel.o \
+    obj/stakereport.o \
     obj/alert.o \
     obj/version.o \
     obj/checkpoints.o \

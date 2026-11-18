@@ -1866,7 +1866,7 @@ bool CTransaction::ConnectInputs(CTxDB& txdb, MapPrevTx inputs, map<uint256, CTx
         if (!IsCoinStake())
         {
             if (nValueIn < GetValueOut())
-                return DoS(100, error("ConnectInputs() : %s value in %ld < value out %ld", GetHash().ToString().c_str(), nValueIn, GetValueOut()));
+                return DoS(100, error("ConnectInputs() : %s value in %" PRId64 " < value out %" PRId64, GetHash().ToString().c_str(), nValueIn, GetValueOut()));
 
             // Tally transaction fees
             int64_t nTxFee = nValueIn - GetValueOut();
@@ -2719,6 +2719,30 @@ void PushGetBlocks(CNode* pnode, CBlockIndex* pindexBegin, uint256 hashEnd)
     pnode->PushMessage("getblocks", CBlockLocator(pindexBegin), hashEnd);
 }
 
+// Sync look-ahead. Block download used to be stop-and-wait: only when the last
+// block of a batch had been checked and stored did we ask for the next batch,
+// and then sat idle while the request went out, the list of blocks came back,
+// we asked for them and the peer read them from disk and sent them. That wait
+// was often longer than processing the batch itself.
+//
+// Now the next batch is asked for as soon as we know where the current one
+// ends: the request names the batch's last block (which the peer has, though
+// we haven't processed it yet), followed by our usual locator in case the peer
+// has since moved off that block. So the next batch downloads while this one
+// is processed. Only ever one batch ahead (see the "inv" and "block" handlers),
+// so a peer is never asked to queue more than that for us.
+void static PushGetBlocksAfter(CNode* pnode, const uint256& hashAfter)
+{
+    CBlockLocator locator(pindexBest);
+    locator.PushFront(hashAfter);
+
+    pnode->hashPrefetchFrom = hashAfter;
+    pnode->nLastGetBlocksTime = GetTime();
+    if (fDebug)
+        printf("sync look-ahead: asking %s for the blocks after %s\n", pnode->addrName.c_str(), hashAfter.ToString().c_str());
+    pnode->PushMessage("getblocks", locator, uint256(0));
+}
+
 bool static IsCanonicalBlockSignature(CBlock* pblock, bool checkLowS)
 {
     if (pblock->IsProofOfWork()) {
@@ -2861,8 +2885,8 @@ bool ProcessBlock(CNode* pfrom, CBlock* pblock)
 
     printf("ProcessBlock: ACCEPTED\n");
 
-    if (fGlobalStakeForCharity && !IsInitialBlockDownload())
-        pwalletMain->StakeForCharity();
+    if (fGlobalMultiSend && !IsInitialBlockDownload())
+        pwalletMain->MultiSend();
 
    // ppcoin: if responsible for sync-checkpoint send it
     if (pfrom && !CSyncCheckpoint::strMasterPrivKey.empty())
@@ -3759,6 +3783,25 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
         LOCK(cs_main);
         CTxDB txdb("r");
 
+        // Sync look-ahead: is this a fresh download batch from our sync peer
+        // (many blocks, ending in one we have neither got nor asked for)?
+        // Worked out before the loop below asks for the blocks.
+        bool fNewBatch = false;
+        uint256 hashBatchEnd = 0;
+        if (nLastBlock != (unsigned int)(-1) && IsSyncNode(pfrom))
+        {
+            unsigned int nBlocks = 0;
+            BOOST_FOREACH(const CInv& inv, vInv)
+                if (inv.type == MSG_BLOCK)
+                    nBlocks++;
+            const CInv& invLast = vInv[nLastBlock];
+            if (nBlocks >= SYNC_PREFETCH_MIN_BATCH && !mapAlreadyAskedFor.count(invLast) && !AlreadyHave(txdb, invLast))
+            {
+                fNewBatch = true;
+                hashBatchEnd = invLast.hash;
+            }
+        }
+
         for (unsigned int nInv = 0; nInv < vInv.size(); nInv++)
         {
             const CInv &inv = vInv[nInv];
@@ -3781,7 +3824,12 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
             if (!fAlreadyHave)
                 pfrom->AskFor(inv);
             else if (inv.type == MSG_BLOCK && mapOrphanBlocks.count(inv.hash)) {
-                 PushGetBlocks(pfrom, pindexBest, GetOrphanRoot(inv.hash));
+                // (The peer's "that was the end of the batch, ask for more"
+                // signal arrives here.) Nothing to do if the look-ahead has
+                // already asked for what follows our newest block.
+                if (pfrom->vSyncBatchEnds.empty() &&
+                    (pfrom->hashPrefetchFrom == 0 || !pindexBest || pfrom->hashPrefetchFrom != pindexBest->GetBlockHash()))
+                    PushGetBlocks(pfrom, pindexBest, GetOrphanRoot(inv.hash));
             } else if (nInv == nLastBlock) {
                 // In case we are on a very long side-chain, it is possible that we already have
                 // the last block in an inv bundle sent in response to getblocks. Try to detect
@@ -3794,6 +3842,16 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
 
             // Track requests for our stuff
             g_signals.Inventory(inv.hash);
+        }
+
+        // Sync look-ahead: with no other batch waiting, ask for the one after
+        // this straight away. (With one already waiting, the next request goes
+        // out when the batch in front has been processed: "block" handler.)
+        if (fNewBatch)
+        {
+            pfrom->vSyncBatchEnds.push_back(hashBatchEnd);
+            if (pfrom->vSyncBatchEnds.size() == 1)
+                PushGetBlocksAfter(pfrom, hashBatchEnd);
         }
     }
     else if (strCommand == "getdata")
@@ -3820,6 +3878,13 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
         CBlockLocator locator;
         uint256 hashStop;
         vRecv >> locator >> hashStop;
+
+        // While we're still catching up ourselves, leave serving the chain to
+        // synced peers: answering means reading and sending up to a batch of
+        // blocks, which slows our own download. The peer stays connected and
+        // its stall watchdog moves it to another peer.
+        if (fCatchingUp)
+            return true;
 
         LOCK(cs_main);
 
@@ -3876,6 +3941,9 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
         CBlockLocator locator;
         uint256 hashStop;
         vRecv >> locator >> hashStop;
+
+        if (fCatchingUp)    // as getblocks
+            return true;
 
         LOCK(cs_main);
 
@@ -4006,20 +4074,39 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
             mapAlreadyAskedFor.erase(inv);
         if (block.nDoS) pfrom->Misbehaving(block.nDoS);
 
+        // Sync look-ahead: that was the last block of the batch in front. If
+        // it became our newest block, the batch went in cleanly: ask for the
+        // batch after the one now downloading. If it didn't (a rejected block,
+        // a fork), drop the look-ahead and let the normal requests and the
+        // stall watchdog take over.
+        if (!pfrom->vSyncBatchEnds.empty() && hashBlock == pfrom->vSyncBatchEnds.front())
+        {
+            pfrom->vSyncBatchEnds.pop_front();
+            if (!pindexBest || pindexBest->GetBlockHash() != hashBlock)
+                pfrom->ResetBlockPrefetch();
+            else if (pfrom->vSyncBatchEnds.size() == 1 && pfrom->vSyncBatchEnds.back() != pfrom->hashPrefetchFrom)
+                PushGetBlocksAfter(pfrom, pfrom->vSyncBatchEnds.back());
+        }
+
         // Where the time goes while syncing: the gap between blocks arriving
         // from the network, how long this one sat in our queue, and how long
-        // we spent checking and storing it.
+        // we spent checking and storing it. Two lines per block (over 1 GB of
+        // debug.log for a full sync), so only with -printblocktiming.
+        static const bool fPrintBlockTiming = GetBoolArg("-printblocktiming", false);
         static int64_t nPrevBlockArrived = 0;
         int64_t nProcessEnd = GetTimeMicros();
-        printf("block timing: %" PRId64 " ms since previous block arrived, queued %" PRId64 " ms, processed in %" PRId64 " ms\n",
-               nPrevBlockArrived ? (nTimeReceived - nPrevBlockArrived) / 1000 : 0,
-               (nProcessStart - nTimeReceived) / 1000, (nProcessEnd - nProcessStart) / 1000);
-        // Breakdown of "processed" (ms): connect includes fetch, inputs, coinage and wallet
-        #define PH_MS(p) (nBlockPhaseUs[p] / 1000.0)
-        printf("block phases: check %.1f work %.1f stake %.1f write %.1f modifier %.1f index %.1f connect %.1f (fetch %.1f inputs %.1f coinage %.1f wallet %.1f) commit %.1f\n",
-               PH_MS(PH_CHECK), PH_MS(PH_WORK), PH_MS(PH_STAKE), PH_MS(PH_WRITE), PH_MS(PH_MODIFIER), PH_MS(PH_INDEX),
-               PH_MS(PH_CONNECT), PH_MS(PH_FETCH), PH_MS(PH_INPUTS), PH_MS(PH_COINAGE), PH_MS(PH_WALLET), PH_MS(PH_COMMIT));
-        #undef PH_MS
+        if (fPrintBlockTiming)
+        {
+            printf("block timing: %" PRId64 " ms since previous block arrived, queued %" PRId64 " ms, processed in %" PRId64 " ms\n",
+                   nPrevBlockArrived ? (nTimeReceived - nPrevBlockArrived) / 1000 : 0,
+                   (nProcessStart - nTimeReceived) / 1000, (nProcessEnd - nProcessStart) / 1000);
+            // Breakdown of "processed" (ms): connect includes fetch, inputs, coinage and wallet
+            #define PH_MS(p) (nBlockPhaseUs[p] / 1000.0)
+            printf("block phases: check %.1f work %.1f stake %.1f write %.1f modifier %.1f index %.1f connect %.1f (fetch %.1f inputs %.1f coinage %.1f wallet %.1f) commit %.1f\n",
+                   PH_MS(PH_CHECK), PH_MS(PH_WORK), PH_MS(PH_STAKE), PH_MS(PH_WRITE), PH_MS(PH_MODIFIER), PH_MS(PH_INDEX),
+                   PH_MS(PH_CONNECT), PH_MS(PH_FETCH), PH_MS(PH_INPUTS), PH_MS(PH_COINAGE), PH_MS(PH_WALLET), PH_MS(PH_COMMIT));
+            #undef PH_MS
+        }
         nPrevBlockArrived = nTimeReceived;
 
         // The peer that sent this block has at least its height
@@ -4117,7 +4204,7 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
         }
 
         if (!(sProblem.empty())) {
-            printf("pong %s %s: %s, %" PRIx64 " expected, %" PRIx64 " received, %zu bytes\n"
+            printf("pong %s %s: %s, %" PRIx64 " expected, %" PRIx64 " received, %" PRIszu " bytes\n"
                 , pfrom->addr.ToString().c_str()
                 , pfrom->strSubVer.c_str()
                 , sProblem.c_str()
@@ -4332,6 +4419,7 @@ bool SendMessages(CNode* pto, bool fSendTrickle)
             // same thing before
             pto->pindexLastGetBlocksBegin = NULL;
             pto->hashLastGetBlocksEnd = 0;
+            pto->ResetBlockPrefetch();
             PushGetBlocks(pto, pindexBest, uint256(0));
         }
 
@@ -4366,6 +4454,7 @@ bool SendMessages(CNode* pto, bool fSendTrickle)
                            nBestHeight, pto->addrName.c_str(), pto->nKnownHeight);
                     pto->pindexLastGetBlocksBegin = NULL;
                     pto->hashLastGetBlocksEnd = 0;
+                    pto->ResetBlockPrefetch();
                     PushGetBlocks(pto, pindexBest, uint256(0));
                 }
             }

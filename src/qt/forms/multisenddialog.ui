@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>StakeForCharityDialog</class>
- <widget class="QWidget" name="StakeForCharityDialog">
+ <class>MultiSendDialog</class>
+ <widget class="QWidget" name="MultiSendDialog">
   <property name="windowModality">
    <enum>Qt::NonModal</enum>
   </property>
@@ -77,7 +77,7 @@
           </widget>
          </item>
          <item row="2" column="0" colspan="2">
-          <widget class="QLineEdit" name="charityPercentEdit">
+          <widget class="QLineEdit" name="multiSendPercentEdit">
            <property name="toolTip">
             <string>Enter whole numbers 1 - 50</string>
            </property>
@@ -87,7 +87,7 @@
           </widget>
          </item>
          <item row="2" column="2" colspan="2">
-          <widget class="QLineEdit" name="charityMinEdit">
+          <widget class="QLineEdit" name="multiSendMinEdit">
            <property name="toolTip">
             <string/>
            </property>
@@ -97,7 +97,7 @@
           </widget>
          </item>
          <item row="2" column="5" colspan="2">
-          <widget class="QLineEdit" name="charityMaxEdit">
+          <widget class="QLineEdit" name="multiSendMaxEdit">
            <property name="toolTip">
             <string/>
            </property>
@@ -120,7 +120,7 @@
           </widget>
          </item>
          <item row="3" column="1" colspan="2">
-          <widget class="QLineEdit" name="charityAddressEdit">
+          <widget class="QLineEdit" name="multiSendAddressEdit">
            <property name="toolTip">
             <string/>
            </property>
@@ -160,7 +160,7 @@
           </widget>
          </item>
          <item row="4" column="1" colspan="2">
-          <widget class="QLineEdit" name="charityChangeAddressEdit">
+          <widget class="QLineEdit" name="multiSendChangeAddressEdit">
            <property name="toolTip">
             <string>Change address must be owned by you</string>
            </property>

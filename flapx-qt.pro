@@ -2,7 +2,7 @@ TEMPLATE = app
 TARGET = flapx-qt
 CONFIG += qt
 QT += gui
-VERSION = 2.9.1.0
+VERSION = 2.9.1.5
 INCLUDEPATH += src src/json src/qt
 DEFINES += QT_GUI BOOST_THREAD_USE_LIB BOOST_SPIRIT_THREADSAFE
 CONFIG += no_include_pwd
@@ -222,13 +222,15 @@ HEADERS += src/qt/bitcoingui.h \
     src/qt/coincontroltreewidget.h \
     src/qt/sendcoinsdialog.h \
     src/qt/addressbookpage.h \
-    src/qt/charitydialog.h \
+    src/qt/multisenddialog.h \
     src/qt/signverifymessagedialog.h \
     src/qt/aboutdialog.h \
     src/qt/editaddressdialog.h \
     src/qt/bitcoinaddressvalidator.h \
     src/qt/intro.h \
     src/qt/calcdialog.h \
+    src/qt/stakereportdialog.h \
+    src/stakereport.h \
     src/alert.h \
     src/addrman.h \
     src/base58.h \
@@ -322,12 +324,13 @@ SOURCES += src/qt/bitcoin.cpp src/qt/bitcoingui.cpp \
     src/qt/coincontroldialog.cpp \
     src/qt/coincontroltreewidget.cpp \
     src/qt/addressbookpage.cpp \
-    src/qt/charitydialog.cpp \
+    src/qt/multisenddialog.cpp \
     src/qt/signverifymessagedialog.cpp \
     src/qt/aboutdialog.cpp \
     src/qt/editaddressdialog.cpp \
     src/qt/bitcoinaddressvalidator.cpp \
     src/qt/calcdialog.cpp \
+    src/qt/stakereportdialog.cpp \
     src/qt/intro.cpp \
     src/alert.cpp \
     src/chainparams.cpp \
@@ -383,6 +386,7 @@ SOURCES += src/qt/bitcoin.cpp src/qt/bitcoingui.cpp \
     src/qt/trafficgraphwidget.cpp \
     src/noui.cpp \
     src/kernel.cpp \
+    src/stakereport.cpp \
     src/scrypt-arm.S \
     src/scrypt-x86.S \
     src/scrypt-x86_64.S \
@@ -419,9 +423,10 @@ FORMS += \
     src/qt/forms/optionsdialog.ui \
     src/qt/forms/shoppingpage.ui \
     src/qt/forms/explorerpage.ui \
-    src/qt/forms/charitydialog.ui \
+    src/qt/forms/multisenddialog.ui \
     src/qt/forms/intro.ui \
-    src/qt/forms/calcdialog.ui
+    src/qt/forms/calcdialog.ui \
+    src/qt/forms/stakereportdialog.ui
 
 contains(USE_QRCODE, 1) {
 HEADERS += src/qt/qrcodedialog.h
@@ -508,7 +513,7 @@ INCLUDEPATH +=$$UPSTREAM_INCLUDE_PATH $$BOOST_INCLUDE_PATH $$BDB_INCLUDE_PATH $$
 LIBS += $$join(UPSTREAM_LIB_PATH,,-L,) $$join(BOOST_LIB_PATH,,-L,) $$join(BDB_LIB_PATH,,-L,) $$join(OPENSSL_LIB_PATH,,-L,) $$join(QRENCODE_LIB_PATH,,-L,)
 LIBS += -lssl -lcrypto -ldb_cxx$$BDB_LIB_SUFFIX -lz
 # -lgdi32 has to happen after -lcrypto (see  #681)
-windows:LIBS += -lws2_32 -lshlwapi -lmswsock -lole32 -loleaut32 -luuid -lgdi32 -lcrypt32
+windows:LIBS += -lws2_32 -lshlwapi -lmswsock -lole32 -loleaut32 -luuid -lgdi32 -lcrypt32 -lbcrypt
 # boost_system is header-only since Boost 1.69 and newer releases no longer ship
 # the stub library; pass NO_BOOST_SYSTEM_LIB=1 when it doesn't exist.
 !contains(NO_BOOST_SYSTEM_LIB, 1):LIBS += -lboost_system$$BOOST_LIB_SUFFIX

@@ -1,10 +1,10 @@
-#ifndef CHARITYDIALOG_H
-#define CHARITYDIALOG_H
+#ifndef MULTISENDDIALOG_H
+#define MULTISENDDIALOG_H
 
 #include <QWidget>
 
 namespace Ui {
-    class StakeForCharityDialog;
+    class MultiSendDialog;
 }
 class WalletModel;
 
@@ -12,13 +12,13 @@ QT_BEGIN_NAMESPACE
 class QLineEdit;
 QT_END_NAMESPACE
 
-class StakeForCharityDialog : public QWidget
+class MultiSendDialog : public QWidget
 {
     Q_OBJECT
 
 public:
-    explicit StakeForCharityDialog(QWidget *parent = 0);
-    ~StakeForCharityDialog();
+    explicit MultiSendDialog(QWidget *parent = 0);
+    ~MultiSendDialog();
 
     void setModel(WalletModel *model);
     void setAddress(const QString &address);
@@ -31,8 +31,8 @@ private slots:
 
 
 private:
-    Ui::StakeForCharityDialog *ui;
+    Ui::MultiSendDialog *ui;
     WalletModel *model;
 };
 
-#endif // CHARITYDIALOG_H
+#endif // MULTISENDDIALOG_H

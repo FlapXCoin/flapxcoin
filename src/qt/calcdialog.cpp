@@ -18,14 +18,25 @@
 #include <algorithm>
 #include <iomanip>
 #include <QString>
+#include <QPushButton>
+#include <QDialogButtonBox>
 
 calcDialog::calcDialog(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::calcDialog)
 {
     ui->setupUi(this);
-	
-	connect(ui->pushButton, SIGNAL(clicked()), this, SLOT(pushButtonClicked()));
+
+    // Enter calculates; only clicking Close (or Esc) closes the window
+    connect(ui->pushButton, SIGNAL(clicked()), this, SLOT(pushButtonClicked()));
+    QPushButton *btnClose = ui->buttonBox->button(QDialogButtonBox::Close);
+    if (btnClose)
+    {
+        btnClose->setAutoDefault(false);
+        btnClose->setDefault(false);
+    }
+    ui->pushButton->setDefault(true);
+    ui->blockSizeEdit->setFocus();
 }
 
 calcDialog::~calcDialog()
@@ -60,14 +71,9 @@ void calcDialog::pushButtonClicked()
 
     // Reward = coin-days x yearly rate / 365.24 (GetProofOfStakeReward)
     double dDaily = dAmount * dRate / 100.0 / 365.2424;
-    ui->yearlyAPR->setText(QString::number(dRate, 'f', 2));
+    ui->yearlyAPR->setText(QString::number(dRate, 'f', 2) + " %");
     ui->dayResult->setText(tr("%1 FLAPX a day, about %2 a month and %3 a year")
                            .arg(QString::number(dDaily, 'f', 4))
                            .arg(QString::number(dDaily * 30.44, 'f', 2))
                            .arg(QString::number(dDaily * 365.2424, 'f', 2)));
-}
-
-void calcDialog::on_buttonBox_accepted()
-{
-	close();
 }

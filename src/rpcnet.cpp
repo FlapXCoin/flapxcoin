@@ -315,3 +315,30 @@ Value getaddednodeinfo(const Array& params, bool fHelp)
 
     return ret;
 }
+
+Value disconnectnode(const Array& params, bool fHelp)
+{
+    if (fHelp || params.size() != 1)
+        throw runtime_error(
+            "disconnectnode <node>\n"
+            "Disconnects from a connected peer. <node> is its address as getpeerinfo\n"
+            "shows it (\"addr\", e.g. <ip>:60042), or just its IP address.");
+
+    string strNode = params[0].get_str();
+    bool fFound = false;
+    {
+        LOCK(cs_vNodes);
+        BOOST_FOREACH(CNode* pnode, vNodes)
+        {
+            if (pnode->addrName == strNode || pnode->addr.ToStringIPPort() == strNode ||
+                pnode->addr.ToStringIP() == strNode)
+            {
+                pnode->fDisconnect = true;
+                fFound = true;
+            }
+        }
+    }
+    if (!fFound)
+        throw JSONRPCError(RPC_CLIENT_NODE_NOT_CONNECTED, "Node not found in connected nodes");
+    return Value::null;
+}
