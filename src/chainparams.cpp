@@ -53,7 +53,8 @@ public:
         pchMessageStart[1] = 0xb6;
         pchMessageStart[2] = 0xa5;
         pchMessageStart[3] = 0xdb;
-        vAlertPubKey = ParseHex("04ef014b36647e8433a2cedf76f1d6ea0bc5914ba936fadceda90d7472da3cf442469d3a1ab5ee416e7428726761dd3188bda3d0ae163db491f8ca0bdad92a0506");
+        // FlapX alert key (from 3.0; the NetCoin key it replaces is not ours)
+        vAlertPubKey = ParseHex("04a3484e337f18ee66d5d4d7d87df82765382b805ca934e885eab5427240536b0f5698d4fc2ce292bbd189acf90419ab1f8e292a0fd20371a5c48ac80336c3ea8e");
         nDefaultPort = 60042;
         nAltPort = 60242;
         nRPCPort = 60142;
@@ -151,7 +152,7 @@ public:
         pchMessageStart[2] = 0xb6;
         pchMessageStart[3] = 0xf1;
         bnProofOfWorkLimit = CBigNum(~uint256(0) >> 16);
-        vAlertPubKey = ParseHex("0471dc165db490094d35cde15b1f5d755fa6ad6f2b5ed0f340e3f17f57389c3c2af113a8cbcc885bde73305a553b5640c83021128008ddf882e856336269080496");
+        vAlertPubKey = ParseHex("04a3484e337f18ee66d5d4d7d87df82765382b805ca934e885eab5427240536b0f5698d4fc2ce292bbd189acf90419ab1f8e292a0fd20371a5c48ac80336c3ea8e");
         nDefaultPort = 60043;
         nAltPort = 60243;
         nRPCPort = 60143;
