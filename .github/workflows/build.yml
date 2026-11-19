@@ -340,13 +340,30 @@ jobs:
           - arch: x86_64
             runner: macos-15-intel
     runs-on: ${{ matrix.runner }}
+    timeout-minutes: 90
+    env:
+      HOMEBREW_NO_AUTO_UPDATE: 1
+      HOMEBREW_NO_INSTALL_UPGRADE: 1
+      HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK: 1
     steps:
       - uses: actions/checkout@v4
 
       - name: Install dependencies
         run: |
-          brew update > /dev/null || true
-          brew install boost openssl@3 berkeley-db@5 miniupnpc qrencode qt@5 ccache
+          brew install boost openssl@3 berkeley-db@5 miniupnpc qrencode ccache dylibbundler
+          if [ "${{ matrix.arch }}" = arm64 ]; then
+            brew install qt@5
+            echo "QTDIR=$(brew --prefix qt@5)" >> "$GITHUB_ENV"
+          else
+            # Homebrew's Qt 5 for Intel pulls in a long chain of rebuilds; Qt's
+            # own 5.15.2 binaries are Intel, so use those
+            pip3 install --break-system-packages aqtinstall
+            python3 -m aqt install-qt mac desktop 5.15.2 clang_64 -O "$RUNNER_TEMP/Qt"
+            QTDIR="$RUNNER_TEMP/Qt/5.15.2/clang_64"
+            # Qt 5.15.2 still links the AGL framework, which current macOS SDKs dropped
+            sed -i '' 's/-framework AGL//g' "$QTDIR/mkspecs/common/mac.conf"
+            echo "QTDIR=$QTDIR" >> "$GITHUB_ENV"
+          fi
           brew --prefix
 
       - uses: actions/cache@v4
@@ -361,22 +378,27 @@ jobs:
           cd src
           make -f makefile.osx -j"$(sysctl -n hw.ncpu)" CC="ccache clang" CXX="ccache clang++"
           strip flapxd
+          # Put the Homebrew libraries it needs in a libs folder next to it
+          mkdir -p ../flapxd-macos/libs && cp flapxd ../flapxd-macos/
+          cd ../flapxd-macos
+          dylibbundler -od -b -x flapxd -d libs/ -p @executable_path/libs/
+          codesign --force --sign - libs/*.dylib flapxd
           file flapxd
           otool -L flapxd
-          if otool -L flapxd | tail -n +2 | grep -v -E '/usr/lib/|/System/'; then
-            echo "flapxd needs libraries that don't come with macOS (listed above)"; exit 1
+          if otool -L flapxd | tail -n +2 | grep -E '/opt/homebrew|/usr/local'; then
+            echo "flapxd still points at Homebrew (listed above)"; exit 1
           fi
           ./flapxd -? | head -n 3 || true
 
       - uses: actions/upload-artifact@v4
         with:
           name: flapxd-macos-${{ matrix.arch }}
-          path: src/flapxd
+          path: flapxd-macos/
 
       - name: Build FlapX-Qt.app
         run: |
           export CCACHE_DIR="$RUNNER_TEMP/ccache"
-          B="$(brew --prefix)"; Q="$(brew --prefix qt@5)"
+          B="$(brew --prefix)"; Q="$QTDIR"
           DB="$(brew --prefix berkeley-db@5)"; SSL="$(brew --prefix openssl@3)"
           "$Q/bin/qmake" USE_UPNP=1 USE_QRCODE=1 NO_BOOST_SYSTEM_LIB=1 "CONFIG+=release" "CONFIG-=debug_and_release" \
             "QMAKE_CC=ccache clang" "QMAKE_CXX=ccache clang++" "QMAKE_LINK=clang++" \
@@ -414,6 +436,11 @@ jobs:
     permissions:
       contents: write
     steps:
+      # for the release notes (doc/release-notes-<version>.md)
+      - uses: actions/checkout@v4
+        with:
+          path: repo
+
       - uses: actions/download-artifact@v4
         with:
           pattern: flapx*
@@ -433,7 +460,7 @@ jobs:
           tar -C dist/flapx-qt-ubuntu18.04-x86_64 -czf "out/flapx-qt-$TAG-ubuntu18.04-x86_64.tar.gz" flapx-qt
           for a in arm64 x86_64; do
             chmod +x "dist/flapxd-macos-$a/flapxd"
-            tar -C "dist/flapxd-macos-$a" -czf "out/flapxd-$TAG-macos-$a.tar.gz" flapxd
+            tar -C "dist/flapxd-macos-$a" -czf "out/flapxd-$TAG-macos-$a.tar.gz" flapxd libs
             cp "dist/flapx-qt-macos-$a/FlapX-Qt-macos-$a.dmg" "out/FlapX-Qt-$TAG-macos-$a.dmg"
           done
           ls -l out
@@ -444,6 +471,8 @@ jobs:
         run: |
           TAG="${GITHUB_REF_NAME}"
           # Either workflow may get here first; the other one just uploads
-          gh release create "$TAG" --repo "$GITHUB_REPOSITORY" --title "FlapX $TAG" --generate-notes \
+          NOTES="repo/doc/release-notes-${TAG#v}.md"
+          if [ -f "$NOTES" ]; then NOTEARGS=(--notes-file "$NOTES"); else NOTEARGS=(--generate-notes); fi
+          gh release create "$TAG" --repo "$GITHUB_REPOSITORY" --title "FlapX $TAG" "${NOTEARGS[@]}" \
             || gh release view "$TAG" --repo "$GITHUB_REPOSITORY" > /dev/null
           gh release upload "$TAG" out/* --repo "$GITHUB_REPOSITORY" --clobber

@@ -30,7 +30,9 @@
 #include <boost/bind/bind.hpp>
 using namespace boost::placeholders;
 #include <cmath>
-#ifdef WIN32
+// The static Windows GUI wallet needs Qt's Windows platform plugin linked in
+// (the daemon has no Qt)
+#if defined(WIN32) && defined(QT_GUI)
 #include <QtPlugin>
 Q_IMPORT_PLUGIN (QWindowsIntegrationPlugin);
 #endif
