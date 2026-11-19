@@ -37,3 +37,10 @@
 @interest = #b9cbe6
 @danger = #ff8a8a
 [/VARS] */
+
+/* The moon sits behind the overview title: give the title a dark backing */
+QLabel#labelOverviewTitle {
+    background-color: rgba(6, 7, 10, 190);
+    border-radius: 6px;
+    padding: 2px 8px;
+}
