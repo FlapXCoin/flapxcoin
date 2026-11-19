@@ -346,7 +346,7 @@ jobs:
       - name: Install dependencies
         run: |
           brew update > /dev/null || true
-          brew install boost openssl@3 berkeley-db@5 miniupnpc qrencode qt@5 ccache
+          brew install boost openssl@3 berkeley-db@5 miniupnpc qrencode qt@5 ccache dylibbundler
           brew --prefix
 
       - uses: actions/cache@v4
@@ -361,17 +361,22 @@ jobs:
           cd src
           make -f makefile.osx -j"$(sysctl -n hw.ncpu)" CC="ccache clang" CXX="ccache clang++"
           strip flapxd
+          # Put the Homebrew libraries it needs in a libs folder next to it
+          mkdir -p ../flapxd-macos/libs && cp flapxd ../flapxd-macos/
+          cd ../flapxd-macos
+          dylibbundler -od -b -x flapxd -d libs/ -p @executable_path/libs/
+          codesign --force --sign - libs/*.dylib flapxd
           file flapxd
           otool -L flapxd
-          if otool -L flapxd | tail -n +2 | grep -v -E '/usr/lib/|/System/'; then
-            echo "flapxd needs libraries that don't come with macOS (listed above)"; exit 1
+          if otool -L flapxd | tail -n +2 | grep -E '/opt/homebrew|/usr/local'; then
+            echo "flapxd still points at Homebrew (listed above)"; exit 1
           fi
           ./flapxd -? | head -n 3 || true
 
       - uses: actions/upload-artifact@v4
         with:
           name: flapxd-macos-${{ matrix.arch }}
-          path: src/flapxd
+          path: flapxd-macos/
 
       - name: Build FlapX-Qt.app
         run: |
@@ -438,7 +443,7 @@ jobs:
           tar -C dist/flapx-qt-ubuntu18.04-x86_64 -czf "out/flapx-qt-$TAG-ubuntu18.04-x86_64.tar.gz" flapx-qt
           for a in arm64 x86_64; do
             chmod +x "dist/flapxd-macos-$a/flapxd"
-            tar -C "dist/flapxd-macos-$a" -czf "out/flapxd-$TAG-macos-$a.tar.gz" flapxd
+            tar -C "dist/flapxd-macos-$a" -czf "out/flapxd-$TAG-macos-$a.tar.gz" flapxd libs
             cp "dist/flapx-qt-macos-$a/FlapX-Qt-macos-$a.dmg" "out/FlapX-Qt-$TAG-macos-$a.dmg"
           done
           ls -l out
