@@ -21,7 +21,7 @@ on:
   workflow_dispatch:
     inputs:
       release_tag:
-        description: 'Rebuild the files of this existing release (e.g. v3.0.0.0); leave empty for a normal build'
+        description: 'Release tag to build files for (e.g. v3.0.0.1): rebuilds an existing release, or creates it (and the tag) on this commit; leave empty for a normal build'
         required: false
         default: ''
 
@@ -481,7 +481,7 @@ jobs:
           # Either workflow may get here first; the other one just uploads
           NOTES="repo/doc/release-notes-${TAG#v}.md"
           if [ -f "$NOTES" ]; then NOTEARGS=(--notes-file "$NOTES"); else NOTEARGS=(--generate-notes); fi
-          gh release create "$TAG" --repo "$GITHUB_REPOSITORY" --title "FlapX $TAG" "${NOTEARGS[@]}" \
+          gh release create "$TAG" --repo "$GITHUB_REPOSITORY" --title "FlapX $TAG" --target "$GITHUB_SHA" "${NOTEARGS[@]}" \
             || gh release view "$TAG" --repo "$GITHUB_REPOSITORY" > /dev/null
           gh release upload "$TAG" out/* --repo "$GITHUB_REPOSITORY" --clobber
           # Remove this workflow's files from an earlier build that weren't zipped

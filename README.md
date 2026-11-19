@@ -1,8 +1,11 @@
-FlapX 3.0.0.0
+FlapX 3.0.0.1
 =============
 
 FlapX 3.0 is the first full release of the modernised wallet. Full notes and
-downloads: [doc/release-notes-3.0.0.0.md](doc/release-notes-3.0.0.0.md)
+downloads: [doc/release-notes-3.0.0.0.md](doc/release-notes-3.0.0.0.md).
+3.0.0.1 improves sync: 3.0+ nodes always first, the lowest ping wins, and a
+right-click Disconnect in the peers tab
+([doc/release-notes-3.0.0.1.md](doc/release-notes-3.0.0.1.md)).
 
 What's new in 3.0
 
