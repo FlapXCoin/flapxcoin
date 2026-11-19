@@ -68,11 +68,11 @@ static const int SYNC_STALLS_BEFORE_SWITCH = 2;
 static const int SYNC_HEIGHT_SLACK = 1000;
 /** Move off a sync peer that has run out of blocks when another peer is at least this far ahead */
 static const int SYNC_SWITCH_MARGIN = 100;
-/** Oldest client version we prefer to download blocks from: 2.9.0.5 (major,
- *  minor, revision, build as 2.09.00.05). These send 500-block batches; 2.3.x
- *  sends 50. Raise this when a newer release should be preferred. Older peers
- *  are still used when no peer this new is available. */
-static const int MIN_SYNC_PEER_VERSION = 2090005;
+/** Oldest client version we prefer to download blocks from: 3.0.0.0 (major,
+ *  minor, revision, build as 3.00.00.00). Raise this when a newer release
+ *  should be preferred. Older peers (2.9.x, 2.3.x...) are still used as a
+ *  fallback when no peer this new is available. */
+static const int MIN_SYNC_PEER_VERSION = 3000000;
 /** While we are this many blocks behind the height our peers agree on, we
  *  don't hand out blocks (getblocks), so our own download goes faster */
 static const int CATCHING_UP_BLOCKS = 144;

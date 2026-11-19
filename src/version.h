@@ -38,7 +38,11 @@ static const int DATABASE_VERSION = 70501;
 // network protocol versioning
 //
 
-static const int PROTOCOL_VERSION = 210043;
+// 210044 from FlapX 3.0.0.0: the first protocol version of its own since the
+// 2.x wallets (all of which, and the 2.9.x test builds, announce 210043), so a
+// later release can stop serving wallets older than 3.0 by raising
+// MIN_PEER_PROTO_VERSION. Old 2.x wallets accept 210044 and download from it.
+static const int PROTOCOL_VERSION = 210044;
 
 // intial proto version, to be increased after version/verack negotiation
 static const int INIT_PROTO_VERSION = 209;

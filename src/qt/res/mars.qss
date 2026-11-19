@@ -1,0 +1,38 @@
+/*
+  Mars Colony theme - a domed settlement on the red planet at dusk, a Starship-
+  style rocket on its pad and a rover kicking up dust (res/images/mars.jpg).
+  Rust-brown panels framed in dusty orange, sand gold totals, and cyan for
+  money coming in.
+
+  The layout is res/flapxcoin.qss, below its variables; the base colours come
+  from the theme table in guiutil.cpp.
+*/
+
+/** [VARS]
+@space = #1a100c
+@space2 = #24160f
+@panel = #2e1c14
+@glass = rgba(26, 14, 10, 150)
+@alt = #2a1a12
+@border = #5c3a28
+@frame = #c8693a
+@accent = #e07a3f
+@accent2 = #4dd0e1
+@tint = 224, 122, 63
+@tint2 = 77, 208, 225
+@btn1 = #e07a3f
+@btn2 = #a8461c
+@btn1light = #ec9a68
+@btn2light = #c4602e
+@onbtn = #ffffff
+@title1 = #a8502a
+@title2 = #6a2e14
+@ontitle = #ffffff
+@text = #ffffff
+@muted = #c9b4a6
+@track = #b39a8a
+@statusbg = #0e0806
+@total = #e8c170
+@interest = #4dd0e1
+@danger = #ff7a6a
+[/VARS] */

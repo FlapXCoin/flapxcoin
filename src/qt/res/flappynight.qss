@@ -1,0 +1,37 @@
+/*
+  Flappy Night theme - the FlappyCoin city and bushes after dark, under a
+  crescent moon and the stars (drawn in code). Pipe green frames and title
+  tabs, orange buttons, and Flappy Bird yellow totals.
+
+  The layout is res/flapxcoin.qss, below its variables; the base colours come
+  from the theme table in guiutil.cpp.
+*/
+
+/** [VARS]
+@space = #0e1630
+@space2 = #141e3e
+@panel = #1a284e
+@glass = rgba(12, 18, 40, 150)
+@alt = #162246
+@border = #344878
+@frame = #73bf2e
+@accent = #fcd535
+@accent2 = #8ee05a
+@tint = 252, 213, 53
+@tint2 = 142, 224, 90
+@btn1 = #f0a020
+@btn2 = #c4600e
+@btn1light = #f8c050
+@btn2light = #e07c28
+@onbtn = #ffffff
+@title1 = #5c9e24
+@title2 = #3a6a14
+@ontitle = #ffffff
+@text = #ffffff
+@muted = #aab6cc
+@track = #8fa0bc
+@statusbg = #080c1a
+@total = #fcd535
+@interest = #8ee05a
+@danger = #ff7b7b
+[/VARS] */

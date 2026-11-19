@@ -1,0 +1,36 @@
+/*
+  None theme - plain grey and black.
+
+  Qt's standard Fusion look with its light grey palette
+  (GUIUtil::applyPlainPalette()): no pictures, no colours, no decoration.
+  Always the last entry in the Themes menu.
+*/
+
+/** [VARS]
+@border = #a0a0a0
+[/VARS] */
+
+QMainWindow, QDialog {
+    color: #000000;
+}
+
+QGroupBox {
+    border: 1px solid @border;
+    border-radius: 4px;
+    margin-top: 12px;
+    padding: 14px 8px 6px 8px;
+    font-weight: bold;
+}
+
+QGroupBox::title {
+    subcontrol-origin: margin;
+    subcontrol-position: top left;
+    left: 8px;
+    padding: 0 4px;
+}
+
+/* Mission Logs: the list of recent transactions sits straight on the panel */
+QListView#listTransactions {
+    background: transparent;
+    border: none;
+}

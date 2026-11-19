@@ -1,0 +1,38 @@
+/*
+  Deep Sea theme - glowing jellyfish over a coral reef, with a little yellow
+  submarine shining its lights (res/images/deepsea.jpg, light rays softened).
+  Jellyfish cyan frames, coral for money coming in, submarine yellow totals,
+  and darker panels.
+
+  The layout is res/flapxcoin.qss, below its variables; the base colours come
+  from the theme table in guiutil.cpp.
+*/
+
+/** [VARS]
+@space = #04141f
+@space2 = #061c2c
+@panel = #0a263a
+@glass = rgba(3, 16, 26, 175)
+@alt = #082232
+@border = #184a64
+@frame = #2bc8c8
+@accent = #3ee8e0
+@accent2 = #ff7f6a
+@tint = 62, 232, 224
+@tint2 = 255, 127, 106
+@btn1 = #1fb5b8
+@btn2 = #0b5a6e
+@btn1light = #4fd0d2
+@btn2light = #16788c
+@onbtn = #ffffff
+@title1 = #127c86
+@title2 = #0a4456
+@ontitle = #ffffff
+@text = #ffffff
+@muted = #a6c4cc
+@track = #8fb0b8
+@statusbg = #020a10
+@total = #ffd23f
+@interest = #3ee8e0
+@danger = #ff8a80
+[/VARS] */
