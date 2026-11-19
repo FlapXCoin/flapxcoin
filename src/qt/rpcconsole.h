@@ -48,6 +48,8 @@ private slots:
     void refreshPeers();
     /** Peers tab: show the details of the selected peer */
     void showPeerDetails();
+    /** Peers tab: right-click menu (Disconnect) */
+    void showPeerMenu(const QPoint &pos);
     /** Network Traffic tab: read the byte totals and feed the graph */
     void sampleTraffic();
 

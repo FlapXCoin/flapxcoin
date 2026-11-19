@@ -177,6 +177,7 @@ public:
     int nMisbehavior;
     double dPingTime;
     double dPingWait;
+    double dMinPing;
     std::string addrLocal;
 };
 
@@ -272,6 +273,9 @@ public:
     int64_t nPingUsecStart;
     // Last measured round-trip time.
     int64_t nPingUsecTime;
+    // Best (lowest) round-trip time measured: the peer's real network
+    // distance. The last ping can be inflated by blocks queued ahead of it.
+    int64_t nMinPingUsecTime;
     // Whether a ping is requested.
     bool fPingQueued;
 
@@ -317,6 +321,7 @@ public:
         nPingNonceSent = 0;
         nPingUsecStart = 0;
         nPingUsecTime = 0;
+        nMinPingUsecTime = 0;
         fPingQueued = false;
 
         // Be shy and don't send version until we hear

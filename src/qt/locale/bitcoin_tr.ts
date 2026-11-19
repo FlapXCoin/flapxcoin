@@ -2696,6 +2696,21 @@ Lütfen adresi kontrol edip tekrar deneyin.</translation>
         <source>Ban score</source>
         <translation>Yasaklama puanı</translation>
     </message>
+    <message>
+        <location filename="../rpcconsole.cpp" line="0"/>
+        <source>Disconnect</source>
+        <translation>Bağlantıyı kes</translation>
+    </message>
+    <message>
+        <location filename="../rpcconsole.cpp" line="0"/>
+        <source>Best ping</source>
+        <translation>En iyi ping</translation>
+    </message>
+    <message>
+        <location filename="../rpcconsole.cpp" line="0"/>
+        <source>Last ping</source>
+        <translation>Son ping</translation>
+    </message>
 </context>
 <context>
     <name>SendCoinsDialog</name>

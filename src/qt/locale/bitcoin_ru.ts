@@ -2711,6 +2711,21 @@ Please check the address and try again.</source>
         <source>Ban score</source>
         <translation>Штрафные баллы</translation>
     </message>
+    <message>
+        <location filename="../rpcconsole.cpp" line="0"/>
+        <source>Disconnect</source>
+        <translation>Отключить</translation>
+    </message>
+    <message>
+        <location filename="../rpcconsole.cpp" line="0"/>
+        <source>Best ping</source>
+        <translation>Лучший пинг</translation>
+    </message>
+    <message>
+        <location filename="../rpcconsole.cpp" line="0"/>
+        <source>Last ping</source>
+        <translation>Последний пинг</translation>
+    </message>
 </context>
 <context>
     <name>SendCoinsDialog</name>
