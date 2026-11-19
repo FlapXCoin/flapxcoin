@@ -1,254 +1,101 @@
 FlapX 3.0.0.1
 =============
 
-FlapX 3.0 is the first full release of the modernised wallet. Full notes and
-downloads: [doc/release-notes-3.0.0.0.md](doc/release-notes-3.0.0.0.md).
-3.0.0.1 improves sync: 3.0+ nodes always first, the lowest ping wins, and a
-right-click Disconnect in the peers tab
-([doc/release-notes-3.0.0.1.md](doc/release-notes-3.0.0.1.md)).
-
-What's new in 3.0
-
-* Builds for every platform: Windows 64/32-bit, macOS (Apple Silicon and Intel)
-  and Linux (Ubuntu 22.04+ and 18.04+), each with the GUI wallet and the daemon
-* Reliable sync: the network fragmentation is fixed, 3.0 wallets prefer 3.0 sync
-  peers with fallback to older ones, and the protocol version is bumped
-* Security: a full code audit with its findings fixed, and new FlapX alert and
-  sync-checkpoint keys replacing NetCoin's (network messages to wallets now work)
-* Staking: an APR Tracking menu with a Stake Report and Interest Estimate, stake
-  auto-balancing, and change sent back to its own address
-* A built-in block explorer, the Mission Control overview, and peers and network
-  traffic in the debug window
-* Twelve themes, the new FlapX logo, and eleven languages besides English
-
-FlapX (FLAPX) - Litecoin / PeerCoin Hybrid POW/POSV hybrid with Personal Investment Rate
-
-
-The default ports: mainnet peer 60042 and RPC 60142; testnet peer 60043 and RPC 60143
-Second peer port (for a second wallet on the same network): mainnet 60242, testnet 60243
-
-POW Details.
-
-60 seconds block time POW.
-Scrypt algorithm.
-15 POW coins per block.
-30 confirmations for mined blocks.
-Difficulty retargets on every block.
-
-
-POS Details.
-
-POS activated
-POSV stake once each month to earn highest possible rewards incentivises running full nodes to increase POS security. Coin age gradually slows after 1 month with an aging half life of 90 days.
-
-Personal Investment Rate or PIR is a special reward algorithm unique for a PoS coin. The APR Stake reward increases in line with the value of the coins staked on a sliding scale.In other words the more FlapX you own and stake the bigger the reward you earn. The last 3 years FlapX had 3 different levels of PIR and it reached the last and final level end 2016.
-The reward rates now are as followed: 0-999N --> #%
-                                      1000-9999N --> #%
-                                      10000-99999N --> #%
-                                      100000-999999N --> #%
-                                      1000000-9999999N --> #%
-                                      10000000N->>> --> #%
-
-120 seconds block time POS
-1 hour minimum age for staking.  30 days max age.
-FAIR-WEIGHT protocol replaces the idea of 'block splitting' to prevent very large FLAPX holders signing lots of POS blocks.
-
-70 confirmations for minted blocks
-   	
-Build notes.
-
-##################################################################################################
-Running the prebuilt binaries
-##################################################################################################
-
-flapxd (Linux daemon)
-Needs nothing extra: Boost, Berkeley DB, OpenSSL and miniupnpc are built in.
-Runs on Ubuntu 22.04+ / Debian 12+ (64-bit).
-
-flapx-qt (Linux GUI wallet)
-Boost, Berkeley DB, OpenSSL, miniupnpc and qrencode are built in; only Qt 5 is
-needed from the system. Most desktops already have it. If you get an error about
-libQt5Widgets, libQt5Gui or libQt5Core, install it:
-
-* Ubuntu 24.04+ / Debian 13: `sudo apt install libqt5widgets5t64`
-* Ubuntu 22.04 / Debian 12: `sudo apt install libqt5widgets5`
-
-Make it executable before the first run: `chmod +x flapx-qt flapxd`
-
-flapxd / flapx-qt for Ubuntu 18.04+
-The same, built on Ubuntu 18.04 for older systems (runs on 18.04 and anything
-newer). On 18.04 the Qt package is: `sudo apt install libqt5widgets5`
-
-flapx-qt.exe and flapxd.exe (Windows, 64-bit and 32-bit)
-Need nothing extra. Each is a single self-contained file.
-
-FlapX-Qt.dmg and flapxd (macOS, Apple Silicon and Intel)
-Open the .dmg and drag FlapX-Qt into Applications. The app isn't notarised by
-Apple, so the first time, right-click it and choose Open, then confirm.
-
-All binaries are built with UPnP on.
-
-Block files: the blockchain is stored in a "chain" folder inside the data
-directory, in files of about 25 MB (chain/blk0001.dat, chain/blk0002.dat, ...).
-On first start, block files from older versions are moved into it
-automatically; no resync is needed. To go back to an older version, move the
-blk*.dat files from chain/ back into the data directory first.
-
-Running two wallets on the same home network
-Your router can send incoming connections on a port to only one computer, so two
-wallets behind the same internet connection can't both use port 60042. From
-2.9.0.4 there is a second peer port, 60242, that wallets treat just like 60042:
-
-* First wallet (e.g. the one that stakes 24/7): leave it as it is, on port 60042.
-* Second wallet: GUI: Settings > Options > Network > "Use the second peer port
-  (60242)", then restart. flapxd: add altport=1 to flapx.conf.
-* On the router, forward TCP 60042 to the first computer and TCP 60242 to the
-  second (or leave UPnP on in both wallets).
-
-Other 2.9.0.4+ wallets will then connect to both: they allow up to two
-connections to the same internet address, one on each of the two ports. Older
-wallets connect to the 60242 one less readily. (Two wallets on the same computer
-also need separate data directories: -datadir.)
-
-Running a wallet in a virtual machine
-To accept incoming connections from a VM, set its network adapter to
-"bridged" (it then gets its own address on your home network, and UPnP and
-port forwarding work as for any other computer). With the VM's default "NAT"
-networking, the VM can still connect out, sync and stake, but other wallets
-can't connect in, and UPnP can't reach your router.
-
-Wallet note: these builds use Berkeley DB 5.3. Back up wallet.dat before
-opening it with them: once a 5.3 build has written to a wallet, older builds
-made with Berkeley DB 4.8 can no longer open it.
-
-##################################################################################################
-Explorer server in one command (Ubuntu 22.04 / 24.04)
-##################################################################################################
-
-On a fresh Ubuntu server, logged in as your normal (sudo) user:
-
-```
-bash <(curl -fsSL https://raw.githubusercontent.com/nerdlabs-dev/flapxcoin-dev/modern-linux-build/contrib/setup-explorer-vm.sh)
-```
-
-It builds flapxd and runs it as a systemd service, installs MongoDB 8.0 and
-Node.js 24, sets up the FlapX explorer (nerdlabs-dev/eiquidus-lab) under pm2 on
-port 3001 with cron jobs that keep it synced, and generates the RPC and database
-passwords. Run it again to update everything. Options and details are at the
-top of contrib/setup-explorer-vm.sh (e.g. ADDNODES="ip" to add your own peers,
-SKIP_EXPLORER=1 for a plain node). MongoDB needs a CPU with AVX: on Proxmox/KVM
-set the VM's CPU type to "host".
-
-##################################################################################################
-Building from source on Ubuntu / Debian
-##################################################################################################
-
-Requires Boost 1.66 or newer, OpenSSL 1.1 or 3, Berkeley DB 5.3 and miniupnpc 2.x,
-all of which come from the distribution's packages. Tested on Ubuntu 22.04 and 24.04.
-
-Daemon (flapxd)
-
-```
-sudo apt install build-essential libssl-dev libdb++-dev zlib1g-dev libminiupnpc-dev \
-    libboost-system-dev libboost-filesystem-dev libboost-program-options-dev \
-    libboost-thread-dev libboost-chrono-dev
-
-USE_UPNP=1 SKIP_DEPS=1 contrib/build-ubuntu.sh
-# or: make -C src -f makefile.unix USE_UPNP=1
-```
-
-GUI wallet (flapx-qt): the daemon packages above, plus
-
-```
-sudo apt install qtbase5-dev qttools5-dev-tools libqrencode-dev
-
-qmake USE_UPNP=1 USE_QRCODE=1 "CONFIG+=release" "CONFIG-=debug_and_release" flapx-qt.pro
-make
-```
-
-If qmake is missing or reports Qt 6, run Qt 5's directly: /usr/lib/qt5/bin/qmake
-
-USE_UPNP=1 turns UPnP on by default; USE_UPNP=0 builds it in but off,
-USE_UPNP=- leaves it out. More detail: doc/build-ubuntu.md
-
-The release binaries for every platform are built by GitHub Actions
-(.github/workflows/build.yml and build-win32.yml); pushing a version tag (v*)
-publishes them as a GitHub release. macOS builds use Homebrew (src/makefile.osx
-for flapxd; flapx-qt.pro for the app).
-
-##################################################################################################
-Legacy build (old upstream/ bundle) - NO LONGER WORKS with this code
-##################################################################################################
-Kept for reference only. The bundle uses Boost 1.55 and Berkeley DB 4.8;
-the code now needs Boost 1.66 or newer. Use the instructions above instead.
-
-Berkeley db 4.8 Deprecation 
-Users on Ubuntu 20+ and Debian 11+ respectively 
-must use Cmake to compile
-
-##################################################################################################
-sudo apt install build-essential libpng-dev zlib1g-dev libbz2-dev python3-pip python3-requirements
-
-sudo make -C upstream unarchive BASE_OS=ubuntu20
-
-
-*for 4.8 atleast do * sudo make -C upstream patches
-answer y no next steps if prompted patch exists
-
-
-sudo make -C upstream build BASE_OS=ubuntu20
-
-daemon
-
-sudo make -C src -f makefile.unix STATIC=1
-
-sudo apt-get install qttools5-dev-tools qtbase5-dev qtchooser qt5-qmake qtbase5-dev-tools
-
-qmake "CONFIG += static" "CONFIG += release"
-make
-
-#############################################################################################
-
-Development process
-===================
-
-Developers work in their own trees, then submit pull requests when
-they think their feature or bug fix is ready.
-
-The patch will be accepted if there is broad consensus that it is a
-good thing.  Developers should expect to rework and resubmit patches
-if they don't match the project's coding conventions (see coding.txt)
-or are controversial.
-
-The master branch is regularly built and tested, but is not guaranteed
-to be completely stable. Tags are regularly created to indicate new
-official, stable release versions of FlapX coin.
-
-Feature branches are created when there are major new features being
-worked on by several people.
-
-From time to time a pull request will become outdated. If this occurs, and
-the pull is no longer automatically mergeable; a comment on the pull will
-be used to issue a warning of closure. The pull will be closed 15 days
-after the warning if action is not taken by the author. Pull requests closed
-in this manner will have their corresponding issue labeled 'stagnant'.
-
-Issues with no commits will be given a similar warning, and closed after
-15 days from their last activity. Issues closed in this manner will be 
-labeled 'stale'. 
-# FlapX
-
-#############################################################################################
-Old punch list (2024)
-#############################################################################################
-
-PUNCH LIST 
-
-
-
->TX page right click explorer link 404
->Change RPC Port
->Another round windows debug (sizing issues)
->flip unlock icon and make new mining a ctive icon 
->tool tip ghosts everywhere
->
+FlapX 3.0 is the first full release of the modernised wallet: it builds and runs on
+today's systems, syncs the network reliably, and adds staking tools, a built-in block
+explorer, twelve themes and eleven languages.
+
+## Downloads
+
+| Platform | Daemon | GUI wallet |
+|---|---|---|
+| Windows 64-bit | `flapxd-v3.0.0.1-win64.zip` | `flapx-qt-v3.0.0.1-win64.zip` |
+| Windows 32-bit | `flapxd-v3.0.0.1-win32.zip` | `flapx-qt-v3.0.0.1-win32.zip` |
+| macOS, Apple Silicon | `flapxd-v3.0.0.1-macos-arm64.zip` | `FlapX-Qt-v3.0.0.1-macos-arm64.zip` (.dmg inside) |
+| macOS, Intel | `flapxd-v3.0.0.1-macos-x86_64.zip` | `FlapX-Qt-v3.0.0.1-macos-x86_64.zip` (.dmg inside) |
+| Linux, Ubuntu 22.04+ / Debian 12+ | `flapxd-v3.0.0.1-linux-x86_64.zip` | `flapx-qt-v3.0.0.1-linux-x86_64.zip` |
+| Linux, Ubuntu 18.04+ | `flapxd-v3.0.0.1-ubuntu18.04-x86_64.zip` | `flapx-qt-v3.0.0.1-ubuntu18.04-x86_64.zip` |
+
+Every file is a .zip. The macOS daemon's zip also holds a `libs` folder it needs;
+keep it next to `flapxd`.
+
+## What's new in 3.0.0.1
+
+- **Sync: 3.0+ nodes first, always.** Blocks are downloaded from a 3.0+ node whenever
+  one can serve them; an older wallet only when there is no 3.0+ node at all. Stuck on
+  an older wallet, the wallet swaps one of its older connections every two minutes
+  until it finds a 3.0+ node.
+- **Sync: lowest ping wins.** Nodes are compared by the best ping measured to them,
+  and after two minutes the wallet moves to a much closer node of the same or a newer
+  version. (The latest ping to the node you download from can read a minute or more
+  while your wallet checks the blocks queued ahead of it.)
+- **Peers tab:** right-click a peer to **Disconnect** it; the Ping column shows each
+  peer's best ping.
+- Every release file is a .zip, and Linux and macOS programs stay executable after
+  unzipping.
+
+Full notes: [doc/release-notes-3.0.0.1.md](doc/release-notes-3.0.0.1.md)
+
+## What's new in 3.0
+
+### Builds and platforms
+- Builds on modern systems again: current Linux, OpenSSL 3, current Boost and Qt 5.
+- Release builds for every platform, made automatically on GitHub: Windows 64-bit and
+  32-bit (wallet and daemon, each a single self-contained file), macOS on Apple Silicon
+  and Intel (wallet and daemon), and Linux for Ubuntu 22.04+ and Ubuntu 18.04+.
+
+### Network and sync
+- Fixes the network fragmentation and syncs the chain reliably; a full sync from zero
+  was tested start to finish.
+- 3.0 wallets prefer other 3.0 nodes for syncing, and fall back to older ones when needed.
+- Protocol version bumped (210044), so a future release can stop serving older wallets.
+- A second peer port (60242), so two wallets on the same home network can both take
+  connections.
+
+### Security
+- A full code audit, with its findings fixed.
+- New FlapX alert key: the developers can send network messages to 3.0 wallets
+  ("please update before block ..."). The old key was left over from NetCoin.
+- New FlapX sync-checkpoint key, replacing NetCoin's: no one else can push checkpoints
+  to the network. 3.0 wallets drop any checkpoint signed with the old key on first start.
+
+### Staking
+- New **APR Tracking** menu: a **Stake Report** (earnings per day, week, month and
+  year) and a redesigned **Interest Estimate**.
+- Stake auto-balancing: small inputs are combined and large ones split.
+- Change goes back to the address it came from, so wallet backups always include it.
+
+### Wallet
+- A built-in block explorer: look up blocks and transactions without leaving the wallet.
+- A redesigned overview ("Mission Control") and a Links page.
+- Peers and live network-traffic tabs in the debug window.
+
+### Look and feel
+- Twelve themes: FlapXCoin, FlappyCoin, Космос, Mars Colony, Synthwave, Deep Sea,
+  Winter, DaGoofMan, Silverwing, Flappy Night, Terminal and None. Custom themes can be
+  added in a `themes` folder.
+- See-through panels with bold white text, and each theme's own colours.
+- The new clean FlapX helmet logo on every icon. The Export icon is by DaGoofMan.
+
+### Languages
+- Russian, Spanish, German, French, Brazilian Portuguese, Italian, Dutch, Polish,
+  Turkish, Ukrainian and Simplified Chinese, all complete, including Qt's own buttons
+  and menus. The wallet follows the computer's language, or pick one under
+  Settings → Options → Display.
+
+## Upgrading
+
+- **From 3.0.0.0:** just replace the program; nothing else changes.
+- **From 2.x: back up `wallet.dat` first.** These builds use Berkeley DB 5.3; once a 3.0 wallet
+  has written to `wallet.dat`, wallets built with Berkeley DB 4.8 can no longer open it.
+- No resync is needed: block files from older versions are moved into the `chain`
+  folder automatically on first start.
+- **Linux GUI:** only Qt 5 is needed from the system. If you get an error about
+  `libQt5Widgets`, install it (`sudo apt install libqt5widgets5`, or
+  `libqt5widgets5t64` on Ubuntu 24.04+). Unzip with `unzip`, which keeps the files
+  executable (if your unzip tool doesn't: `chmod +x flapx-qt flapxd`).
+- **macOS:** the app isn't notarised by Apple, so the first time, right-click
+  FlapX-Qt and choose **Open**, then confirm. After that it opens normally.
+  For the daemon, macOS blocks files downloaded in a browser until you clear the
+  download flag once, in the folder you unzipped it to:
+  `xattr -dr com.apple.quarantine flapxd libs`
