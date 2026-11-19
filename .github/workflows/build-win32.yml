@@ -17,6 +17,11 @@ on:
   pull_request:
     paths-ignore: [ '**.md', 'doc/**', 'README', 'COPYING', 'INSTALL' ]
   workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Rebuild the files of this existing release (e.g. v3.0.0.0); leave empty for a normal build'
+        required: false
+        default: ''
 
 concurrency:
   group: build-win32-${{ github.ref }}
@@ -246,7 +251,7 @@ jobs:
   # publishes the other binaries to the same release).
   release:
     name: Add to release
-    if: startsWith(github.ref, 'refs/tags/v')
+    if: startsWith(github.ref, 'refs/tags/v') || inputs.release_tag != ''
     needs: [ windows-qt-32bit ]
     runs-on: ubuntu-22.04
     permissions:
@@ -267,12 +272,19 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          TAG="${GITHUB_REF_NAME}"
+          TAG="${{ inputs.release_tag || github.ref_name }}"
           mkdir out
-          cp dist/flapx-qt-win32.exe "out/flapx-qt-$TAG-win32.exe"
-          cp dist/flapxd-win32.exe "out/flapxd-$TAG-win32.exe"
+          mkdir -p z/qt z/d
+          cp dist/flapx-qt-win32.exe z/qt/flapx-qt.exe
+          cp dist/flapxd-win32.exe z/d/flapxd.exe
+          (cd z/qt && zip -q "../../out/flapx-qt-$TAG-win32.zip" flapx-qt.exe)
+          (cd z/d && zip -q "../../out/flapxd-$TAG-win32.zip" flapxd.exe)
           NOTES="repo/doc/release-notes-${TAG#v}.md"
           if [ -f "$NOTES" ]; then NOTEARGS=(--notes-file "$NOTES"); else NOTEARGS=(--generate-notes); fi
           gh release create "$TAG" --repo "$GITHUB_REPOSITORY" --title "FlapX $TAG" "${NOTEARGS[@]}" \
             || gh release view "$TAG" --repo "$GITHUB_REPOSITORY" > /dev/null
           gh release upload "$TAG" out/* --repo "$GITHUB_REPOSITORY" --clobber
+          # Remove this workflow's files from an earlier build that weren't zipped
+          gh release view "$TAG" --repo "$GITHUB_REPOSITORY" --json assets --jq '.assets[].name' \
+            | grep 'win32' | grep -v '\.zip$' \
+            | while read -r f; do gh release delete-asset "$TAG" "$f" --repo "$GITHUB_REPOSITORY" -y; done
