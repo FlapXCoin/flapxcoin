@@ -246,6 +246,7 @@ public:
     int nSyncStalls;            // stall watchdog firings in a row at the same height
     int nSyncStallHeight;       // our height at the last firing
     int64_t nSyncAvoidUntil;    // don't pick this peer to sync from before this time
+    int nSyncReleases;        // times we gave up downloading from it (ReleaseSyncNode)
     int nStartingHeight;
     int nKnownHeight;           // highest block height this peer is known to have:
                                 // its version height, raised by blocks it sends or announces
@@ -305,6 +306,7 @@ public:
         nSyncStalls = 0;
         nSyncStallHeight = -1;
         nSyncAvoidUntil = 0;
+        nSyncReleases = 0;
         nStartingHeight = -1;
         nKnownHeight = -1;
         fStartSync = false;
