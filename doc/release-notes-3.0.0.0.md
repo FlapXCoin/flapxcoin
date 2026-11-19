@@ -9,12 +9,15 @@ explorer, twelve themes and eleven languages.
 
 | Platform | Daemon | GUI wallet |
 |---|---|---|
-| Windows 64-bit | `flapxd-v3.0.0.0-win64.exe` | `flapx-qt-v3.0.0.0-win64.exe` |
-| Windows 32-bit | `flapxd-v3.0.0.0-win32.exe` | `flapx-qt-v3.0.0.0-win32.exe` |
-| macOS, Apple Silicon | `flapxd-v3.0.0.0-macos-arm64.tar.gz` | `FlapX-Qt-v3.0.0.0-macos-arm64.dmg` |
-| macOS, Intel | `flapxd-v3.0.0.0-macos-x86_64.tar.gz` | `FlapX-Qt-v3.0.0.0-macos-x86_64.dmg` |
-| Linux, Ubuntu 22.04+ / Debian 12+ | `flapxd-v3.0.0.0-linux-x86_64.tar.gz` | `flapx-qt-v3.0.0.0-linux-x86_64.tar.gz` |
-| Linux, Ubuntu 18.04+ | `flapxd-v3.0.0.0-ubuntu18.04-x86_64.tar.gz` | `flapx-qt-v3.0.0.0-ubuntu18.04-x86_64.tar.gz` |
+| Windows 64-bit | `flapxd-v3.0.0.0-win64.zip` | `flapx-qt-v3.0.0.0-win64.zip` |
+| Windows 32-bit | `flapxd-v3.0.0.0-win32.zip` | `flapx-qt-v3.0.0.0-win32.zip` |
+| macOS, Apple Silicon | `flapxd-v3.0.0.0-macos-arm64.zip` | `FlapX-Qt-v3.0.0.0-macos-arm64.zip` (.dmg inside) |
+| macOS, Intel | `flapxd-v3.0.0.0-macos-x86_64.zip` | `FlapX-Qt-v3.0.0.0-macos-x86_64.zip` (.dmg inside) |
+| Linux, Ubuntu 22.04+ / Debian 12+ | `flapxd-v3.0.0.0-linux-x86_64.zip` | `flapx-qt-v3.0.0.0-linux-x86_64.zip` |
+| Linux, Ubuntu 18.04+ | `flapxd-v3.0.0.0-ubuntu18.04-x86_64.zip` | `flapx-qt-v3.0.0.0-ubuntu18.04-x86_64.zip` |
+
+Every file is a .zip. The macOS daemon's zip also holds a `libs` folder it needs;
+keep it next to `flapxd`.
 
 ## What's new
 
@@ -71,7 +74,7 @@ explorer, twelve themes and eleven languages.
   folder automatically on first start.
 - **Linux GUI:** only Qt 5 is needed from the system. If you get an error about
   `libQt5Widgets`, install it (`sudo apt install libqt5widgets5`, or
-  `libqt5widgets5t64` on Ubuntu 24.04+). Make the files executable first:
-  `chmod +x flapx-qt flapxd`.
+  `libqt5widgets5t64` on Ubuntu 24.04+). Unzip with `unzip`, which keeps the files
+  executable (if your unzip tool doesn't: `chmod +x flapx-qt flapxd`).
 - **macOS:** the app isn't notarised by Apple, so the first time, right-click
   FlapX-Qt and choose **Open**, then confirm. After that it opens normally.

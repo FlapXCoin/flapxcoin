@@ -19,6 +19,11 @@ on:
   pull_request:
     paths-ignore: [ '**.md', 'doc/**', 'README', 'COPYING', 'INSTALL' ]
   workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Rebuild the files of this existing release (e.g. v3.0.0.0); leave empty for a normal build'
+        required: false
+        default: ''
 
 # A newer push to the same branch cancels a build that's still running;
 # release (tag) builds are never cancelled
@@ -430,7 +435,7 @@ jobs:
   # same release when it finishes.
   release:
     name: Publish release
-    if: startsWith(github.ref, 'refs/tags/v')
+    if: startsWith(github.ref, 'refs/tags/v') || inputs.release_tag != ''
     needs: [ linux-daemon, linux-qt, windows-qt, ubuntu1804, macos ]
     runs-on: ubuntu-22.04
     permissions:
@@ -448,20 +453,23 @@ jobs:
 
       - name: Package the binaries
         run: |
-          TAG="${GITHUB_REF_NAME}"
+          TAG="${{ inputs.release_tag || github.ref_name }}"
           mkdir out
+          # Each file goes in its own .zip; zip keeps the Unix executable bits
+          z() { out="$PWD/out/$1"; shift; (cd "$1" && shift && zip -qry "$out" "$@"); }
           chmod +x dist/flapxd-linux-x86_64/flapxd dist/flapx-qt-linux-x86_64/flapx-qt
-          tar -C dist/flapxd-linux-x86_64 -czf "out/flapxd-$TAG-linux-x86_64.tar.gz" flapxd
-          tar -C dist/flapx-qt-linux-x86_64 -czf "out/flapx-qt-$TAG-linux-x86_64.tar.gz" flapx-qt
-          cp dist/flapx-qt-windows-x86_64/flapx-qt.exe "out/flapx-qt-$TAG-win64.exe"
-          cp dist/flapxd-windows-x86_64/flapxd.exe "out/flapxd-$TAG-win64.exe"
+          z "flapxd-$TAG-linux-x86_64.zip" dist/flapxd-linux-x86_64 flapxd
+          z "flapx-qt-$TAG-linux-x86_64.zip" dist/flapx-qt-linux-x86_64 flapx-qt
+          z "flapx-qt-$TAG-win64.zip" dist/flapx-qt-windows-x86_64 flapx-qt.exe
+          z "flapxd-$TAG-win64.zip" dist/flapxd-windows-x86_64 flapxd.exe
           chmod +x dist/flapxd-ubuntu18.04-x86_64/flapxd dist/flapx-qt-ubuntu18.04-x86_64/flapx-qt
-          tar -C dist/flapxd-ubuntu18.04-x86_64 -czf "out/flapxd-$TAG-ubuntu18.04-x86_64.tar.gz" flapxd
-          tar -C dist/flapx-qt-ubuntu18.04-x86_64 -czf "out/flapx-qt-$TAG-ubuntu18.04-x86_64.tar.gz" flapx-qt
+          z "flapxd-$TAG-ubuntu18.04-x86_64.zip" dist/flapxd-ubuntu18.04-x86_64 flapxd
+          z "flapx-qt-$TAG-ubuntu18.04-x86_64.zip" dist/flapx-qt-ubuntu18.04-x86_64 flapx-qt
           for a in arm64 x86_64; do
             chmod +x "dist/flapxd-macos-$a/flapxd"
-            tar -C "dist/flapxd-macos-$a" -czf "out/flapxd-$TAG-macos-$a.tar.gz" flapxd libs
-            cp "dist/flapx-qt-macos-$a/FlapX-Qt-macos-$a.dmg" "out/FlapX-Qt-$TAG-macos-$a.dmg"
+            z "flapxd-$TAG-macos-$a.zip" "dist/flapxd-macos-$a" flapxd libs
+            mv "dist/flapx-qt-macos-$a/FlapX-Qt-macos-$a.dmg" "dist/flapx-qt-macos-$a/FlapX-Qt-$TAG.dmg"
+            z "FlapX-Qt-$TAG-macos-$a.zip" "dist/flapx-qt-macos-$a" "FlapX-Qt-$TAG.dmg"
           done
           ls -l out
 
@@ -469,10 +477,14 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          TAG="${GITHUB_REF_NAME}"
+          TAG="${{ inputs.release_tag || github.ref_name }}"
           # Either workflow may get here first; the other one just uploads
           NOTES="repo/doc/release-notes-${TAG#v}.md"
           if [ -f "$NOTES" ]; then NOTEARGS=(--notes-file "$NOTES"); else NOTEARGS=(--generate-notes); fi
           gh release create "$TAG" --repo "$GITHUB_REPOSITORY" --title "FlapX $TAG" "${NOTEARGS[@]}" \
             || gh release view "$TAG" --repo "$GITHUB_REPOSITORY" > /dev/null
           gh release upload "$TAG" out/* --repo "$GITHUB_REPOSITORY" --clobber
+          # Remove this workflow's files from an earlier build that weren't zipped
+          gh release view "$TAG" --repo "$GITHUB_REPOSITORY" --json assets --jq '.assets[].name' \
+            | grep -v '\.zip$' | grep -v 'win32' \
+            | while read -r f; do gh release delete-asset "$TAG" "$f" --repo "$GITHUB_REPOSITORY" -y; done
