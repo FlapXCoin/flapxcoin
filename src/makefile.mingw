@@ -2,44 +2,46 @@
 # Distributed under the MIT/X11 software license, see the accompanying
 # file license.txt or http://www.opensource.org/licenses/mit-license.php.
 
-USE_UPNP:=0
-USE_IPV6:=1
+# Windows daemon (flapxd.exe), built in MSYS2 (MINGW64 or MINGW32) like the
+# GUI wallet: Boost, OpenSSL and miniupnpc from MSYS2, Berkeley DB 5.3 built
+# statically (pass BDB_INCLUDE_PATH / BDB_LIB_PATH). Links everything
+# statically, so the .exe runs on its own.
+#
+#   make -f makefile.mingw BDB_INCLUDE_PATH=... BDB_LIB_PATH=...
 
-INCLUDEPATHS= \
- -I"C:\deps\boost_1_55_0" \
- -I"C:\deps\db-4.8.30.NC\build_unix" \
- -I"C:\deps\openssl-1.0.1i\include"
- 
-LIBPATHS= \
- -L"C:\deps\boost_1_55_0\stage\lib" \
- -L"C:\deps\db-4.8.30.NC\build_unix" \
- -L"C:\deps\openssl-1.0.1i"
+USE_UPNP ?= 1
+BOOST_LIB_SUFFIX ?= -mt
+CC ?= gcc
+CXX ?= g++
 
-LIBS= \
- -l boost_system-mgw49-mt-s-1_55 \
- -l boost_filesystem-mgw49-mt-s-1_55 \
- -l boost_program_options-mgw49-mt-s-1_55 \
- -l boost_thread-mgw49-mt-s-1_55 \
- -l boost_chrono-mgw49-mt-s-1_55 \
- -l db_cxx \
- -l ssl \
- -l crypto
+INCLUDEPATHS = $(addprefix -I,$(BOOST_INCLUDE_PATH) $(BDB_INCLUDE_PATH) $(OPENSSL_INCLUDE_PATH) $(MINIUPNPC_INCLUDE_PATH))
+LIBPATHS = $(addprefix -L,$(BOOST_LIB_PATH) $(BDB_LIB_PATH) $(OPENSSL_LIB_PATH) $(MINIUPNPC_LIB_PATH))
 
-DEFS=-DWIN32 -D_WINDOWS -DBOOST_THREAD_USE_LIB -DBOOST_SPIRIT_THREADSAFE -DUSE_IPV6 -D__NO_SYSTEM_INCLUDES
+# boost_system is header-only in current Boost (MSYS2 has no library for it)
+LIBS = \
+ -l boost_filesystem$(BOOST_LIB_SUFFIX) \
+ -l boost_program_options$(BOOST_LIB_SUFFIX) \
+ -l boost_thread$(BOOST_LIB_SUFFIX) \
+ -l boost_chrono$(BOOST_LIB_SUFFIX) \
+ -l db_cxx
+
+DEFS=-DWIN32 -D_WINDOWS -D_MT -DBOOST_THREAD_USE_LIB -DBOOST_SPIRIT_THREADSAFE -DUSE_IPV6 \
+ -DBOOST_THREAD_PROVIDES_GENERIC_SHARED_MUTEX_ON_WIN
 #DEBUGFLAGS=-g
-CFLAGS=-mthreads -O2 -w -Wall -Wextra -Wformat -Wformat-security -Wno-unused-parameter $(DEBUGFLAGS) $(DEFS) $(INCLUDEPATHS)
-LDFLAGS=-Wl,--dynamicbase -Wl,--nxcompat
+CFLAGS=-O2 -w $(DEBUGFLAGS) $(DEFS) $(INCLUDEPATHS)
+CXXFLAGS_EXTRA=-std=c++11
+LDFLAGS=-Wl,--dynamicbase -Wl,--nxcompat -static -static-libgcc -static-libstdc++
 
 TESTDEFS = -DTEST_DATA_DIR=$(abspath test/data)
 
-#ifdef USE_UPNP
-# INCLUDEPATHS += -I"/e"
-# LIBPATHS += -L"C:\upnpc-exe-win32"
-# LIBS += -l miniupnpc -l iphlpapi
-# DEFS += -DSTATICLIB -DUSE_UPNP=$(USE_UPNP)
-#endif
+ifneq ($(USE_UPNP), -)
+ LIBS += -l miniupnpc -l iphlpapi
+ DEFS += -DSTATICLIB -DMINIUPNP_STATICLIB -DUSE_UPNP=$(USE_UPNP)
+endif
 
-LIBS += -l kernel32 -l user32 -l gdi32 -l comdlg32 -l winspool -l winmm -l shell32 -l comctl32 -l ole32 -l oleaut32 -l uuid -l rpcrt4 -l advapi32 -l ws2_32 -l mswsock -l shlwapi
+LIBS += -l ssl -l crypto -l z
+# -lgdi32 has to come after -lcrypto
+LIBS += -l kernel32 -l user32 -l gdi32 -l comdlg32 -l winspool -l winmm -l shell32 -l comctl32 -l ole32 -l oleaut32 -l uuid -l rpcrt4 -l advapi32 -l ws2_32 -l mswsock -l shlwapi -l crypt32 -l bcrypt
 
 # TODO: make the mingw builds smarter about dependencies, like the linux/osx builds are
 HEADERS = $(wildcard *.h)
@@ -87,17 +89,22 @@ DEFS += $(addprefix -I,$(CURDIR)/leveldb/include)
 DEFS += $(addprefix -I,$(CURDIR)/leveldb/helpers)
 OBJS += obj/txdb-leveldb.o
 leveldb/libleveldb.a:
-	cd leveldb; make; cd ..
+	cd leveldb; $(MAKE) TARGET_OS=NATIVE_WINDOWS CC="$(CC)" CXX="$(CXX)" libleveldb.a libmemenv.a; cd ..
 obj/txdb-leveldb.o: leveldb/libleveldb.a
 
 obj/scrypt.o: scrypt.c
-	gcc -c $(CFLAGS) -o $@ $^
+	$(CC) -c $(CFLAGS) -o $@ $^
+
+obj/build.h: FORCE
+	/bin/sh ../share/genbuild.sh obj/build.h
+version.cpp: obj/build.h
+DEFS += -DHAVE_BUILD_INFO -I$(CURDIR)/obj
 
 obj/%.o: %.cpp $(HEADERS)
-	g++ -c $(CFLAGS) -o $@ $<
+	$(CXX) -c $(CFLAGS) $(CXXFLAGS_EXTRA) -o $@ $<
 
-flapxd.exe: $(OBJS:obj/%=obj/%)
-	g++ $(CFLAGS) -o $@ $(LIBPATHS) $^ $(LIBS)
+flapxd.exe: leveldb/libleveldb.a $(OBJS:obj/%=obj/%)
+	$(CXX) $(CFLAGS) $(LDFLAGS) -o $@ $(LIBPATHS) $(OBJS) $(LIBS)
 
 TESTOBJS := $(patsubst test/%.cpp,obj-test/%.o,$(wildcard test/*.cpp))
 
@@ -111,4 +118,6 @@ clean:
 	rm -f flapxd.exe test_flapx.exe
 	rm -f obj/*.o
 	rm -f obj-test/*.o
-	rm -f build.h
+	rm -f obj/build.h
+
+FORCE:

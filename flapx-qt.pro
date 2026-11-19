@@ -56,8 +56,6 @@ UI_DIR = build
 
 # use: qmake "RELEASE=1"
 contains(RELEASE, 1) {
-    # Mac: compile for maximum compatibility (10.6, 64-bit)
-    macx:QMAKE_MACOSX_DEPLOYMENT_TARGET=10.6
     !windows:!macx {
         # Linux: static link
         LIBS += -Wl,-Bstatic
@@ -116,49 +114,16 @@ contains(BITCOIN_NEED_QT_PLUGINS, 1) {
 }
 
 macx: {
-
-    isEmpty(DEPSDIR) {
-
-        check_dir = /usr/local/Cellar
-        exists($$check_dir) {
-            DEPSDIR = /usr/local
-        }
-
-        !exists($$check_dir) {
-            DEPSDIR = /opt/local
-        }
-    }
-
-    isEmpty(BOOST_LIB_PATH) {
-        BOOST_LIB_PATH = $$DEPSDIR/lib
-    }
-
-    isEmpty(BOOST_INCLUDE_PATH) {
-        BOOST_INCLUDE_PATH = $$DEPSDIR/include
-    }
-
-    isEmpty(BDB_LIB_PATH) {
-        BDB_LIB_PATH = $$DEPSDIR/lib
-    }
-
-    isEmpty(BDB_INCLUDE_PATH) {
-        BDB_INCLUDE_PATH = $$DEPSDIR/include
-    }
-
+    # macOS, with the libraries from Homebrew: pass BOOST_*, BDB_*, OPENSSL_*,
+    # MINIUPNPC_* and QRENCODE_* paths (see .github/workflows/build.yml).
+    # macdeployqt then copies Qt and those libraries into the .app.
+    TARGET = FlapX-Qt
     HEADERS += src/qt/macdockiconhandler.h src/qt/macnotificationhandler.h
     OBJECTIVE_SOURCES += src/qt/macdockiconhandler.mm src/qt/macnotificationhandler.mm
-    LIBS += -framework Foundation -framework ApplicationServices -framework AppKit -framework CoreServices \
-        $$BDB_LIB_PATH/libdb_cxx.a \
-        $$BOOST_LIB_PATH/libboost_system-mt.a \
-        $$BOOST_LIB_PATH/libboost_filesystem-mt.a \
-        $$BOOST_LIB_PATH/libboost_program_options-mt.a \
-        $$BOOST_LIB_PATH/libboost_thread-mt.a \
-        $$BOOST_LIB_PATH/libboost_chrono-mt.a
+    LIBS += -framework Foundation -framework ApplicationServices -framework AppKit -framework CoreServices
     DEFINES += MAC_OSX MSG_NOSIGNAL=0
     ICON = src/mac/artwork/flapx.icns
-    QMAKE_INFO_PLIST=src/mac/Info.plist
-    # osx 10.9 has changed the stdlib default to libc++. To prevent some link error, you may need to use libstdc++
-    QMAKE_CXXFLAGS += -stdlib=libstdc++
+    QMAKE_INFO_PLIST = src/mac/Info.plist
 
     QMAKE_CFLAGS_THREAD += -pthread
     QMAKE_CXXFLAGS_THREAD += -pthread
@@ -469,26 +434,6 @@ isEmpty(BOOST_LIB_SUFFIX) {
 isEmpty(BOOST_THREAD_LIB_SUFFIX) {
     win32:BOOST_THREAD_LIB_SUFFIX = $$BOOST_LIB_SUFFIX
     else:BOOST_THREAD_LIB_SUFFIX = $$BOOST_LIB_SUFFIX
-}
-
-isEmpty(BDB_LIB_PATH) {
-    macx:BDB_LIB_PATH = /opt/local/lib/db48
-}
-
-isEmpty(BDB_LIB_SUFFIX) {
-    macx:BDB_LIB_SUFFIX = -4.8
-}
-
-isEmpty(BDB_INCLUDE_PATH) {
-    macx:BDB_INCLUDE_PATH = /opt/local/include/db48
-}
-
-isEmpty(BOOST_LIB_PATH) {
-    macx:BOOST_LIB_PATH = /opt/local/lib
-}
-
-isEmpty(BOOST_INCLUDE_PATH) {
-    macx:BOOST_INCLUDE_PATH = /opt/local/include
 }
 
 windows:DEFINES += WIN32

@@ -218,6 +218,30 @@ jobs:
           name: flapx-qt-windows-x86-32bit
           path: release/flapx-qt-win32.exe
 
+      - name: Build flapxd-win32.exe
+        run: |
+          set -e
+          P="$RUNNER_TEMP/w32"
+          export CCACHE_DIR="$RUNNER_TEMP/ccache"
+          cd src
+          make -f makefile.mingw -j"$(nproc)" CC="ccache $HOST-gcc" CXX="ccache $HOST-g++" \
+            "BOOST_INCLUDE_PATH=$P/include" "BOOST_LIB_PATH=$P/lib" \
+            "BDB_INCLUDE_PATH=$P/include" "BDB_LIB_PATH=$P/lib" \
+            "OPENSSL_INCLUDE_PATH=$P/include" "OPENSSL_LIB_PATH=$P/lib" \
+            "MINIUPNPC_INCLUDE_PATH=$P/include" "MINIUPNPC_LIB_PATH=$P/lib" flapxd.exe
+          $HOST-strip flapxd.exe
+          mv flapxd.exe flapxd-win32.exe
+          file flapxd-win32.exe | grep -q 'PE32 executable.*Intel 80386' || { echo "not a 32-bit Windows exe"; exit 1; }
+          DLLS="$($HOST-objdump -p flapxd-win32.exe | awk '/DLL Name/ {print tolower($3)}' | sort -u)"
+          echo "$DLLS"
+          BAD="$(echo "$DLLS" | grep -v -x -E 'kernel32.dll|user32.dll|gdi32.dll|advapi32.dll|shell32.dll|ole32.dll|oleaut32.dll|comdlg32.dll|ws2_32.dll|mswsock.dll|crypt32.dll|iphlpapi.dll|shlwapi.dll|winmm.dll|winspool.drv|msvcrt.dll|rpcrt4.dll|comctl32.dll|bcrypt.dll|api-ms-win-.*' || true)"
+          if [ -n "$BAD" ]; then echo "needs non-Windows DLLs: $BAD"; exit 1; fi
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: flapxd-windows-x86-32bit
+          path: src/flapxd-win32.exe
+
   # A version tag adds the 32-bit .exe to the GitHub release (build.yml
   # publishes the other binaries to the same release).
   release:
@@ -230,8 +254,9 @@ jobs:
     steps:
       - uses: actions/download-artifact@v4
         with:
-          name: flapx-qt-windows-x86-32bit
+          pattern: flap*-windows-x86-32bit
           path: dist
+          merge-multiple: true
 
       - name: Publish
         env:
@@ -240,6 +265,7 @@ jobs:
           TAG="${GITHUB_REF_NAME}"
           mkdir out
           cp dist/flapx-qt-win32.exe "out/flapx-qt-$TAG-win32.exe"
+          cp dist/flapxd-win32.exe "out/flapxd-$TAG-win32.exe"
           gh release create "$TAG" --repo "$GITHUB_REPOSITORY" --title "FlapX $TAG" --generate-notes \
             || gh release view "$TAG" --repo "$GITHUB_REPOSITORY" > /dev/null
           gh release upload "$TAG" out/* --repo "$GITHUB_REPOSITORY" --clobber

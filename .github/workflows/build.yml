@@ -274,13 +274,142 @@ jobs:
           name: flapx-qt-windows-x86_64
           path: release/flapx-qt.exe
 
+      - name: Build flapxd.exe
+        run: |
+          BDB="$(cygpath -m "$RUNNER_TEMP/bdb-install")"
+          export CCACHE_DIR="$(cygpath -m "$RUNNER_TEMP/ccache")"
+          cd src
+          make -f makefile.mingw -j"$(nproc)" CC="ccache gcc" CXX="ccache g++" \
+            "BDB_INCLUDE_PATH=$BDB/include" "BDB_LIB_PATH=$BDB/lib" flapxd.exe
+          strip flapxd.exe
+          ldd flapxd.exe
+          if ldd flapxd.exe | grep '=>' | grep -vi '/c/windows/'; then
+            echo "flapxd.exe depends on non-system DLLs (listed above)"; exit 1
+          fi
+          ./flapxd.exe -? | head -n 3 || true
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: flapxd-windows-x86_64
+          path: src/flapxd.exe
+
+  # Ubuntu 18.04 builds, for older Linux systems: the daemon and the GUI wallet,
+  # built inside an Ubuntu 18.04 container (glibc 2.27, Qt 5.9), so they run on
+  # 18.04 and anything newer. GitHub no longer has 18.04 runners.
+  ubuntu1804:
+    name: Ubuntu 18.04 daemon + GUI
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build in an Ubuntu 18.04 container
+        run: |
+          docker run --rm -v "$PWD":/src -w /src ubuntu:18.04 bash contrib/ci/build-ubuntu1804.sh
+          sudo chown -R "$(id -u):$(id -g)" .
+
+      - name: Check the binaries
+        run: |
+          file src/flapxd flapx-qt
+          ldd flapx-qt
+          # newest glibc symbol each needs (18.04 has 2.27)
+          for b in src/flapxd flapx-qt; do
+            objdump -T "$b" | grep -o 'GLIBC_[0-9.]*' | sort -uV | tail -n1
+          done
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: flapxd-ubuntu18.04-x86_64
+          path: src/flapxd
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: flapx-qt-ubuntu18.04-x86_64
+          path: flapx-qt
+
+  # macOS: Apple Silicon and Intel, the daemon and the GUI wallet (.dmg), with
+  # the libraries from Homebrew. The app is signed ad hoc (not notarised), so
+  # the first time it's opened macOS asks: right-click > Open.
+  macos:
+    name: macOS ${{ matrix.arch }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: arm64
+            runner: macos-15
+          - arch: x86_64
+            runner: macos-15-intel
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          brew update > /dev/null || true
+          brew install boost openssl@3 berkeley-db@5 miniupnpc qrencode qt@5 ccache
+          brew --prefix
+
+      - uses: actions/cache@v4
+        with:
+          path: ${{ runner.temp }}/ccache
+          key: ccache-macos-${{ matrix.arch }}-${{ github.sha }}
+          restore-keys: ccache-macos-${{ matrix.arch }}-
+
+      - name: Build flapxd
+        run: |
+          export CCACHE_DIR="$RUNNER_TEMP/ccache"
+          cd src
+          make -f makefile.osx -j"$(sysctl -n hw.ncpu)" CC="ccache clang" CXX="ccache clang++"
+          strip flapxd
+          file flapxd
+          otool -L flapxd
+          if otool -L flapxd | tail -n +2 | grep -v -E '/usr/lib/|/System/'; then
+            echo "flapxd needs libraries that don't come with macOS (listed above)"; exit 1
+          fi
+          ./flapxd -? | head -n 3 || true
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: flapxd-macos-${{ matrix.arch }}
+          path: src/flapxd
+
+      - name: Build FlapX-Qt.app
+        run: |
+          export CCACHE_DIR="$RUNNER_TEMP/ccache"
+          B="$(brew --prefix)"; Q="$(brew --prefix qt@5)"
+          DB="$(brew --prefix berkeley-db@5)"; SSL="$(brew --prefix openssl@3)"
+          "$Q/bin/qmake" USE_UPNP=1 USE_QRCODE=1 NO_BOOST_SYSTEM_LIB=1 "CONFIG+=release" "CONFIG-=debug_and_release" \
+            "QMAKE_CC=ccache clang" "QMAKE_CXX=ccache clang++" "QMAKE_LINK=clang++" \
+            "QMAKE_LRELEASE=$Q/bin/lrelease" \
+            "BOOST_INCLUDE_PATH=$B/include" "BOOST_LIB_PATH=$B/lib" \
+            "BDB_INCLUDE_PATH=$DB/include" "BDB_LIB_PATH=$DB/lib" \
+            "OPENSSL_INCLUDE_PATH=$SSL/include" "OPENSSL_LIB_PATH=$SSL/lib" \
+            "MINIUPNPC_INCLUDE_PATH=$B/include" "MINIUPNPC_LIB_PATH=$B/lib" \
+            "QRENCODE_INCLUDE_PATH=$B/include" "QRENCODE_LIB_PATH=$B/lib" flapx-qt.pro
+          make -j"$(sysctl -n hw.ncpu)"
+          # Copy Qt and the Homebrew libraries into the app, sign it ad hoc
+          # (required on Apple Silicon) and pack it into a .dmg
+          "$Q/bin/macdeployqt" FlapX-Qt.app
+          codesign --force --deep --sign - FlapX-Qt.app
+          otool -L FlapX-Qt.app/Contents/MacOS/FlapX-Qt
+          if otool -L FlapX-Qt.app/Contents/MacOS/FlapX-Qt | tail -n +2 | grep -E '/opt/homebrew|/usr/local'; then
+            echo "the app still points at Homebrew (listed above)"; exit 1
+          fi
+          mkdir dmg && cp -R FlapX-Qt.app dmg/ && ln -s /Applications dmg/Applications
+          hdiutil create -volname "FlapX" -srcfolder dmg -ov -format UDZO "FlapX-Qt-macos-${{ matrix.arch }}.dmg"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: flapx-qt-macos-${{ matrix.arch }}
+          path: FlapX-Qt-macos-${{ matrix.arch }}.dmg
+
   # A version tag (e.g. v3.0.0.0) publishes the binaries as a GitHub release.
   # The 32-bit Windows build runs in build-win32.yml and adds its .exe to the
   # same release when it finishes.
   release:
     name: Publish release
     if: startsWith(github.ref, 'refs/tags/v')
-    needs: [ linux-daemon, linux-qt, windows-qt ]
+    needs: [ linux-daemon, linux-qt, windows-qt, ubuntu1804, macos ]
     runs-on: ubuntu-22.04
     permissions:
       contents: write
@@ -298,6 +427,15 @@ jobs:
           tar -C dist/flapxd-linux-x86_64 -czf "out/flapxd-$TAG-linux-x86_64.tar.gz" flapxd
           tar -C dist/flapx-qt-linux-x86_64 -czf "out/flapx-qt-$TAG-linux-x86_64.tar.gz" flapx-qt
           cp dist/flapx-qt-windows-x86_64/flapx-qt.exe "out/flapx-qt-$TAG-win64.exe"
+          cp dist/flapxd-windows-x86_64/flapxd.exe "out/flapxd-$TAG-win64.exe"
+          chmod +x dist/flapxd-ubuntu18.04-x86_64/flapxd dist/flapx-qt-ubuntu18.04-x86_64/flapx-qt
+          tar -C dist/flapxd-ubuntu18.04-x86_64 -czf "out/flapxd-$TAG-ubuntu18.04-x86_64.tar.gz" flapxd
+          tar -C dist/flapx-qt-ubuntu18.04-x86_64 -czf "out/flapx-qt-$TAG-ubuntu18.04-x86_64.tar.gz" flapx-qt
+          for a in arm64 x86_64; do
+            chmod +x "dist/flapxd-macos-$a/flapxd"
+            tar -C "dist/flapxd-macos-$a" -czf "out/flapxd-$TAG-macos-$a.tar.gz" flapxd
+            cp "dist/flapx-qt-macos-$a/FlapX-Qt-macos-$a.dmg" "out/FlapX-Qt-$TAG-macos-$a.dmg"
+          done
           ls -l out
 
       - name: Publish
