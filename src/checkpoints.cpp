@@ -483,6 +483,21 @@ static MapCheckpoints mapCheckpoints =
             pfrom->AskFor(CInv(MSG_BLOCK, hashPendingCheckpoint));
     }
 
+    // The checkpoint master private key, as the 64-character hex secret (or DER hex).
+    // False unless it is the private half of strMasterPubKey.
+    static bool ReadMasterKey(const std::string &strPrivKey, CKey &key)
+    {
+        std::vector<unsigned char> vchPrivKey = ParseHex(strPrivKey);
+        if (vchPrivKey.size() == 32)
+            key.Set(vchPrivKey.begin(), vchPrivKey.end(), false);
+        else if (vchPrivKey.empty() || !key.SetPrivKey(CPrivKey(vchPrivKey.begin(), vchPrivKey.end()), false))
+            return false;
+        if (!key.IsValid())
+            return false;
+        CPubKey pubkey = key.GetPubKey();
+        return std::vector<unsigned char>(pubkey.begin(), pubkey.end()) == ParseHex(CSyncCheckpoint::strMasterPubKey);
+    }
+
     bool SetCheckpointPrivKey(std::string strPrivKey)
     {
         // Test signing a sync-checkpoint with genesis block
@@ -493,9 +508,9 @@ static MapCheckpoints mapCheckpoints =
         sMsg << (CUnsignedSyncCheckpoint)checkpoint;
         checkpoint.vchMsg = std::vector<unsigned char>(sMsg.begin(), sMsg.end());
 
-        std::vector<unsigned char> vchPrivKey = ParseHex(strPrivKey);
         CKey key;
-        key.SetPrivKey(CPrivKey(vchPrivKey.begin(), vchPrivKey.end()), false); // if key is not correct openssl may crash
+        if (!ReadMasterKey(strPrivKey, key))
+            return false;
         if (!key.Sign(Hash(checkpoint.vchMsg.begin(), checkpoint.vchMsg.end()), checkpoint.vchSig))
             return false;
 
@@ -514,10 +529,8 @@ static MapCheckpoints mapCheckpoints =
 
         if (CSyncCheckpoint::strMasterPrivKey.empty())
             return error("SendSyncCheckpoint: Checkpoint master key unavailable.");
-        std::vector<unsigned char> vchPrivKey = ParseHex(CSyncCheckpoint::strMasterPrivKey);
         CKey key;
-        key.SetPrivKey(CPrivKey(vchPrivKey.begin(), vchPrivKey.end()), false); // if key is not correct openssl may crash
-        if (!key.Sign(Hash(checkpoint.vchMsg.begin(), checkpoint.vchMsg.end()), checkpoint.vchSig))
+        if (!ReadMasterKey(CSyncCheckpoint::strMasterPrivKey, key) || !key.Sign(Hash(checkpoint.vchMsg.begin(), checkpoint.vchMsg.end()), checkpoint.vchSig))
             return error("SendSyncCheckpoint: Unable to sign checkpoint, check private key?");
 
         if(!checkpoint.ProcessSyncCheckpoint(NULL))
@@ -548,7 +561,9 @@ static MapCheckpoints mapCheckpoints =
 }
 
 // flapx: sync-checkpoint master key
-const std::string CSyncCheckpoint::strMasterPubKey = "046b2e58c8c0502bea592b7ec55f5acb8781a2764520f346642a5c2a6e8ef8b00704752e825d9e739daac343fae5027945e018a15e456e98ef2d0b507fbd9a6d13";
+// FlapX sync-checkpoint master key (from 3.0; the NetCoin key it replaces is not ours).
+// The node holding the private half runs with -checkpointkey=<64-character hex secret>.
+const std::string CSyncCheckpoint::strMasterPubKey = "040f5bb10f48eca704a223ee2028a59e5551033cd31a4b67dc19edbb584fb0c7818752c1f49f1579940a73bae086f88e17e56133b3cdd94b891af459e445587a23";
 
 std::string CSyncCheckpoint::strMasterPrivKey = "";
 
