@@ -22,6 +22,8 @@
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QLabel>
+#include <QMenu>
+#include <QAction>
 
 #include "net.h"
 #include "trafficgraphwidget.h"
@@ -517,6 +519,8 @@ void RPCConsole::setupPeersTab()
     peerTable->horizontalHeader()->setResizeMode(PC_ADDRESS, QHeaderView::Stretch);
 #endif
     connect(peerTable, SIGNAL(itemSelectionChanged()), this, SLOT(showPeerDetails()));
+    peerTable->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(peerTable, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(showPeerMenu(QPoint)));
     splitter->addWidget(peerTable);
 
     peerDetails = new QTextBrowser();
@@ -608,7 +612,9 @@ void RPCConsole::refreshPeers()
         QString direction = stats.fInbound ? tr("Inbound") : tr("Outbound");
         if (stats.fSyncNode)
             direction += tr(" (sync)");
-        double fPing = stats.dPingWait > stats.dPingTime ? stats.dPingWait : stats.dPingTime;
+        // The best ping measured: the peer's real distance. The latest ping can
+        // read a minute or more while blocks queued ahead of it are processed.
+        double fPing = stats.dMinPing > 0 ? stats.dMinPing : (stats.dPingTime > 0 ? stats.dPingTime : stats.dPingWait);
 
         peerTable->setItem(nRow, PC_ADDRESS, new PeerItem(QString::fromStdString(stats.addrName)));
         peerTable->setItem(nRow, PC_DIRECTION, new PeerItem(direction, stats.fInbound ? 1 : 0));
@@ -677,13 +683,39 @@ void RPCConsole::showPeerDetails()
     ROW(tr("Last receive"), p->nLastRecv ? tr("%1 ago").arg(GUIUtil::formatDurationStr(nNow - p->nLastRecv)) : tr("never"));
     ROW(tr("Sent"), GUIUtil::formatBytes(p->nSendBytes));
     ROW(tr("Received"), GUIUtil::formatBytes(p->nRecvBytes));
-    ROW(tr("Ping"), p->dPingTime > 0 ? tr("%1 ms").arg((int)(p->dPingTime * 1000)) : tr("not measured yet"));
+    ROW(tr("Best ping"), p->dMinPing > 0 ? tr("%1 ms").arg((int)(p->dMinPing * 1000)) : tr("not measured yet"));
+    if (p->dPingTime > 0)
+        ROW(tr("Last ping"), tr("%1 ms").arg((int)(p->dPingTime * 1000)));
     if (p->dPingWait > 0)
         ROW(tr("Ping waiting"), tr("%1 ms").arg((int)(p->dPingWait * 1000)));
     ROW(tr("Sees us at"), p->addrLocal.empty() ? tr("unknown") : QString::fromStdString(p->addrLocal).toHtmlEscaped());
     ROW(tr("Ban score"), QString::number(p->nMisbehavior));
 #undef ROW
     peerDetails->setHtml("<table cellspacing='3'>" + rows.join("") + "</table>");
+}
+
+void RPCConsole::showPeerMenu(const QPoint &pos)
+{
+    QTableWidgetItem *item = peerTable->itemAt(pos);
+    if (!item)
+        return;
+    QTableWidgetItem *addrItem = peerTable->item(item->row(), PC_ADDRESS);
+    if (!addrItem)
+        return;
+    std::string strAddr = addrItem->text().toStdString();
+
+    QMenu menu(this);
+    QAction *disconnectAction = menu.addAction(tr("Disconnect"));
+    if (menu.exec(peerTable->viewport()->mapToGlobal(pos)) != disconnectAction)
+        return;
+
+    {
+        LOCK(cs_vNodes);
+        BOOST_FOREACH(CNode* pnode, vNodes)
+            if (pnode->addrName == strAddr)
+                pnode->fDisconnect = true;
+    }
+    refreshPeers();
 }
 
 void RPCConsole::on_openDebugLogfileButton_clicked()

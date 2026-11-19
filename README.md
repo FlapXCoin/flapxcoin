@@ -1,4 +1,4 @@
-FlapX 3.0.0.0
+FlapX 3.0.0.1
 =============
 
 FlapX 3.0 is the first full release of the modernised wallet: it builds and runs on
@@ -9,17 +9,34 @@ explorer, twelve themes and eleven languages.
 
 | Platform | Daemon | GUI wallet |
 |---|---|---|
-| Windows 64-bit | `flapxd-v3.0.0.0-win64.zip` | `flapx-qt-v3.0.0.0-win64.zip` |
-| Windows 32-bit | `flapxd-v3.0.0.0-win32.zip` | `flapx-qt-v3.0.0.0-win32.zip` |
-| macOS, Apple Silicon | `flapxd-v3.0.0.0-macos-arm64.zip` | `FlapX-Qt-v3.0.0.0-macos-arm64.zip` (.dmg inside) |
-| macOS, Intel | `flapxd-v3.0.0.0-macos-x86_64.zip` | `FlapX-Qt-v3.0.0.0-macos-x86_64.zip` (.dmg inside) |
-| Linux, Ubuntu 22.04+ / Debian 12+ | `flapxd-v3.0.0.0-linux-x86_64.zip` | `flapx-qt-v3.0.0.0-linux-x86_64.zip` |
-| Linux, Ubuntu 18.04+ | `flapxd-v3.0.0.0-ubuntu18.04-x86_64.zip` | `flapx-qt-v3.0.0.0-ubuntu18.04-x86_64.zip` |
+| Windows 64-bit | `flapxd-v3.0.0.1-win64.zip` | `flapx-qt-v3.0.0.1-win64.zip` |
+| Windows 32-bit | `flapxd-v3.0.0.1-win32.zip` | `flapx-qt-v3.0.0.1-win32.zip` |
+| macOS, Apple Silicon | `flapxd-v3.0.0.1-macos-arm64.zip` | `FlapX-Qt-v3.0.0.1-macos-arm64.zip` (.dmg inside) |
+| macOS, Intel | `flapxd-v3.0.0.1-macos-x86_64.zip` | `FlapX-Qt-v3.0.0.1-macos-x86_64.zip` (.dmg inside) |
+| Linux, Ubuntu 22.04+ / Debian 12+ | `flapxd-v3.0.0.1-linux-x86_64.zip` | `flapx-qt-v3.0.0.1-linux-x86_64.zip` |
+| Linux, Ubuntu 18.04+ | `flapxd-v3.0.0.1-ubuntu18.04-x86_64.zip` | `flapx-qt-v3.0.0.1-ubuntu18.04-x86_64.zip` |
 
 Every file is a .zip. The macOS daemon's zip also holds a `libs` folder it needs;
 keep it next to `flapxd`.
 
-## What's new
+## What's new in 3.0.0.1
+
+- **Sync: 3.0+ nodes first, always.** Blocks are downloaded from a 3.0+ node whenever
+  one can serve them; an older wallet only when there is no 3.0+ node at all. Stuck on
+  an older wallet, the wallet swaps one of its older connections every two minutes
+  until it finds a 3.0+ node.
+- **Sync: lowest ping wins.** Nodes are compared by the best ping measured to them,
+  and after two minutes the wallet moves to a much closer node of the same or a newer
+  version. (The latest ping to the node you download from can read a minute or more
+  while your wallet checks the blocks queued ahead of it.)
+- **Peers tab:** right-click a peer to **Disconnect** it; the Ping column shows each
+  peer's best ping.
+- Every release file is a .zip, and Linux and macOS programs stay executable after
+  unzipping.
+
+Full notes: [doc/release-notes-3.0.0.1.md](doc/release-notes-3.0.0.1.md)
+
+## What's new in 3.0
 
 ### Builds and platforms
 - Builds on modern systems again: current Linux, OpenSSL 3, current Boost and Qt 5.
@@ -68,7 +85,8 @@ keep it next to `flapxd`.
 
 ## Upgrading
 
-- **Back up `wallet.dat` first.** These builds use Berkeley DB 5.3; once a 3.0 wallet
+- **From 3.0.0.0:** just replace the program; nothing else changes.
+- **From 2.x: back up `wallet.dat` first.** These builds use Berkeley DB 5.3; once a 3.0 wallet
   has written to `wallet.dat`, wallets built with Berkeley DB 4.8 can no longer open it.
 - No resync is needed: block files from older versions are moved into the `chain`
   folder automatically on first start.

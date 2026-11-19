@@ -2696,6 +2696,21 @@ Please check the address and try again.</translation>
         <source>Ban score</source>
         <translation>Ban score</translation>
     </message>
+    <message>
+        <location filename="../rpcconsole.cpp" line="0"/>
+        <source>Disconnect</source>
+        <translation>Disconnect</translation>
+    </message>
+    <message>
+        <location filename="../rpcconsole.cpp" line="0"/>
+        <source>Best ping</source>
+        <translation>Best ping</translation>
+    </message>
+    <message>
+        <location filename="../rpcconsole.cpp" line="0"/>
+        <source>Last ping</source>
+        <translation>Last ping</translation>
+    </message>
 </context>
 <context>
     <name>SendCoinsDialog</name>

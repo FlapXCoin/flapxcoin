@@ -2708,6 +2708,21 @@ Please check the address and try again.</source>
         <source>Ban score</source>
         <translation>Бал бану</translation>
     </message>
+    <message>
+        <location filename="../rpcconsole.cpp" line="0"/>
+        <source>Disconnect</source>
+        <translation>Від'єднати</translation>
+    </message>
+    <message>
+        <location filename="../rpcconsole.cpp" line="0"/>
+        <source>Best ping</source>
+        <translation>Найкращий пінг</translation>
+    </message>
+    <message>
+        <location filename="../rpcconsole.cpp" line="0"/>
+        <source>Last ping</source>
+        <translation>Останній пінг</translation>
+    </message>
 </context>
 <context>
     <name>SendCoinsDialog</name>

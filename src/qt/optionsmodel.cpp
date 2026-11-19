@@ -1,6 +1,7 @@
 #include "optionsmodel.h"
 #include "bitcoinunits.h"
 #include <QSettings>
+#include <QCryptographicHash>
 
 #include "init.h"
 #include "walletdb.h"
@@ -36,6 +37,18 @@ bool static ApplyProxySettings()
     return true;
 }
 
+// The second-port setting belongs to one wallet, not to the computer: two
+// wallets on the same computer (different data folders) share Qt's settings,
+// and they're the very case this option is for. So it's stored under a key
+// made from this wallet's data folder.
+static bool fAltPortFromConf = false;   // altport=1 in flapx.conf or -altport on the command line
+
+static QString AltPortKey()
+{
+    QByteArray dir = QString::fromStdString(GetDataDir(false).string()).toUtf8();
+    return "fUseAltPort_" + QString(QCryptographicHash::hash(dir, QCryptographicHash::Md5).toHex().left(12));
+}
+
 void OptionsModel::Init()
 {
     QSettings settings;
@@ -54,7 +67,14 @@ void OptionsModel::Init()
     // command-line options to override the GUI settings:
     if (settings.contains("fUseUPnP"))
         SoftSetBoolArg("-upnp", settings.value("fUseUPnP").toBool());
-    if (settings.value("fUseAltPort", false).toBool())
+    // Older builds kept one setting for the whole computer: the first wallet
+    // to start takes it over, then it's removed
+    if (!settings.contains(AltPortKey()) && settings.contains("fUseAltPort")) {
+        settings.setValue(AltPortKey(), settings.value("fUseAltPort").toBool());
+        settings.remove("fUseAltPort");
+    }
+    fAltPortFromConf = GetBoolArg("-altport", false);
+    if (settings.value(AltPortKey(), false).toBool())
         SoftSetBoolArg("-altport", true);
     if (settings.contains("addrProxy") && settings.value("fUseProxy").toBool())
         SoftSetArg("-proxy", settings.value("addrProxy").toString().toStdString());
@@ -145,7 +165,8 @@ QVariant OptionsModel::data(const QModelIndex & index, int role) const
         case MapPortUPnP:
             return settings.value("fUseUPnP", GetBoolArg("-upnp", true));
         case UseAltPort:
-            return settings.value("fUseAltPort", false);
+            // ticked when it's on, whether from here or from altport=1 in the conf
+            return settings.value(AltPortKey(), false).toBool() || fAltPortFromConf;
         case MinimizeOnClose:
             return QVariant(fMinimizeOnClose);
         case ProxyUse:
@@ -211,7 +232,7 @@ bool OptionsModel::setData(const QModelIndex & index, const QVariant & value, in
             break;
         case UseAltPort:
             // Takes effect at the next start (the port is opened at startup)
-            settings.setValue("fUseAltPort", value.toBool());
+            settings.setValue(AltPortKey(), value.toBool());
             break;
         case MinimizeOnClose:
             fMinimizeOnClose = value.toBool();

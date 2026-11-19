@@ -4183,6 +4183,8 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
                     if (pingUsecTime > 0) {
                         // Successful ping time measurement, replace previous
                         pfrom->nPingUsecTime = pingUsecTime;
+                        if (pfrom->nMinPingUsecTime == 0 || pingUsecTime < pfrom->nMinPingUsecTime)
+                            pfrom->nMinPingUsecTime = pingUsecTime;
                     } else {
                         // This should never happen
                         sProblem = "Timing mishap";

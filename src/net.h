@@ -177,6 +177,7 @@ public:
     int nMisbehavior;
     double dPingTime;
     double dPingWait;
+    double dMinPing;
     std::string addrLocal;
 };
 
@@ -246,6 +247,7 @@ public:
     int nSyncStalls;            // stall watchdog firings in a row at the same height
     int nSyncStallHeight;       // our height at the last firing
     int64_t nSyncAvoidUntil;    // don't pick this peer to sync from before this time
+    int nSyncReleases;        // times we gave up downloading from it (ReleaseSyncNode)
     int nStartingHeight;
     int nKnownHeight;           // highest block height this peer is known to have:
                                 // its version height, raised by blocks it sends or announces
@@ -271,6 +273,9 @@ public:
     int64_t nPingUsecStart;
     // Last measured round-trip time.
     int64_t nPingUsecTime;
+    // Best (lowest) round-trip time measured: the peer's real network
+    // distance. The last ping can be inflated by blocks queued ahead of it.
+    int64_t nMinPingUsecTime;
     // Whether a ping is requested.
     bool fPingQueued;
 
@@ -305,6 +310,7 @@ public:
         nSyncStalls = 0;
         nSyncStallHeight = -1;
         nSyncAvoidUntil = 0;
+        nSyncReleases = 0;
         nStartingHeight = -1;
         nKnownHeight = -1;
         fStartSync = false;
@@ -315,6 +321,7 @@ public:
         nPingNonceSent = 0;
         nPingUsecStart = 0;
         nPingUsecTime = 0;
+        nMinPingUsecTime = 0;
         fPingQueued = false;
 
         // Be shy and don't send version until we hear

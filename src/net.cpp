@@ -676,6 +676,7 @@ void CNode::copyStats(CNodeStats &stats)
     // Raw ping time is in microseconds, but show it to user as whole seconds (Bitcoin users should be well used to small numbers with many decimal places by now :)
     stats.dPingTime = (((double)nPingUsecTime) / 1e6);
     stats.dPingWait = (((double)nPingUsecWait) / 1e6);
+    stats.dMinPing = (((double)nMinPingUsecTime) / 1e6);
 
     // Leave string empty if addrLocal invalid (not filled in yet)
     stats.addrLocal = addrLocal.IsValid() ? addrLocal.ToString() : "";
@@ -1558,13 +1559,28 @@ static bool IsPreferredSyncVersion(const CNode *pnode) {
     return PeerClientVersion(pnode) >= MIN_SYNC_PEER_VERSION;
 }
 
-// Preferred-version peers first (bigger batches); among equals, the one we
-// heard from most recently
-static int64_t NodeSyncScore(const CNode *pnode) {
-    int64_t nScore = pnode->nLastRecv;
-    if (IsPreferredSyncVersion(pnode))
-        nScore += (int64_t)1 << 40;   // outranks any difference in nLastRecv
-    return nScore;
+// A peer's network distance in microseconds: the best (lowest) ping we've
+// measured to it. Not the latest ping: a pong waits behind every block queued
+// ahead of it, so while we're busy checking a batch of blocks the latest ping
+// to the peer we download from can read a minute or more, however close it is.
+// Not measured yet: UNKNOWN_PING_USEC, so a peer we know is close beats one we
+// know nothing about.
+static const int64_t UNKNOWN_PING_USEC = 2 * 1000000;
+static int64_t PeerPingUsec(const CNode *pnode) {
+    if (pnode->nMinPingUsecTime > 0)
+        return pnode->nMinPingUsecTime;
+    if (pnode->nPingUsecTime > 0)
+        return pnode->nPingUsecTime;
+    return UNKNOWN_PING_USEC;
+}
+
+// Among peers of the same version tier, the lowest ping wins; equal pings
+// (rare), the one we heard from most recently
+static bool BetterSyncPeer(const CNode *a, const CNode *b) {
+    int64_t pa = PeerPingUsec(a), pb = PeerPingUsec(b);
+    if (pa != pb)
+        return pa < pb;
+    return a->nLastRecv > b->nLastRecv;
 }
 
 bool fCatchingUp = false;
@@ -1627,6 +1643,7 @@ int GetBestPeerHeight() {
 
 void ReleaseSyncNode(CNode* pnode, int64_t nSeconds) {
     pnode->nSyncAvoidUntil = GetTime() + nSeconds;
+    pnode->nSyncReleases++;
     pnode->ResetBlockPrefetch();
     if (pnode == pnodeSync)
         pnodeSync = NULL;   // ThreadMessageHandler picks a new one
@@ -1674,55 +1691,63 @@ static bool HeightAgreed(const CNode *pnode, int nAgreed) {
 // Pick the peer to download blocks from. Height comes first: only peers within
 // SYNC_HEIGHT_SLACK blocks of the height peers agree on are considered, so a new
 // node neither latches onto a node that is itself still syncing nor follows a
-// lone peer on a much taller fork. Among those, 2.9+ peers win (bigger
-// batches), then the one we heard from most recently.
+// lone peer on a much taller fork.
+// Then version: a 3.0+ peer (MIN_SYNC_PEER_VERSION) is always used if there is
+// one, even one we gave up on a little while ago; an older wallet only when no
+// 3.0+ peer can serve us at all. Within a tier, the lowest best ping wins.
+static const int MAX_PREFERRED_RETRIES = 3;
+static int64_t nSyncNodeSince = 0;   // when the current sync peer was picked
 void static StartSync(const vector<CNode*> &vNodes) {
     // fImporting and fReindex are accessed out of cs_main here, but only
     // as an optimization - they are checked again in SendMessages.
     if (fReindex)
         return;
 
-    // Peers we recently gave up on (see ReleaseSyncNode) are only used if
-    // there's no one else.
+    // Passes, best first: 3.0+ peers, then 3.0+ peers we recently gave up on
+    // (see ReleaseSyncNode) unless they've failed us MAX_PREFERRED_RETRIES
+    // times, then older peers, then any peer we gave up on.
     int64_t nNow = GetTime();
-    for (int nPass = 0; nPass < 2; nPass++) {
-        bool fUseAvoided = (nPass == 1);
+    for (int nPass = 0; nPass < 4; nPass++) {
+        bool fPreferredOnly = (nPass < 2);
+        bool fUseAvoided = (nPass % 2 == 1);
 
         int nMaxHeight = AgreedPeerHeight(vNodes, fUseAvoided, nNow);
+        if (nMaxHeight < 0 && fUseAvoided)
+            nMaxHeight = AgreedPeerHeight(vNodes, false, nNow);
         if (nMaxHeight <= nBestHeight - 144)
             continue;
 
         CNode *pnodeNewSync = NULL;
-        int64_t nBestScore = 0;
         BOOST_FOREACH(CNode* pnode, vNodes) {
             if (!CanSyncFrom(pnode) || (pnode->nSyncAvoidUntil > nNow) != fUseAvoided)
+                continue;
+            if (fPreferredOnly && (!IsPreferredSyncVersion(pnode) ||
+                                   (fUseAvoided && pnode->nSyncReleases >= MAX_PREFERRED_RETRIES)))
+                continue;
+            if (!fPreferredOnly && nPass == 2 && IsPreferredSyncVersion(pnode))
                 continue;
             if (PeerHeight(pnode) <= nBestHeight - 144 ||
                 PeerHeight(pnode) < nMaxHeight - SYNC_HEIGHT_SLACK ||
                 !HeightAgreed(pnode, nMaxHeight))
                 continue;
-            int64_t nScore = NodeSyncScore(pnode);
-            if (pnodeNewSync == NULL || nScore > nBestScore) {
+            if (pnodeNewSync == NULL || BetterSyncPeer(pnode, pnodeNewSync))
                 pnodeNewSync = pnode;
-                nBestScore = nScore;
-            }
         }
         if (pnodeNewSync) {
-            printf("sync: downloading from %s (%s) height %d, agreed peer height %d, us %d\n",
+            printf("sync: downloading from %s (%s) height %d, ping %d ms, agreed peer height %d, us %d\n",
                    pnodeNewSync->addrName.c_str(), pnodeNewSync->strSubVer.c_str(),
-                   pnodeNewSync->nKnownHeight, nMaxHeight, nBestHeight);
+                   pnodeNewSync->nKnownHeight, (int)(PeerPingUsec(pnodeNewSync) / 1000), nMaxHeight, nBestHeight);
             pnodeNewSync->fStartSync = true;
             pnodeSync = pnodeNewSync;
+            nSyncNodeSince = nNow;
             return;
         }
     }
 }
 
-// The sync peer has sent every block it is known to have. If another usable
-// peer is clearly further ahead, move to it now rather than waiting for the
-// stall watchdog (which takes a couple of minutes to give up).
-// The sync peer is older than MIN_SYNC_PEER_VERSION (small batches) but a
-// preferred-version peer at the agreed height is available: switch to it.
+// The sync peer is older than MIN_SYNC_PEER_VERSION but a 3.0+ peer that can
+// serve us is connected (even one we gave up on earlier, unless it has failed
+// us MAX_PREFERRED_RETRIES times): switch to it.
 // Only ever from old to new, so it can't flip back and forth.
 void static UpgradeSyncNodeIfOld(const vector<CNode*> &vNodes) {
     if (fReindex || pnodeSync == NULL || IsPreferredSyncVersion(pnodeSync))
@@ -1730,17 +1755,92 @@ void static UpgradeSyncNodeIfOld(const vector<CNode*> &vNodes) {
     int64_t nNow = GetTime();
     int nAgreed = AgreedPeerHeight(vNodes, false, nNow);
     BOOST_FOREACH(CNode* pnode, vNodes) {
-        if (pnode == pnodeSync || !CanSyncFrom(pnode) || pnode->nSyncAvoidUntil > nNow ||
+        if (pnode == pnodeSync || !CanSyncFrom(pnode) ||
             !IsPreferredSyncVersion(pnode) || !HeightAgreed(pnode, nAgreed) ||
-            PeerHeight(pnode) <= nBestHeight)
+            PeerHeight(pnode) <= nBestHeight ||
+            (pnode->nSyncAvoidUntil > nNow && pnode->nSyncReleases >= MAX_PREFERRED_RETRIES))
             continue;
         printf("sync: %s (%s) is older than the preferred version, switching to %s (%s)\n",
                pnodeSync->addrName.c_str(), pnodeSync->strSubVer.c_str(),
                pnode->addrName.c_str(), pnode->strSubVer.c_str());
+        pnode->nSyncAvoidUntil = 0;
         ReleaseSyncNode(pnodeSync, 10 * 60);
         StartSync(vNodes);
         return;
     }
+}
+
+// Another peer of the same or a newer version tier is much closer than the
+// sync peer (best pings: at most half, and at least PING_SWITCH_MARGIN_USEC
+// less): move to it. Only after the sync peer has had SYNC_PING_SETTLE seconds,
+// so pings have been measured, and the peer left is avoided for 10 minutes, so
+// this can't flip back and forth.
+static const int64_t PING_SWITCH_MARGIN_USEC = 250 * 1000;
+static const int64_t SYNC_PING_SETTLE = 2 * 60;
+void static SwitchIfSyncNodeSlow(const vector<CNode*> &vNodes) {
+    if (fReindex || pnodeSync == NULL)
+        return;
+    int64_t nNow = GetTime();
+    if (nNow - nSyncNodeSince < SYNC_PING_SETTLE)
+        return;
+    int64_t nSyncPing = PeerPingUsec(pnodeSync);
+    bool fSyncPreferred = IsPreferredSyncVersion(pnodeSync);
+    int nAgreed = AgreedPeerHeight(vNodes, false, nNow);
+    CNode *pnodeBest = NULL;
+    BOOST_FOREACH(CNode* pnode, vNodes) {
+        if (pnode == pnodeSync || !CanSyncFrom(pnode) || pnode->nSyncAvoidUntil > nNow ||
+            (fSyncPreferred && !IsPreferredSyncVersion(pnode)) ||
+            !HeightAgreed(pnode, nAgreed) || PeerHeight(pnode) <= nBestHeight ||
+            pnode->nMinPingUsecTime <= 0)
+            continue;
+        int64_t nPing = PeerPingUsec(pnode);
+        if (nPing * 2 <= nSyncPing && nSyncPing - nPing >= PING_SWITCH_MARGIN_USEC &&
+            (pnodeBest == NULL || nPing < PeerPingUsec(pnodeBest)))
+            pnodeBest = pnode;
+    }
+    if (pnodeBest == NULL)
+        return;
+    printf("sync: %s best ping %d ms, %s (%s) is closer at %d ms, switching\n",
+           pnodeSync->addrName.c_str(), (int)(nSyncPing / 1000),
+           pnodeBest->addrName.c_str(), pnodeBest->strSubVer.c_str(), (int)(PeerPingUsec(pnodeBest) / 1000));
+    ReleaseSyncNode(pnodeSync, 10 * 60);
+    StartSync(vNodes);
+}
+
+// Catching up from an older wallet because no 3.0+ peer is connected: every
+// couple of minutes, drop one older outbound peer that we aren't downloading
+// from, so the connection thread dials a fresh address and may find a 3.0+
+// node. The newest older peer goes, so one slot keeps cycling while the
+// long-standing peers stay. Inbound peers, the sync peer and 3.0+ peers are
+// never dropped, and at least 4 outbound connections stay up.
+static const int64_t SEEK_PREFERRED_INTERVAL = 2 * 60;
+void static SeekPreferredSyncPeer(const vector<CNode*> &vNodes) {
+    static int64_t nLastSeek = 0;
+    if (fReindex || !fCatchingUp || pnodeSync == NULL || IsPreferredSyncVersion(pnodeSync))
+        return;
+    int64_t nNow = GetTime();
+    if (nNow - nLastSeek < SEEK_PREFERRED_INTERVAL)
+        return;
+    int nOutbound = 0;
+    CNode *pnodeDrop = NULL;
+    BOOST_FOREACH(CNode* pnode, vNodes) {
+        if (pnode->fDisconnect || !pnode->fSuccessfullyConnected)
+            continue;
+        if (IsPreferredSyncVersion(pnode))
+            return;                 // UpgradeSyncNodeIfOld will move to it
+        if (pnode->fInbound)
+            continue;
+        nOutbound++;
+        // the newest connection, so the long-standing peers stay
+        if (pnode != pnodeSync && !pnode->fOneShot && (pnodeDrop == NULL || pnode->nTimeConnected > pnodeDrop->nTimeConnected))
+            pnodeDrop = pnode;
+    }
+    nLastSeek = nNow;
+    if (pnodeDrop == NULL || nOutbound <= 4)
+        return;
+    printf("sync: no 3.0+ peer connected, dropping %s (%s) to look for one\n",
+           pnodeDrop->addrName.c_str(), pnodeDrop->strSubVer.c_str());
+    pnodeDrop->fDisconnect = true;
 }
 
 void static SwitchIfSyncNodeExhausted(const vector<CNode*> &vNodes) {
@@ -1787,6 +1887,8 @@ void ThreadMessageHandler()
         {
             SwitchIfSyncNodeExhausted(vNodesCopy);
             UpgradeSyncNodeIfOld(vNodesCopy);
+            SwitchIfSyncNodeSlow(vNodesCopy);
+            SeekPreferredSyncPeer(vNodesCopy);
         }
 
         // Catching up: well behind the height our peers agree on. If every
