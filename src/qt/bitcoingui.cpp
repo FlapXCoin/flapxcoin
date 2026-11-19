@@ -225,7 +225,7 @@ BitcoinGUI::BitcoinGUI(QWidget *parent):
     progressBar->setAlignment(Qt::AlignCenter);
     progressBar->setVisible(false);
 
-    // (the progress bar is styled by the application style sheet, GUIUtil::flapxStyleSheet)
+    // (the progress bar is styled by the application style sheet, GUIUtil::darkThemeStyleSheet)
     statusBar()->addWidget(progressBarLabel);
     statusBar()->addWidget(progressBar);
 
@@ -1144,11 +1144,10 @@ void BitcoinGUI::updateStakingIcon()
 }
 
 // Names of the built-in themes (compiled into the wallet): the default look
-// (res/flapxcoin.qss), the original 2014 FlappyCoin wallet's look (res/flappycoin.qss)
-// and the 1970s Soviet space programme (res/kosmos.qss)
+// (res/flapxcoin.qss) and the original 2014 FlappyCoin wallet's look (res/flappycoin.qss).
+// The other dark themes (Космос, Mars Colony, ...) are listed in GUIUtil's theme table.
 static const QString FLAPXCOIN_THEME = "FlapXCoin";
 static const QString FLAPPYCOIN_THEME = "FlappyCoin";
-static const QString KOSMOS_THEME = QString::fromUtf8("Космос");
 // Plain grey and black, always last in the Themes menu
 static const QString NONE_THEME = "None";
 
@@ -1161,29 +1160,25 @@ void BitcoinGUI::paintEvent(QPaintEvent *event)
         return;
 
     // The picture or scenery fills the window down to the status bar:
-    // FlappyCoin: sky, with clouds, city and bushes along the bottom.
-    // Космос: Soyuz over the Earth, Sputnik, and Venera parachuting down to Venus.
-    // FlapXCoin: the moon base, the rocket lifting off and the Voyager probe.
+    // FlappyCoin: sky, with clouds, city and bushes along the bottom;
+    // the dark built-in themes: their picture or drawn scene (GUIUtil's theme table)
     QRect area = rect();
     if (statusBar() && statusBar()->isVisible())
         area.setBottom(statusBar()->geometry().top() - 1);
-    if (GUIUtil::themeLook() != GUIUtil::LOOK_FLAPX)
+    if (GUIUtil::isFlappyTheme())
     {
         QPainter painter(this);
-        if (GUIUtil::isFlappyTheme())
-            GUIUtil::drawFlappyScenery(painter, area);
-        else
-            GUIUtil::drawKosmosScenery(painter, area);
+        GUIUtil::drawFlappyScenery(painter, area);
         return;
     }
-    if (selectedTheme == FLAPXCOIN_THEME)
+    if (GUIUtil::darkThemeIndex(selectedTheme) >= 0)
     {
         QPainter painter(this);
-        if (GUIUtil::drawFlapXScenery(painter, area))
+        if (GUIUtil::drawDarkThemeScene(painter, area))
             return;
     }
 
-    // Themes from a themes folder (and FlapXCoin without its picture): the starfield,
+    // Themes from a themes folder (and a built-in theme without its picture): the starfield,
     // with the explorer's background over it:
     // a navy glow centred above the top edge
     // (ellipse at 50% -20%), fading into the background 60% of the way to the far corner.
@@ -1341,50 +1336,49 @@ void BitcoinGUI::changeTheme(QString theme)
 void BitcoinGUI::loadTheme(QString theme)
 {
     QString styleSheet;
-    GUIUtil::ThemeLook look = GUIUtil::LOOK_FLAPX;
+    GUIUtil::ThemeLook look = GUIUtil::LOOK_DARK;
+    int darkTheme = GUIUtil::darkThemeIndex(theme);
 
     if (theme == FLAPPYCOIN_THEME)
     {
         look = GUIUtil::LOOK_FLAPPY;
         styleSheet = GUIUtil::flappyStyleSheet();
     }
-    else if (theme == KOSMOS_THEME)
-    {
-        look = GUIUtil::LOOK_KOSMOS;
-        styleSheet = GUIUtil::kosmosStyleSheet();
-    }
     else if (theme == NONE_THEME)
     {
         look = GUIUtil::LOOK_NONE;
         styleSheet = GUIUtil::plainStyleSheet();
     }
+    else if (darkTheme >= 0)
+    {
+        styleSheet = GUIUtil::darkThemeStyleSheet(darkTheme);
+    }
     // Extra themes live in <themes dir>/<name>/styles.qss and may use $theme-dir for their own files
-    else if (theme != FLAPXCOIN_THEME && !themesDir.isEmpty())
+    else if (!themesDir.isEmpty())
     {
         QString themeDir = themesDir + "/" + theme;
         styleSheet = GUIUtil::loadStyleSheet(themeDir + "/styles.qss", themeDir);
     }
 
-    // FlapXCoin, or a theme that is missing or unreadable: use the built-in look
+    // A theme that is missing or unreadable: use the default look
     if (styleSheet.isEmpty())
     {
         theme = FLAPXCOIN_THEME;
-        look = GUIUtil::LOOK_FLAPX;
-        styleSheet = GUIUtil::flapxStyleSheet();
+        look = GUIUtil::LOOK_DARK;
+        darkTheme = 0;
+        styleSheet = GUIUtil::darkThemeStyleSheet(0);
     }
 
-    // FlappyCoin and Kosmos have their own palettes; every other theme sits on
-    // the FlapX one. Set the look first: widgets read it when the palette-change
-    // events reach them.
+    // FlappyCoin and None have their own palettes; themes from a themes folder sit
+    // on the FlapXCoin one. Set the look first: widgets read it when the
+    // palette-change events reach them.
     GUIUtil::setThemeLook(look);
     if (look == GUIUtil::LOOK_FLAPPY)
         GUIUtil::applyFlappyPalette();
-    else if (look == GUIUtil::LOOK_KOSMOS)
-        GUIUtil::applyKosmosPalette();
     else if (look == GUIUtil::LOOK_NONE)
         GUIUtil::applyPlainPalette();
     else
-        GUIUtil::applyFlapXPalette();
+        GUIUtil::applyDarkTheme(darkTheme >= 0 ? darkTheme : 0);
     qApp->setStyleSheet(styleSheet);
     update();
 
@@ -1404,9 +1398,12 @@ void BitcoinGUI::listThemes(QStringList& themes)
 {
     // The built-in themes are always available and always first
     themes.clear();
-    themes.append(FLAPXCOIN_THEME);
-    themes.append(FLAPPYCOIN_THEME);
-    themes.append(KOSMOS_THEME);
+    for (int i = 0; i < GUIUtil::darkThemeCount(); i++)
+    {
+        themes.append(GUIUtil::darkThemeName(i));
+        if (i == 0)
+            themes.append(FLAPPYCOIN_THEME);   // the original look, right after the default
+    }
 
     // Extra themes: a "themes" folder in the data directory, next to the wallet,
     // or in the source tree when running a development build
@@ -1433,9 +1430,10 @@ void BitcoinGUI::listThemes(QStringList& themes)
         foreach (const QString &entry, dir.entryList(QDir::Dirs | QDir::NoDotAndDotDot, QDir::Name))
         {
             // a theme folder needs a styles.qss, and can't reuse a built-in name
-            if (entry.compare(FLAPXCOIN_THEME, Qt::CaseInsensitive) != 0 &&
-                entry.compare(FLAPPYCOIN_THEME, Qt::CaseInsensitive) != 0 &&
-                entry.compare(KOSMOS_THEME, Qt::CaseInsensitive) != 0 &&
+            bool builtIn = false;
+            foreach (const QString &name, themes)
+                builtIn = builtIn || entry.compare(name, Qt::CaseInsensitive) == 0;
+            if (!builtIn &&
                 entry.compare("Kosmos", Qt::CaseInsensitive) != 0 &&
                 entry.compare(NONE_THEME, Qt::CaseInsensitive) != 0 &&
                 QFile::exists(dir.filePath(entry + "/styles.qss")))

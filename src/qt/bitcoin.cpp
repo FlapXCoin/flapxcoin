@@ -156,8 +156,8 @@ int main(int argc, char *argv[])
 
     // All GUI styling: the FlapX palette plus the built-in FlapXCoin theme.
     // The main window switches to another theme later if one was picked in the Themes menu.
-    GUIUtil::applyFlapXPalette();
-    app.setStyleSheet(GUIUtil::flapxStyleSheet());
+    GUIUtil::applyDarkTheme(0);
+    app.setStyleSheet(GUIUtil::darkThemeStyleSheet(0));
     QSettings().remove("fDarkMode"); // dark mode no longer exists
 
     // ... then GUI settings:

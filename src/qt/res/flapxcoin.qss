@@ -4,11 +4,14 @@
   Deep navy space with the FlapX moon-base picture behind the window, see-through
   panels framed in FlapX green, Flappy Bird yellow for highlights and the
   selected page, and bold white text throughout. The base colours also come
-  from GUIUtil::applyFlapXPalette().
+  from the theme table in GUIUtil (guiutil.cpp).
 
-  The Космос theme uses this same layout with its own colours: to make another
-  space theme, copy this file to themes/<Name>/styles.qss next to the wallet
-  (or in the data directory) and change the variables below.
+  The other dark built-in themes (Космос, Mars Colony, Synthwave, Deep Sea,
+  Winter, DaGoofMan, Flappy Night, Terminal) use this same layout: each one's
+  .qss holds only its own variables (and any extra rules), and the wallet adds
+  everything below the variables. To make another space theme, copy this file
+  to themes/<Name>/styles.qss next to the wallet (or in the data directory) and
+  change the variables.
 */
 
 /** [VARS]
@@ -121,7 +124,7 @@ QToolBar QToolButton:hover {
 QToolBar QToolButton:checked {
     background-color: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 rgba(@tint, 56), stop:1 rgba(@tint2, 31));
     border: 1px solid @accent;
-    color: #ffffff;
+    color: @text;
     font-weight: bold;
 }
 
@@ -164,7 +167,7 @@ QFrame[frameShape="4"], QFrame[frameShape="5"] {
 /* ---------- overview page ---------- */
 
 QLabel#labelOverviewTitle {
-    color: #ffffff;
+    color: @text;
 }
 
 QGroupBox QLabel#labelBalance, QGroupBox QLabel#labelStake, QGroupBox QLabel#labelUnconfirmed,
@@ -219,7 +222,7 @@ QListView, QTableView, QTreeView {
     border-radius: 8px;
     gridline-color: @border;
     selection-background-color: rgba(@tint, 50);
-    selection-color: #ffffff;
+    selection-color: @text;
     outline: 0;
 }
 
@@ -256,7 +259,7 @@ QLineEdit, QTextEdit, QPlainTextEdit, QComboBox, QSpinBox, QDoubleSpinBox, QDate
     border-radius: 6px;
     padding: 4px 6px;
     selection-background-color: rgba(@tint, 90);
-    selection-color: #ffffff;
+    selection-color: @text;
 }
 
 QLineEdit:focus, QTextEdit:focus, QPlainTextEdit:focus, QComboBox:focus,
@@ -279,7 +282,7 @@ QComboBox QAbstractItemView {
     color: @text;
     border: 1px solid @border;
     selection-background-color: rgba(@tint, 50);
-    selection-color: #ffffff;
+    selection-color: @text;
 }
 
 /* ---------- buttons ---------- */
@@ -295,7 +298,7 @@ QPushButton {
 
 QPushButton:hover {
     background-color: rgba(@tint, 30);
-    color: #ffffff;
+    color: @text;
 }
 
 QPushButton:pressed {

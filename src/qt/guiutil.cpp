@@ -504,38 +504,135 @@ static QPixmap flapxStarfieldTile(const QColor &space)
     return pixmap;
 }
 
-void applyFlapXPalette()
+// ---------- the dark built-in themes ----------
+
+static void drawKosmosFallback(QPainter &painter, const QRect &rect);
+static void drawFlappyNightScene(QPainter &painter, const QRect &rect);
+static void drawTerminalScene(QPainter &painter, const QRect &rect);
+
+// The dark built-in themes, in Themes-menu order. Each one is the FlapXCoin layout
+// (res/flapxcoin.qss) with its own variables (res/<theme>.qss), palette and background.
+struct DarkTheme
 {
-    // Fusion draws every widget from the palette, so the whole wallet takes the FlapX colours
+    const char *name;        // in the Themes menu (UTF-8)
+    const char *qss;         // its variables, and any extra rules
+    const char *picture;     // background picture, or 0
+    void (*scene)(QPainter &, const QRect &);   // drawn in code: the background if there's no picture, or if it's missing
+    bool stars;              // starfield behind dialogs
+    // palette
+    QRgb space, space2, panel, border, light, mid, dark, text, disabled;
+    QRgb accent, accent2, highlight, bright;
+    // colours set in code (the traffic graph uses space and border)
+    QRgb positive, negative, negativeAmount, muted;
+};
+
+static const DarkTheme darkThemes[] = {
+    // FlapXCoin: the moon base, a rocket lifting off and a Voyager-style probe;
+    // Flappy Bird yellow and FlapX green
+    { "FlapXCoin", ":/themes/flapxcoin.qss", ":/themes/flapx.jpg", 0, true,
+      0x0b1220, 0x111a2e, 0x15203a, 0x24345a, 0x2c3e68, 0x1b2848, 0x070c17, 0xffffff, 0x5b6a86,
+      0xfcd535, 0x22f07a, 0x1f6f80, 0xff6b81,
+      0x22f07a, 0xff6b81, 0xffffff, 0xced6e4 },
+    // Космос: Soyuz, Sputnik and Venera; Soviet red and star gold
+    { "\xd0\x9a\xd0\xbe\xd1\x81\xd0\xbc\xd0\xbe\xd1\x81", ":/themes/kosmos.qss", ":/themes/kosmos.jpg", drawKosmosFallback, true,
+      0x0f1430, 0x161c3e, 0x1d2450, 0x3a3f78, 0x484e8c, 0x282d5c, 0x090c1e, 0xffffff, 0x6e6a8c,
+      0xe53935, 0xf9c80e, 0x961e1e, 0xff5a5f,
+      0xf9c80e, 0xff8a80, 0xffffff, 0xd6d0e2 },
+    // Mars Colony: domes and a rocket at dusk; dusty orange, sand gold and cyan
+    { "Mars Colony", ":/themes/mars.qss", ":/themes/mars.jpg", 0, true,
+      0x1a100c, 0x24160f, 0x2e1c14, 0x5c3a28, 0x6e4632, 0x3a2418, 0x0e0806, 0xffffff, 0x7a6458,
+      0xe07a3f, 0x4dd0e1, 0x8a3f1c, 0xff6b5a,
+      0x4dd0e1, 0xff7a6a, 0xffffff, 0xe2d2c6 },
+    // Synthwave: neon sunset over the grid; hot pink, cyan and orange
+    { "Synthwave", ":/themes/synthwave.qss", ":/themes/synthwave.jpg", 0, true,
+      0x140824, 0x1c0c30, 0x261040, 0x542480, 0x642c96, 0x30144e, 0x0a0414, 0xffffff, 0x7a6290,
+      0xff2e97, 0x22e5ff, 0x8a1a66, 0xff4d6d,
+      0x22e5ff, 0xff6b8b, 0xffffff, 0xe0d0ee },
+    // Deep Sea: jellyfish, coral and a yellow submarine; jellyfish cyan and coral
+    { "Deep Sea", ":/themes/deepsea.qss", ":/themes/deepsea.jpg", 0, false,
+      0x04141f, 0x061c2c, 0x0a263a, 0x184a64, 0x1e5a78, 0x0e3044, 0x020a10, 0xffffff, 0x50707e,
+      0x3ee8e0, 0xff7f6a, 0x0f6a78, 0xff6b81,
+      0xff7f6a, 0xff8a80, 0xffffff, 0xc8e0e6 },
+    // Winter: a snowy moon base under the Earth; icy cyan, gold and holiday green
+    { "Winter", ":/themes/winter.qss", ":/themes/winter.jpg", 0, true,
+      0x0a101e, 0x0e1628, 0x141e36, 0x344a6e, 0x3e5a84, 0x1c2a46, 0x050810, 0xffffff, 0x5e6e88,
+      0x8fe3ff, 0x3ddc84, 0x1f5f8a, 0xff6b81,
+      0x3ddc84, 0xff7b7b, 0xffffff, 0xd6e2f0 },
+    // DaGoofMan: the crowned fortress and its fleet; his orange
+    { "DaGoofMan", ":/themes/dagoofman.qss", ":/themes/dagoofman.jpg", 0, true,
+      0x0e0a0a, 0x16100e, 0x201612, 0x50301e, 0x603a24, 0x2a1c14, 0x060404, 0xffffff, 0x6e5e56,
+      0xff7a1a, 0xffb347, 0x8a3a08, 0xff5a4a,
+      0xffb347, 0xff6b5a, 0xffffff, 0xe6d6cc },
+    // Flappy Night: the FlappyCoin city after dark; yellow and pipe green
+    { "Flappy Night", ":/themes/flappynight.qss", 0, drawFlappyNightScene, true,
+      0x0e1630, 0x141e3e, 0x1a284e, 0x344878, 0x40568a, 0x1e2c56, 0x080c1a, 0xffffff, 0x5e6a8a,
+      0xfcd535, 0x8ee05a, 0x3a6a1e, 0xff6b6b,
+      0x8ee05a, 0xff7b7b, 0xffffff, 0xd4dcec },
+    // Terminal: green on black, monospace, scan lines
+    { "Terminal", ":/themes/terminal.qss", 0, drawTerminalScene, false,
+      0x000000, 0x030a04, 0x061208, 0x145a22, 0x1a7a2e, 0x0a2a10, 0x000000, 0x33ff66, 0x1a6a30,
+      0x33ff66, 0xb8ff5c, 0x0f5a22, 0xff5555,
+      0x7dff9a, 0xff5555, 0x33ff66, 0x22b84a },
+};
+static const int nDarkThemes = sizeof(darkThemes) / sizeof(darkThemes[0]);
+static int nDarkTheme = 0;
+
+int darkThemeCount()
+{
+    return nDarkThemes;
+}
+
+QString darkThemeName(int index)
+{
+    if (index < 0 || index >= nDarkThemes)
+        return QString();
+    return QString::fromUtf8(darkThemes[index].name);
+}
+
+int darkThemeIndex(const QString &name)
+{
+    for (int i = 0; i < nDarkThemes; i++)
+        if (name == QString::fromUtf8(darkThemes[i].name))
+            return i;
+    return -1;
+}
+
+void applyDarkTheme(int index)
+{
+    if (index < 0 || index >= nDarkThemes)
+        index = 0;
+    nDarkTheme = index;
+    const DarkTheme &t = darkThemes[index];
+
     if (QStyle *style = QStyleFactory::create("Fusion"))
         QApplication::setStyle(style);
 
-    const QColor space(11, 18, 32), space2(17, 26, 46), panel(21, 32, 58), border(36, 52, 90);
-    const QColor text(255, 255, 255), cyan(252, 213, 53), mint(34, 240, 122);   // "cyan": the accent, now Flappy yellow
-    const QColor disabled(91, 106, 134);
-
+    const QColor space(t.space), text(t.text), disabled(t.disabled), border(t.border);
     QPalette p;
     p.setColor(QPalette::Window, space);
-    // window backgrounds carry the starfield; panels and inputs stay solid
-    p.setBrush(QPalette::Active, QPalette::Window, QBrush(flapxStarfieldTile(space)));
-    p.setBrush(QPalette::Inactive, QPalette::Window, QBrush(flapxStarfieldTile(space)));
+    if (t.stars)
+    {
+        // dialogs get a starfield too; the main window draws the full scene itself
+        p.setBrush(QPalette::Active, QPalette::Window, QBrush(flapxStarfieldTile(space)));
+        p.setBrush(QPalette::Inactive, QPalette::Window, QBrush(flapxStarfieldTile(space)));
+    }
     p.setColor(QPalette::WindowText, text);
-    p.setColor(QPalette::Base, space2);
-    p.setColor(QPalette::AlternateBase, panel);
-    p.setColor(QPalette::ToolTipBase, space2);
+    p.setColor(QPalette::Base, QColor(t.space2));
+    p.setColor(QPalette::AlternateBase, QColor(t.panel));
+    p.setColor(QPalette::ToolTipBase, QColor(t.space2));
     p.setColor(QPalette::ToolTipText, text);
     p.setColor(QPalette::Text, text);
-    p.setColor(QPalette::Button, panel);
+    p.setColor(QPalette::Button, QColor(t.panel));
     p.setColor(QPalette::ButtonText, text);
-    p.setColor(QPalette::BrightText, QColor(255, 107, 129));
-    p.setColor(QPalette::Link, cyan);
-    p.setColor(QPalette::LinkVisited, mint);
-    p.setColor(QPalette::Highlight, QColor(31, 111, 128));
-    p.setColor(QPalette::HighlightedText, Qt::white);
-    p.setColor(QPalette::Light, QColor(44, 62, 104));
+    p.setColor(QPalette::BrightText, QColor(t.bright));
+    p.setColor(QPalette::Link, QColor(t.accent));
+    p.setColor(QPalette::LinkVisited, QColor(t.accent2));
+    p.setColor(QPalette::Highlight, QColor(t.highlight));
+    p.setColor(QPalette::HighlightedText, text);
+    p.setColor(QPalette::Light, QColor(t.light));
     p.setColor(QPalette::Midlight, border);
-    p.setColor(QPalette::Mid, QColor(27, 40, 72));
-    p.setColor(QPalette::Dark, QColor(7, 12, 23));
+    p.setColor(QPalette::Mid, QColor(t.mid));
+    p.setColor(QPalette::Dark, QColor(t.dark));
     p.setColor(QPalette::Shadow, Qt::black);
     p.setColor(QPalette::Disabled, QPalette::WindowText, disabled);
     p.setColor(QPalette::Disabled, QPalette::Text, disabled);
@@ -544,15 +641,17 @@ void applyFlapXPalette()
     QApplication::setPalette(p);
 }
 
-QString loadStyleSheet(const QString &path, const QString &themeDir)
+static QString readTextFile(const QString &path)
 {
-    QFile qss(path);
-    if (!qss.open(QFile::ReadOnly))
+    QFile file(path);
+    if (!file.open(QFile::ReadOnly))
         return QString();
+    return QString::fromUtf8(file.readAll());
+}
 
-    QString styleSheet = QString::fromUtf8(qss.readAll());
-    qss.close();
-
+// Fill in a style sheet's [VARS] variables and $theme-dir
+static QString fillStyleSheet(QString styleSheet, const QString &themeDir)
+{
     // Variables are declared between "/** [VARS]" and "[/VARS] */", one "@name = value" per line
     QMap<QString, QString> variables;
     bool readingVariables = false;
@@ -585,9 +684,31 @@ QString loadStyleSheet(const QString &path, const QString &themeDir)
     return styleSheet;
 }
 
-QString flapxStyleSheet()
+QString loadStyleSheet(const QString &path, const QString &themeDir)
 {
-    return loadStyleSheet(":/themes/flapxcoin.qss", ":/themes");
+    QString styleSheet = readTextFile(path);
+    if (styleSheet.isEmpty())
+        return QString();
+    return fillStyleSheet(styleSheet, themeDir);
+}
+
+QString darkThemeStyleSheet(int index)
+{
+    if (index < 0 || index >= nDarkThemes)
+        index = 0;
+    // The FlapXCoin layout is everything after its variables; the theme's own file
+    // (its variables, and any extra rules) goes after the layout, so its rules win
+    QString layout = readTextFile(":/themes/flapxcoin.qss");
+    const QString endVars = "[/VARS] */";
+    const int cutAt = layout.indexOf(endVars);
+    if (cutAt < 0)
+        return QString();
+    if (index == 0)
+        return fillStyleSheet(layout, ":/themes");
+    QString own = readTextFile(QString::fromUtf8(darkThemes[index].qss));
+    if (own.isEmpty())
+        return QString();
+    return fillStyleSheet(own + "\n" + layout.mid(cutAt + endVars.length()), ":/themes");
 }
 
 QString flappyStyleSheet()
@@ -610,12 +731,7 @@ void applyPlainPalette()
     }
 }
 
-QString kosmosStyleSheet()
-{
-    return loadStyleSheet(":/themes/kosmos.qss", ":/themes");
-}
-
-static ThemeLook nThemeLook = LOOK_FLAPX;
+static ThemeLook nThemeLook = LOOK_DARK;
 
 void setThemeLook(ThemeLook look)
 {
@@ -634,20 +750,6 @@ bool isFlappyTheme()
 
 QColor themeColor(ThemeColor which)
 {
-    if (nThemeLook == LOOK_KOSMOS)
-    {
-        switch (which)
-        {
-        case TC_POSITIVE:        return QColor(249, 200, 14);   // star gold
-        case TC_NEGATIVE:        return QColor(255, 138, 128);
-        case TC_NEGATIVE_AMOUNT: return QColor(255, 255, 255);  // white
-        case TC_MUTED:           return QColor(214, 208, 226);
-        case TC_ACCENT:          return QColor(229, 57, 53);    // Soviet red
-        case TC_ACCENT2:         return QColor(249, 200, 14);   // star gold
-        case TC_GRAPH_BG:        return QColor(15, 20, 48);
-        case TC_GRAPH_GRID:      return QColor(43, 47, 99);
-        }
-    }
     if (nThemeLook == LOOK_NONE)
     {
         switch (which)
@@ -676,16 +778,18 @@ QColor themeColor(ThemeColor which)
         case TC_GRAPH_GRID:      return QColor(156, 201, 143);
         }
     }
+    // the dark themes (and themes from a themes folder, on FlapXCoin's colours)
+    const DarkTheme &t = darkThemes[nDarkTheme];
     switch (which)
     {
-    case TC_POSITIVE:        return QColor(34, 240, 122);   // FlapX green
-    case TC_NEGATIVE:        return QColor(255, 107, 129);
-    case TC_NEGATIVE_AMOUNT: return QColor(255, 255, 255);  // white
-    case TC_MUTED:           return QColor(206, 214, 228);
-    case TC_ACCENT:          return QColor(252, 213, 53);   // Flappy Bird yellow
-    case TC_ACCENT2:         return QColor(34, 240, 122);   // FlapX green
-    case TC_GRAPH_BG:        return QColor(11, 18, 32);
-    case TC_GRAPH_GRID:      return QColor(36, 52, 90);
+    case TC_POSITIVE:        return QColor(t.positive);
+    case TC_NEGATIVE:        return QColor(t.negative);
+    case TC_NEGATIVE_AMOUNT: return QColor(t.negativeAmount);
+    case TC_MUTED:           return QColor(t.muted);
+    case TC_ACCENT:          return QColor(t.accent);
+    case TC_ACCENT2:         return QColor(t.accent2);
+    case TC_GRAPH_BG:        return QColor(t.space);
+    case TC_GRAPH_GRID:      return QColor(t.border);
     }
     return QColor();
 }
@@ -836,45 +940,6 @@ void drawFlappyScenery(QPainter &painter, const QRect &rect)
     // Scenery strip along the bottom
     const int y = rect.bottom() + 1 - tile.height();
     painter.drawTiledPixmap(QRect(rect.left(), y, rect.width(), tile.height()), tile);
-}
-
-void applyKosmosPalette()
-{
-    if (QStyle *style = QStyleFactory::create("Fusion"))
-        QApplication::setStyle(style);
-
-    const QColor space(15, 20, 48), space2(22, 28, 62), panel(29, 36, 80), border(58, 63, 120);
-    const QColor text(255, 255, 255), orange(229, 57, 53), teal(249, 200, 14);   // red accent, star gold
-    const QColor disabled(110, 106, 140);
-
-    QPalette p;
-    p.setColor(QPalette::Window, space);
-    // dialogs get a starfield too; the main window draws the full scene itself
-    p.setBrush(QPalette::Active, QPalette::Window, QBrush(flapxStarfieldTile(space)));
-    p.setBrush(QPalette::Inactive, QPalette::Window, QBrush(flapxStarfieldTile(space)));
-    p.setColor(QPalette::WindowText, text);
-    p.setColor(QPalette::Base, space2);
-    p.setColor(QPalette::AlternateBase, panel);
-    p.setColor(QPalette::ToolTipBase, space2);
-    p.setColor(QPalette::ToolTipText, text);
-    p.setColor(QPalette::Text, text);
-    p.setColor(QPalette::Button, panel);
-    p.setColor(QPalette::ButtonText, text);
-    p.setColor(QPalette::BrightText, QColor(255, 90, 95));
-    p.setColor(QPalette::Link, orange);
-    p.setColor(QPalette::LinkVisited, teal);
-    p.setColor(QPalette::Highlight, QColor(150, 30, 30));
-    p.setColor(QPalette::HighlightedText, Qt::white);
-    p.setColor(QPalette::Light, QColor(72, 78, 140));
-    p.setColor(QPalette::Midlight, border);
-    p.setColor(QPalette::Mid, QColor(40, 45, 92));
-    p.setColor(QPalette::Dark, QColor(9, 12, 30));
-    p.setColor(QPalette::Shadow, Qt::black);
-    p.setColor(QPalette::Disabled, QPalette::WindowText, disabled);
-    p.setColor(QPalette::Disabled, QPalette::Text, disabled);
-    p.setColor(QPalette::Disabled, QPalette::ButtonText, disabled);
-    p.setColor(QPalette::Disabled, QPalette::Highlight, border);
-    QApplication::setPalette(p);
 }
 
 // pi, without relying on M_PI (not defined in strict C++ mode on Windows)
@@ -1149,28 +1214,121 @@ static bool drawBottomAnchored(QPainter &painter, const QRect &rect, const QImag
     return true;
 }
 
-bool drawFlapXScenery(QPainter &painter, const QRect &rect)
+// Flappy Night: the FlappyCoin city and bushes after dark, under the stars and a
+// crescent moon
+static void drawFlappyNightScene(QPainter &painter, const QRect &rect)
 {
-    // The FlapX picture (res/images/flapx.jpg): a moon base with a stainless-steel
-    // rocket lifting off its pad, a Voyager-style probe, and cyan and mint nebulas
-    static QImage picture(":/themes/flapx.jpg");
-    static QPixmap scaled;
-    static QSize scaledFor;
-    return drawBottomAnchored(painter, rect, picture, scaled, scaledFor);
+    static QPixmap tile = flappySceneryTile();
+    painter.save();
+
+    QLinearGradient sky(rect.topLeft(), rect.bottomLeft());
+    sky.setColorAt(0.0, QColor(7, 11, 30));
+    sky.setColorAt(0.65, QColor(20, 30, 70));
+    sky.setColorAt(1.0, QColor(38, 52, 102));
+    painter.fillRect(rect, sky);
+
+    // Stars: the same scatter every time, fewer near the horizon
+    painter.setRenderHint(QPainter::Antialiasing, true);
+    painter.setPen(Qt::NoPen);
+    quint32 seed = 20141;
+    const int count = rect.width() * rect.height() / 2600;
+    for (int i = 0; i < count; i++)
+    {
+        seed = seed * 1103515245u + 12345u; const double x = (seed >> 8) % 10000 / 10000.0;
+        seed = seed * 1103515245u + 12345u; const double y = (seed >> 8) % 10000 / 10000.0;
+        seed = seed * 1103515245u + 12345u; const int bright = 120 + (seed >> 8) % 136;
+        const double fy = y * y;   // bunch them towards the top
+        QColor star(255, 255, 235, (int)(bright * (1.0 - fy * 0.8)));
+        painter.setBrush(star);
+        const double r = (bright > 235) ? 1.3 : 0.8;
+        painter.drawEllipse(QPointF(rect.left() + x * rect.width(), rect.top() + fy * rect.height() * 0.8), r, r);
+    }
+
+    // Crescent moon, top right, with a soft glow
+    const QPointF moon(rect.left() + rect.width() * 0.82, rect.top() + rect.height() * 0.16);
+    const double mr = qMax(22.0, rect.height() * 0.05);
+    QRadialGradient glow(moon, mr * 3.5);
+    glow.setColorAt(0.0, QColor(255, 244, 190, 70));
+    glow.setColorAt(1.0, QColor(255, 244, 190, 0));
+    painter.setBrush(glow);
+    painter.drawEllipse(moon, mr * 3.5, mr * 3.5);
+    QPainterPath disc, bite;
+    disc.addEllipse(moon, mr, mr);
+    bite.addEllipse(moon + QPointF(mr * 0.45, -mr * 0.25), mr * 0.85, mr * 0.85);
+    painter.setBrush(QColor(255, 240, 170));
+    painter.drawPath(disc.subtracted(bite));
+
+    // The scenery strip, in moonlight
+    const int y = rect.bottom() + 1 - tile.height();
+    const QRect strip(rect.left(), y, rect.width(), tile.height());
+    painter.drawTiledPixmap(strip, tile);
+    painter.fillRect(strip, QColor(10, 18, 52, 165));
+    painter.restore();
 }
 
-void drawKosmosScenery(QPainter &painter, const QRect &rect)
+// Terminal: a black screen with faint green scan lines and a dim glow in the middle
+static void drawTerminalScene(QPainter &painter, const QRect &rect)
 {
-    // The Kosmos picture (res/images/kosmos.jpg): Soyuz over the Earth, Sputnik,
-    // and a Venera lander parachuting down to Venus. Scaled to fill the window,
-    // keeping its shape and anchored to the bottom, so the planets always sit
-    // along the bottom edge; anything that doesn't fit is cut off at the top
-    // and the sides. Scaled once per window size.
-    static QImage picture(":/themes/kosmos.jpg");
+    painter.save();
+    painter.fillRect(rect, Qt::black);
+    QRadialGradient glow(rect.center(), qMax(rect.width(), rect.height()) * 0.7);
+    glow.setColorAt(0.0, QColor(0, 46, 14));
+    glow.setColorAt(1.0, QColor(0, 0, 0));
+    painter.fillRect(rect, glow);
+    painter.setPen(QColor(51, 255, 102, 14));
+    for (int y = rect.top(); y <= rect.bottom(); y += 3)
+        painter.drawLine(rect.left(), y, rect.right(), y);
+
+    // a prompt in the bottom corner
+    QFont font("DejaVu Sans Mono");
+    font.setStyleHint(QFont::Monospace);
+    font.setPixelSize(14);
+    painter.setFont(font);
+    painter.setPen(QColor(51, 255, 102, 70));
+    painter.drawText(QRect(rect.left() + 12, rect.top(), rect.width() - 24, rect.height() - 10),
+                     Qt::AlignLeft | Qt::AlignBottom, "flapx@node:~$ _");
+    painter.restore();
+}
+
+bool drawDarkThemeScene(QPainter &painter, const QRect &rect)
+{
+    // The picture or the drawn scene, kept per theme and window size
+    static QImage picture;
+    static int pictureFor = -1;
     static QPixmap scaled;
     static QSize scaledFor;
-    if (!drawBottomAnchored(painter, rect, picture, scaled, scaledFor))
-        drawKosmosFallback(painter, rect);
+    static int scaledTheme = -1;
+
+    const DarkTheme &t = darkThemes[nDarkTheme];
+    if (rect.isEmpty())
+        return false;
+    if (scaledTheme != nDarkTheme)
+    {
+        scaledFor = QSize();
+        scaledTheme = nDarkTheme;
+    }
+    if (t.picture)
+    {
+        if (pictureFor != nDarkTheme)
+        {
+            picture = QImage(QString::fromUtf8(t.picture));
+            pictureFor = nDarkTheme;
+        }
+        if (drawBottomAnchored(painter, rect, picture, scaled, scaledFor))
+            return true;
+    }
+    if (!t.scene)
+        return false;
+    if (scaledFor != rect.size())
+    {
+        scaled = QPixmap(rect.size());
+        QPainter scene(&scaled);
+        t.scene(scene, QRect(QPoint(0, 0), rect.size()));
+        scene.end();
+        scaledFor = rect.size();
+    }
+    painter.drawPixmap(rect.topLeft(), scaled);
+    return true;
 }
 
 QString formatBytes(quint64 bytes)

@@ -82,6 +82,18 @@
         <file alias="kosmos.jpg">res/images/kosmos.jpg</file>
         <file alias="flapx.jpg">res/images/flapx.jpg</file>
         <file alias="plain.qss">res/plain.qss</file>
+        <file alias="mars.qss">res/mars.qss</file>
+        <file alias="mars.jpg">res/images/mars.jpg</file>
+        <file alias="synthwave.qss">res/synthwave.qss</file>
+        <file alias="synthwave.jpg">res/images/synthwave.jpg</file>
+        <file alias="deepsea.qss">res/deepsea.qss</file>
+        <file alias="deepsea.jpg">res/images/deepsea.jpg</file>
+        <file alias="winter.qss">res/winter.qss</file>
+        <file alias="winter.jpg">res/images/winter.jpg</file>
+        <file alias="dagoofman.qss">res/dagoofman.qss</file>
+        <file alias="dagoofman.jpg">res/images/dagoofman.jpg</file>
+        <file alias="flappynight.qss">res/flappynight.qss</file>
+        <file alias="terminal.qss">res/terminal.qss</file>
     </qresource>
     <qresource prefix="/qt/art">
         <file>res/images/art/ccflapx.png</file>

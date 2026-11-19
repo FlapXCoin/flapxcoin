@@ -118,16 +118,24 @@ namespace GUIUtil
         QString uiOptions;
     };
 
-    /** FlapX colours for every widget: Qt's Fusion style with the FlapX navy palette.
-        Applied once at startup; themes (Themes menu) only change the style sheet on top. */
-    void applyFlapXPalette();
-
     /** Read a theme style sheet and fill in its [VARS] variables and $theme-dir.
         Returns an empty string if the file can't be read. */
     QString loadStyleSheet(const QString &path, const QString &themeDir);
 
-    /** The built-in FlapXCoin theme (res/flapxcoin.qss), the wallet's default look */
-    QString flapxStyleSheet();
+    /** The dark built-in themes (FlapXCoin, Космос, Mars Colony, ...) share the FlapXCoin
+        layout (res/flapxcoin.qss) with their own colours and background. Index 0 is
+        FlapXCoin, the default; themes from a themes folder sit on its palette. */
+    int darkThemeCount();
+    QString darkThemeName(int index);
+    /** Index of the built-in dark theme with this name, or -1 */
+    int darkThemeIndex(const QString &name);
+    /** The theme's style sheet: its own [VARS] on the FlapXCoin layout */
+    QString darkThemeStyleSheet(int index);
+    /** Make it the active look: Fusion style with the theme's palette */
+    void applyDarkTheme(int index);
+    /** Draw the active dark theme's background picture or scene in rect, filling it and
+        anchored to the bottom. Returns false if it has none (the starfield shows instead). */
+    bool drawDarkThemeScene(QPainter &painter, const QRect &rect);
 
     /** The built-in FlappyCoin theme (res/flappycoin.qss): the original 2014 wallet's look */
     QString flappyStyleSheet();
@@ -136,26 +144,13 @@ namespace GUIUtil
     /** Draw the FlappyCoin scenery (clouds, city, bushes) along the bottom of rect */
     void drawFlappyScenery(QPainter &painter, const QRect &rect);
 
-    /** Draw the FlapX background picture in rect, filling it and anchored to the bottom.
-        Returns false if the picture is missing (the starfield shows instead). */
-    bool drawFlapXScenery(QPainter &painter, const QRect &rect);
-
     /** The built-in None theme (res/plain.qss): plain grey and black, no decoration */
     QString plainStyleSheet();
     /** Qt's standard light grey palette, for the None theme */
     void applyPlainPalette();
 
-    /** The built-in Kosmos theme (res/kosmos.qss): the 1970s Soviet space programme */
-    QString kosmosStyleSheet();
-    /** Deep-space palette for the Kosmos theme */
-    void applyKosmosPalette();
-    /** Draw the Kosmos background picture in rect (Soyuz, Sputnik, Venera, the Earth and
-        Venus), filling it and anchored to the bottom; a drawn version if the picture is missing */
-    void drawKosmosScenery(QPainter &painter, const QRect &rect);
-
-    /** Which built-in look is active, for colours set in code. Themes loaded from a
-        themes folder use the FlapX look underneath. */
-    enum ThemeLook { LOOK_FLAPX, LOOK_FLAPPY, LOOK_KOSMOS, LOOK_NONE };
+    /** Which kind of look is active, for colours set in code */
+    enum ThemeLook { LOOK_DARK, LOOK_FLAPPY, LOOK_NONE };
     void setThemeLook(ThemeLook look);
     ThemeLook themeLook();
     bool isFlappyTheme();

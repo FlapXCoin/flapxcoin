@@ -1,0 +1,38 @@
+/*
+  DaGoofMan theme - a dark crowned fortress and its fleet over a fiery planet
+  (res/images/dagoofman.jpg), for DaGoofMan, who made the wallet's Export
+  icon. His colour is orange: orange frames, buttons and title tabs, with
+  ember gold amounts.
+
+  The layout is res/flapxcoin.qss, below its variables; the base colours come
+  from the theme table in guiutil.cpp.
+*/
+
+/** [VARS]
+@space = #0e0a0a
+@space2 = #16100e
+@panel = #201612
+@glass = rgba(14, 9, 8, 160)
+@alt = #1a120e
+@border = #50301e
+@frame = #ff7a1a
+@accent = #ff7a1a
+@accent2 = #ffb347
+@tint = 255, 122, 26
+@tint2 = 255, 179, 71
+@btn1 = #ff7a1a
+@btn2 = #b84a00
+@btn1light = #ff9c52
+@btn2light = #d8661a
+@onbtn = #ffffff
+@title1 = #e0620c
+@title2 = #7a2e00
+@ontitle = #ffffff
+@text = #ffffff
+@muted = #ccb8aa
+@track = #b09a8c
+@statusbg = #060404
+@total = #ffb347
+@interest = #ffd08a
+@danger = #ff6b5a
+[/VARS] */

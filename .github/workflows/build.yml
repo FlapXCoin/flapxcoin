@@ -153,6 +153,10 @@ jobs:
           # Космос, written the way QSettings stores non-Latin text in its .conf file
           PRINT_SCREENSHOTS_BASE64=1 THEME='\x41a\x43e\x441\x43c\x43e\x441' contrib/ci/gui-screenshots.sh ./flapx-qt screenshots/kosmos
           PRINT_SCREENSHOTS_BASE64=1 THEME=None contrib/ci/gui-screenshots.sh ./flapx-qt screenshots/none
+          # The other built-in themes, a few pages each
+          for t in "Mars Colony" Synthwave "Deep Sea" Winter DaGoofMan "Flappy Night" Terminal; do
+            PRINT_SCREENSHOTS_BASE64=1 QUICK=1 THEME="$t" contrib/ci/gui-screenshots.sh ./flapx-qt "screenshots/$(echo "$t" | tr -d ' ' | tr A-Z a-z)"
+          done
 
       - uses: actions/upload-artifact@v4
         if: always()

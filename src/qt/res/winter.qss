@@ -1,0 +1,37 @@
+/*
+  Winter theme - a snowy moon base under the Earth and a blue nebula, with a
+  light snowfall (res/images/winter.jpg, the bright ground darkened). Icy cyan
+  frames, gold totals, and holiday green for money coming in.
+
+  The layout is res/flapxcoin.qss, below its variables; the base colours come
+  from the theme table in guiutil.cpp.
+*/
+
+/** [VARS]
+@space = #0a101e
+@space2 = #0e1628
+@panel = #141e36
+@glass = rgba(10, 16, 30, 160)
+@alt = #121c32
+@border = #344a6e
+@frame = #8fe3ff
+@accent = #8fe3ff
+@accent2 = #3ddc84
+@tint = 143, 227, 255
+@tint2 = 61, 220, 132
+@btn1 = #4fb3e0
+@btn2 = #1f6f9a
+@btn1light = #8fd0ee
+@btn2light = #3a8cb8
+@onbtn = #ffffff
+@title1 = #2a7fb0
+@title2 = #16476e
+@ontitle = #ffffff
+@text = #ffffff
+@muted = #b4c4d8
+@track = #98aac2
+@statusbg = #050810
+@total = #ffd166
+@interest = #3ddc84
+@danger = #ff7b7b
+[/VARS] */
