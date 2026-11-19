@@ -1,0 +1,45 @@
+/*
+  Terminal theme - an old green-screen terminal: green text on black in a
+  monospace font, with faint scan lines (drawn in code).
+
+  The layout is res/flapxcoin.qss, below its variables; the base colours come
+  from the theme table in guiutil.cpp.
+*/
+
+/** [VARS]
+@space = #000000
+@space2 = #030a04
+@panel = #061208
+@glass = rgba(0, 8, 2, 205)
+@alt = #04100a
+@border = #145a22
+@frame = #1fd655
+@accent = #33ff66
+@accent2 = #b8ff5c
+@tint = 51, 255, 102
+@tint2 = 184, 255, 92
+@btn1 = #0f5a22
+@btn2 = #073012
+@btn1light = #187a30
+@btn2light = #0c4a1c
+@onbtn = #33ff66
+@title1 = #0f5a22
+@title2 = #062a10
+@ontitle = #33ff66
+@text = #33ff66
+@muted = #22b84a
+@track = #1a8a3a
+@statusbg = #000000
+@total = #b8ff5c
+@interest = #7dff9a
+@danger = #ff5555
+[/VARS] */
+
+* {
+    font-family: "DejaVu Sans Mono", "Consolas", "Lucida Console", "Courier New", monospace;
+}
+
+/* The toolbar keeps a narrower font, so all its buttons fit */
+QToolBar QToolButton {
+    font-family: "DejaVu Sans", "Segoe UI", sans-serif;
+}

@@ -1,0 +1,39 @@
+/*
+  Космос (Kosmos) theme - the Soviet space programme of the 1970s, as the retro
+  future saw it: Soyuz, Sputnik and Venera.
+
+  The FlapXCoin layout in cosmic navy, with see-through panels framed in Soviet
+  red, solid red title tabs, red buttons and selected page, star gold for
+  amounts, and bold white text throughout. The base colours come from
+  the theme table in guiutil.cpp; behind the main window is the Kosmos picture
+  (res/images/kosmos.jpg). The layout is res/flapxcoin.qss, below its variables.
+*/
+
+/** [VARS]
+@space = #0f1430
+@space2 = #161c3e
+@panel = #1d2450
+@glass = rgba(16, 20, 50, 150)
+@alt = #1a2049
+@border = #3a3f78
+@frame = #d32f2f
+@accent = #e53935
+@accent2 = #f9c80e
+@tint = 229, 57, 53
+@tint2 = 249, 200, 14
+@btn1 = #e53935
+@btn2 = #a01818
+@btn1light = #ef5350
+@btn2light = #c62828
+@onbtn = #ffffff
+@title1 = #c62828
+@title2 = #8e1b1b
+@ontitle = #ffffff
+@text = #ffffff
+@muted = #b9b3c9
+@track = #a89fbf
+@statusbg = #0a0d22
+@total = #f9c80e
+@interest = #ffe08a
+@danger = #ff8a80
+[/VARS] */

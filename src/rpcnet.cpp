@@ -6,6 +6,7 @@
 #include "net.h"
 #include "bitcoinrpc.h"
 #include "alert.h"
+#include "chainparams.h"
 #include "wallet.h"
 #include "db.h"
 #include "walletdb.h"
@@ -124,9 +125,9 @@ Value sendalert(const Array& params, bool fHelp)
         throw runtime_error(
             "sendalert <message> <privatekey> <minver> <maxver> <priority> <id> [cancelupto]\n"
             "<message> is the alert text message\n"
-            "<privatekey> is hex string of alert master private key\n"
-            "<minver> is the minimum applicable internal client version\n"
-            "<maxver> is the maximum applicable internal client version\n"
+            "<privatekey> is the alert private key as 64 hex characters (or DER hex)\n"
+            "<minver> is the lowest protocol version the alert applies to (e.g. 0)\n"
+            "<maxver> is the highest protocol version it applies to (e.g. 210043 = wallets older than 3.0)\n"
             "<priority> is integer priority number\n"
             "<id> is the alert id\n"
             "[cancelupto] cancels all alert id's up to this number\n"
@@ -150,8 +151,18 @@ Value sendalert(const Array& params, bool fHelp)
     sMsg << (CUnsignedAlert)alert;
     alert.vchMsg = vector<unsigned char>(sMsg.begin(), sMsg.end());
 
+    // Accept the raw 32-byte secret (64 hex characters) or a DER-encoded EC private key.
     vector<unsigned char> vchPrivKey = ParseHex(params[1].get_str());
-    key.SetPrivKey(CPrivKey(vchPrivKey.begin(), vchPrivKey.end()), false); // if key is not correct openssl may crash
+    if (vchPrivKey.size() == 32)
+        key.Set(vchPrivKey.begin(), vchPrivKey.end(), false);
+    else if (vchPrivKey.empty() || !key.SetPrivKey(CPrivKey(vchPrivKey.begin(), vchPrivKey.end()), false))
+        throw runtime_error("Could not read the private key; give the 64-character hex secret.\n");
+    if (!key.IsValid())
+        throw runtime_error("The private key is not valid.\n");
+    // Refuse early when the key is not the one this wallet checks alerts against.
+    CPubKey pubkey = key.GetPubKey();
+    if (std::vector<unsigned char>(pubkey.begin(), pubkey.end()) != Params().AlertKey())
+        throw runtime_error("This private key does not match the alert key built into this wallet.\n");
     if (!key.Sign(Hash(alert.vchMsg.begin(), alert.vchMsg.end()), alert.vchSig))
         throw runtime_error(
             "Unable to sign alert, check private key?\n");

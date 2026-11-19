@@ -1,0 +1,38 @@
+/*
+  Synthwave theme - an 80s neon sunset over a glowing grid, palm trees and
+  wireframe mountains (res/images/synthwave.jpg, dimmed to sit behind the
+  panels). Hot pink frames and buttons, cyan for money coming in, orange
+  totals, and darker panels so the text stays easy to read.
+
+  The layout is res/flapxcoin.qss, below its variables; the base colours come
+  from the theme table in guiutil.cpp.
+*/
+
+/** [VARS]
+@space = #140824
+@space2 = #1c0c30
+@panel = #261040
+@glass = rgba(18, 6, 34, 185)
+@alt = #1e0c34
+@border = #542480
+@frame = #ff2e97
+@accent = #ff2e97
+@accent2 = #22e5ff
+@tint = 255, 46, 151
+@tint2 = 34, 229, 255
+@btn1 = #ff2e97
+@btn2 = #9e1a8c
+@btn1light = #ff6bb5
+@btn2light = #c03aa8
+@onbtn = #ffffff
+@title1 = #b0187a
+@title2 = #5a0f5e
+@ontitle = #ffffff
+@text = #ffffff
+@muted = #c4b0d8
+@track = #a890c0
+@statusbg = #0a0414
+@total = #ff9e3d
+@interest = #22e5ff
+@danger = #ff6b8b
+[/VARS] */

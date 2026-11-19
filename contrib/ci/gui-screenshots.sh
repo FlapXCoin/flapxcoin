@@ -6,6 +6,8 @@
 # Needs: Xvfb, xdotool, ImageMagick (import)
 # THEME=<name> takes them with that theme, e.g. THEME=FlappyCoin (writes the
 # wallet's GUI settings file, so only use it on a build machine)
+# QUICK=1 takes only the overview, send and transactions pages, Options and the
+# debug window's traffic graph (enough to check a theme)
 #
 # Uses a throwaway data directory with networking off, so no real wallet or
 # chain data is involved.
@@ -64,7 +66,9 @@ shot()  { sleep 2; import -window "$1" "$OUT/$2.png" && echo "saved $2.png"; }
 
 # Pages: Alt+1 .. Alt+6
 names=(overview send receive transactions addressbook links)
-for n in 1 2 3 4 5 6; do
+pages="1 2 3 4 5 6"
+[ "${QUICK:-0}" = 1 ] && pages="1 2 4"
+for n in $pages; do
     focus
     xdotool key "alt+$n"
     shot "$WID" "$(printf '%02d' "$n")-${names[$((n-1))]}"
@@ -92,6 +96,7 @@ dialog() {
     xdotool key Escape
     sleep 1
 }
+if [ "${QUICK:-0}" != 1 ]; then
 # Explorer page (Alt+7): the newest block (the genesis block here, as the
 # throwaway wallet has no chain), then the transaction in it
 focus
@@ -102,9 +107,10 @@ shot "$WID" "07-explorer-block"
 xdotool key ctrl+a; xdotool type 9e17be6aefbffc74cf4deab73f93bd050e696008fe28c56de80520a22b05fafb; xdotool key Return; sleep 2
 shot "$WID" "07b-explorer-tx"
 
+fi
 dialog '^Options$'        10-options    alt+s o
-dialog 'PIR Calculator'   11-calculator alt+s p
-dialog 'Debug window'     12-debug      alt+h d
+[ "${QUICK:-0}" != 1 ] && dialog 'PIR Calculator'   11-calculator alt+s p
+[ "${QUICK:-0}" != 1 ] && dialog 'Debug window'     12-debug      alt+h d
 # Debug window again, for its Peers and Network Traffic tabs
 debugtabs() {
     focus
@@ -113,7 +119,7 @@ debugtabs() {
     d="$(xdotool search --onlyvisible --name 'Debug window' 2>/dev/null | head -n1)"
     if [ -n "$d" ]; then
         xdotool windowfocus --sync "$d" 2>/dev/null || true
-        xdotool key alt+p; sleep 3; shot "$d" "12b-debug-peers"
+        [ "${QUICK:-0}" != 1 ] && { xdotool key alt+p; sleep 3; shot "$d" "12b-debug-peers"; }
         xdotool key alt+n; sleep 5; shot "$d" "12c-debug-traffic"
     else
         echo "Window 'Debug window' not found"
@@ -122,7 +128,7 @@ debugtabs() {
     sleep 1
 }
 debugtabs
-dialog '^About FlapX'     13-about      alt+h a
+[ "${QUICK:-0}" != 1 ] && dialog '^About FlapX'     13-about      alt+h a
 
 cleanup
 
@@ -130,7 +136,7 @@ cleanup
 # can read the build log but can't download artifacts
 if [ "${PRINT_SCREENSHOTS_BASE64:-0}" = 1 ]; then
     for f in "$OUT"/*.png; do
-        echo "=== BEGIN SCREENSHOT $(basename "$f") ==="
+        echo "=== BEGIN SCREENSHOT $(basename "$OUT")/$(basename "$f") ==="
         base64 -w 1000 "$f"
         echo "=== END SCREENSHOT ==="
     done
