@@ -78,3 +78,6 @@ keep it next to `flapxd`.
   executable (if your unzip tool doesn't: `chmod +x flapx-qt flapxd`).
 - **macOS:** the app isn't notarised by Apple, so the first time, right-click
   FlapX-Qt and choose **Open**, then confirm. After that it opens normally.
+  For the daemon, macOS blocks files downloaded in a browser until you clear the
+  download flag once, in the folder you unzipped it to:
+  `xattr -dr com.apple.quarantine flapxd libs`
