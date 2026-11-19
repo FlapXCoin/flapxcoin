@@ -1262,7 +1262,7 @@ static void drawFlappyNightScene(QPainter &painter, const QRect &rect)
     const int y = rect.bottom() + 1 - tile.height();
     const QRect strip(rect.left(), y, rect.width(), tile.height());
     painter.drawTiledPixmap(strip, tile);
-    painter.fillRect(strip, QColor(10, 18, 52, 165));
+    painter.fillRect(strip, QColor(10, 18, 52, 195));
     painter.restore();
 }
 

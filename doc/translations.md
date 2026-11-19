@@ -9,20 +9,33 @@ language** (after a restart), or forced with `lang=ru` in `flapx.conf` /
 |---|---|---|
 | English | `src/qt/locale/bitcoin_en.ts` | source language |
 | Russian (Русский) | `src/qt/locale/bitcoin_ru.ts` | complete (861 strings) |
+| Spanish (Español) | `src/qt/locale/bitcoin_es.ts` | complete |
+| German (Deutsch) | `src/qt/locale/bitcoin_de.ts` | complete |
+| French (Français) | `src/qt/locale/bitcoin_fr.ts` | complete |
+| Portuguese, Brazil (Português) | `src/qt/locale/bitcoin_pt_BR.ts` | complete |
+| Italian (Italiano) | `src/qt/locale/bitcoin_it.ts` | complete |
+| Dutch (Nederlands) | `src/qt/locale/bitcoin_nl.ts` | complete |
+| Polish (Polski) | `src/qt/locale/bitcoin_pl.ts` | complete |
+| Turkish (Türkçe) | `src/qt/locale/bitcoin_tr.ts` | complete |
+| Ukrainian (Українська) | `src/qt/locale/bitcoin_uk.ts` | complete |
+| Chinese, Simplified (简体中文) | `src/qt/locale/bitcoin_zh_CN.ts` | complete |
 
 Qt supplies some text itself: the standard dialog buttons (OK, Cancel, Yes,
 No...), the Copy/Paste menu in text boxes, and the scroll bar menus. The
 wallet uses the system's Qt translations for these when it has them, and
 otherwise its own `src/qt/locale/qt_<code>.ts` (built in under
 `/qttranslations`, so it isn't listed as a language). That matters for the
-static Windows build, which has no Qt translations. Only Russian has one so
-far; a new language can add its own `qt_<code>.ts` the same way.
+static Windows build, which has no Qt translations. Every language above has
+one; a new language can add its own `qt_<code>.ts` the same way.
 
 The Russian translation reuses the community translations of Bitcoin
 (0.8.6, 0.9.5) and NovaCoin for the text FlapX inherited from them, with the
 FlapX-specific text translated for FlapX. It uses «кошелёк» for "wallet".
-Corrections from Russian-speaking users are welcome: edit the `.ts` file in
-Qt Linguist (or any text editor) and send a pull request.
+The other languages (added in 3.0) are built the same way: the community
+translations of Bitcoin 0.8.6/0.9.5 and NovaCoin where the English text is
+the same (with other coins' names swapped for FlapX), and the rest written
+for FlapX. Corrections from native speakers are welcome: edit the `.ts` file
+in Qt Linguist (or any text editor) and send a pull request.
 
 ## How it fits together
 

@@ -38,3 +38,8 @@
 * {
     font-family: "DejaVu Sans Mono", "Consolas", "Lucida Console", "Courier New", monospace;
 }
+
+/* The toolbar keeps a narrower font, so all its buttons fit */
+QToolBar QToolButton {
+    font-family: "DejaVu Sans", "Segoe UI", sans-serif;
+}
