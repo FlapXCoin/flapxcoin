@@ -1,0 +1,39 @@
+/*
+  Silverwing theme - the FlapX bird flying past a silver moon over a city in
+  the clouds, all in brushed silver and pewter on midnight navy
+  (res/images/silverwing.jpg). Monochrome: thin silver frames, polished metal
+  title tabs and buttons with dark text, and pale moonlight blue for money
+  coming in.
+
+  The layout is res/flapxcoin.qss, below its variables; the base colours come
+  from the theme table in guiutil.cpp.
+*/
+
+/** [VARS]
+@space = #0b0f1e
+@space2 = #10152a
+@panel = #161c34
+@glass = rgba(10, 14, 28, 165)
+@alt = #131a30
+@border = #3a4258
+@frame = #b8c0d0
+@accent = #dfe5ee
+@accent2 = #b9cbe6
+@tint = 223, 229, 238
+@tint2 = 185, 203, 230
+@btn1 = #e6ebf2
+@btn2 = #8c95a6
+@btn1light = #f5f7fa
+@btn2light = #a9b1bf
+@onbtn = #0b0f1e
+@title1 = #d4dae4
+@title2 = #8a93a5
+@ontitle = #0b0f1e
+@text = #ffffff
+@muted = #b4bccb
+@track = #9aa3b5
+@statusbg = #070a14
+@total = #f2f5f9
+@interest = #b9cbe6
+@danger = #ff8a8a
+[/VARS] */

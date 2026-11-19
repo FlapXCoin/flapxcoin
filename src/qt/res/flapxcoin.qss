@@ -7,7 +7,7 @@
   from the theme table in GUIUtil (guiutil.cpp).
 
   The other dark built-in themes (Космос, Mars Colony, Synthwave, Deep Sea,
-  Winter, DaGoofMan, Flappy Night, Terminal) use this same layout: each one's
+  Winter, DaGoofMan, Silverwing, Flappy Night, Terminal) use this same layout: each one's
   .qss holds only its own variables (and any extra rules), and the wallet adds
   everything below the variables. To make another space theme, copy this file
   to themes/<Name>/styles.qss next to the wallet (or in the data directory) and

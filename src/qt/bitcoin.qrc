@@ -112,6 +112,8 @@
         <file alias="winter.jpg">res/images/winter.jpg</file>
         <file alias="dagoofman.qss">res/dagoofman.qss</file>
         <file alias="dagoofman.jpg">res/images/dagoofman.jpg</file>
+        <file alias="silverwing.qss">res/silverwing.qss</file>
+        <file alias="silverwing.jpg">res/images/silverwing.jpg</file>
         <file alias="flappynight.qss">res/flappynight.qss</file>
         <file alias="terminal.qss">res/terminal.qss</file>
     </qresource>
