@@ -252,6 +252,11 @@ jobs:
     permissions:
       contents: write
     steps:
+      # for the release notes (doc/release-notes-<version>.md)
+      - uses: actions/checkout@v4
+        with:
+          path: repo
+
       - uses: actions/download-artifact@v4
         with:
           pattern: flap*-windows-x86-32bit
@@ -266,6 +271,8 @@ jobs:
           mkdir out
           cp dist/flapx-qt-win32.exe "out/flapx-qt-$TAG-win32.exe"
           cp dist/flapxd-win32.exe "out/flapxd-$TAG-win32.exe"
-          gh release create "$TAG" --repo "$GITHUB_REPOSITORY" --title "FlapX $TAG" --generate-notes \
+          NOTES="repo/doc/release-notes-${TAG#v}.md"
+          if [ -f "$NOTES" ]; then NOTEARGS=(--notes-file "$NOTES"); else NOTEARGS=(--generate-notes); fi
+          gh release create "$TAG" --repo "$GITHUB_REPOSITORY" --title "FlapX $TAG" "${NOTEARGS[@]}" \
             || gh release view "$TAG" --repo "$GITHUB_REPOSITORY" > /dev/null
           gh release upload "$TAG" out/* --repo "$GITHUB_REPOSITORY" --clobber

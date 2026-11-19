@@ -1,19 +1,22 @@
-2024 updates in progress
-FLAPXZERO DAY 3
-========
+FlapX 3.0.0.0
+=============
 
+FlapX 3.0 is the first full release of the modernised wallet. Full notes and
+downloads: [doc/release-notes-3.0.0.0.md](doc/release-notes-3.0.0.0.md)
 
-PUNCH LIST 
+What's new in 3.0
 
-
-
->TX page right click explorer link 404
->Change RPC Port
->Another round windows debug (sizing issues)
->flip unlock icon and make new mining a ctive icon 
->tool tip ghosts everywhere
->
-
+* Builds for every platform: Windows 64/32-bit, macOS (Apple Silicon and Intel)
+  and Linux (Ubuntu 22.04+ and 18.04+), each with the GUI wallet and the daemon
+* Reliable sync: the network fragmentation is fixed, 3.0 wallets prefer 3.0 sync
+  peers with fallback to older ones, and the protocol version is bumped
+* Security: a full code audit with its findings fixed, and new FlapX alert and
+  sync-checkpoint keys replacing NetCoin's (network messages to wallets now work)
+* Staking: an APR Tracking menu with a Stake Report and Interest Estimate, stake
+  auto-balancing, and change sent back to its own address
+* A built-in block explorer, the Mission Control overview, and peers and network
+  traffic in the debug window
+* Twelve themes, the new FlapX logo, and eleven languages besides English
 
 FlapX (FLAPX) - Litecoin / PeerCoin Hybrid POW/POSV hybrid with Personal Investment Rate
 
@@ -69,8 +72,16 @@ libQt5Widgets, libQt5Gui or libQt5Core, install it:
 
 Make it executable before the first run: `chmod +x flapx-qt flapxd`
 
-flapx-qt.exe (Windows GUI wallet)
-Needs nothing extra. Single self-contained file for 64-bit Windows.
+flapxd / flapx-qt for Ubuntu 18.04+
+The same, built on Ubuntu 18.04 for older systems (runs on 18.04 and anything
+newer). On 18.04 the Qt package is: `sudo apt install libqt5widgets5`
+
+flapx-qt.exe and flapxd.exe (Windows, 64-bit and 32-bit)
+Need nothing extra. Each is a single self-contained file.
+
+FlapX-Qt.dmg and flapxd (macOS, Apple Silicon and Intel)
+Open the .dmg and drag FlapX-Qt into Applications. The app isn't notarised by
+Apple, so the first time, right-click it and choose Open, then confirm.
 
 All binaries are built with UPnP on.
 
@@ -157,8 +168,10 @@ If qmake is missing or reports Qt 6, run Qt 5's directly: /usr/lib/qt5/bin/qmake
 USE_UPNP=1 turns UPnP on by default; USE_UPNP=0 builds it in but off,
 USE_UPNP=- leaves it out. More detail: doc/build-ubuntu.md
 
-The Windows wallet and the release binaries are built by GitHub Actions
-(.github/workflows/build.yml).
+The release binaries for every platform are built by GitHub Actions
+(.github/workflows/build.yml and build-win32.yml); pushing a version tag (v*)
+publishes them as a GitHub release. macOS builds use Homebrew (src/makefile.osx
+for flapxd; flapx-qt.pro for the app).
 
 ##################################################################################################
 Legacy build (old upstream/ bundle) - NO LONGER WORKS with this code
@@ -222,6 +235,17 @@ Issues with no commits will be given a similar warning, and closed after
 labeled 'stale'. 
 # FlapX
 
+#############################################################################################
+Old punch list (2024)
+#############################################################################################
+
+PUNCH LIST 
 
 
 
+>TX page right click explorer link 404
+>Change RPC Port
+>Another round windows debug (sizing issues)
+>flip unlock icon and make new mining a ctive icon 
+>tool tip ghosts everywhere
+>
