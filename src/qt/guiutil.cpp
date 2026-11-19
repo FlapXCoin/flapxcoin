@@ -565,8 +565,8 @@ static const DarkTheme darkThemes[] = {
       0xffb347, 0xff6b5a, 0xffffff, 0xe6d6cc },
     // Silverwing: the bird past a silver moon over a city in the clouds; monochrome silver
     { "Silverwing", ":/themes/silverwing.qss", ":/themes/silverwing.jpg", 0, true,
-      0x0b0f1e, 0x10152a, 0x161c34, 0x3a4258, 0x4a5370, 0x1e2540, 0x05070f, 0xffffff, 0x5c6478,
-      0xdfe5ee, 0xb9cbe6, 0x3a4560, 0xff7b7b,
+      0x07080b, 0x0c0d12, 0x121319, 0x3c3f48, 0x4c505c, 0x1a1c23, 0x030304, 0xffffff, 0x5e626e,
+      0xdfe5ee, 0xb9cbe6, 0x3a3e4a, 0xff7b7b,
       0xb9cbe6, 0xff8a8a, 0xffffff, 0xd0d6e2 },
     // Flappy Night: the FlappyCoin city after dark; yellow and pipe green
     { "Flappy Night", ":/themes/flappynight.qss", 0, drawFlappyNightScene, true,
