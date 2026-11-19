@@ -16,7 +16,7 @@ CXX ?= clang++
 DEPSDIR ?= $(shell brew --prefix 2>/dev/null || echo /usr/local)
 OPENSSL_PREFIX ?= $(DEPSDIR)/opt/openssl@3
 BDB_PREFIX ?= $(DEPSDIR)/opt/berkeley-db@5
-BOOST_LIB_SUFFIX ?= -mt
+BOOST_LIB_SUFFIX ?=
 USE_UPNP ?= 1
 
 INCLUDEPATHS= \

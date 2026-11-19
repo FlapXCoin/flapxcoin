@@ -340,13 +340,30 @@ jobs:
           - arch: x86_64
             runner: macos-15-intel
     runs-on: ${{ matrix.runner }}
+    timeout-minutes: 90
+    env:
+      HOMEBREW_NO_AUTO_UPDATE: 1
+      HOMEBREW_NO_INSTALL_UPGRADE: 1
+      HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK: 1
     steps:
       - uses: actions/checkout@v4
 
       - name: Install dependencies
         run: |
-          brew update > /dev/null || true
-          brew install boost openssl@3 berkeley-db@5 miniupnpc qrencode qt@5 ccache dylibbundler
+          brew install boost openssl@3 berkeley-db@5 miniupnpc qrencode ccache dylibbundler
+          if [ "${{ matrix.arch }}" = arm64 ]; then
+            brew install qt@5
+            echo "QTDIR=$(brew --prefix qt@5)" >> "$GITHUB_ENV"
+          else
+            # Homebrew's Qt 5 for Intel pulls in a long chain of rebuilds; Qt's
+            # own 5.15.2 binaries are Intel, so use those
+            pip3 install --break-system-packages aqtinstall
+            python3 -m aqt install-qt mac desktop 5.15.2 clang_64 -O "$RUNNER_TEMP/Qt"
+            QTDIR="$RUNNER_TEMP/Qt/5.15.2/clang_64"
+            # Qt 5.15.2 still links the AGL framework, which current macOS SDKs dropped
+            sed -i '' 's/-framework AGL//g' "$QTDIR/mkspecs/common/mac.conf"
+            echo "QTDIR=$QTDIR" >> "$GITHUB_ENV"
+          fi
           brew --prefix
 
       - uses: actions/cache@v4
@@ -381,7 +398,7 @@ jobs:
       - name: Build FlapX-Qt.app
         run: |
           export CCACHE_DIR="$RUNNER_TEMP/ccache"
-          B="$(brew --prefix)"; Q="$(brew --prefix qt@5)"
+          B="$(brew --prefix)"; Q="$QTDIR"
           DB="$(brew --prefix berkeley-db@5)"; SSL="$(brew --prefix openssl@3)"
           "$Q/bin/qmake" USE_UPNP=1 USE_QRCODE=1 NO_BOOST_SYSTEM_LIB=1 "CONFIG+=release" "CONFIG-=debug_and_release" \
             "QMAKE_CC=ccache clang" "QMAKE_CXX=ccache clang++" "QMAKE_LINK=clang++" \
