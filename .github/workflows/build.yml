@@ -423,7 +423,12 @@ jobs:
             echo "the app still points at Homebrew (listed above)"; exit 1
           fi
           mkdir dmg && cp -R FlapX-Qt.app dmg/ && ln -s /Applications dmg/Applications
-          hdiutil create -volname "FlapX" -srcfolder dmg -ov -format UDZO "FlapX-Qt-macos-${{ matrix.arch }}.dmg"
+          # hdiutil on GitHub's macOS runners sometimes fails with "Resource busy": retry
+          for i in 1 2 3 4 5; do
+            hdiutil create -volname "FlapX" -srcfolder dmg -ov -format UDZO "FlapX-Qt-macos-${{ matrix.arch }}.dmg" && break
+            [ "$i" = 5 ] && exit 1
+            echo "hdiutil failed, retrying in 15 s"; sleep 15
+          done
 
       - uses: actions/upload-artifact@v4
         with:
