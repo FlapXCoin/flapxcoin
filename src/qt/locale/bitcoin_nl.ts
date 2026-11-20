@@ -2081,8 +2081,8 @@ Controleer het adres en probeer het opnieuw.</translation>
     </message>
     <message>
         <location filename="../forms/overviewpage.ui" line="46"/>
-        <source>Lock/Unlock</source>
-        <translation>Vergrendelen/Ontgrendelen</translation>
+        <source>Unlock</source>
+        <translation>Ontgrendelen</translation>
     </message>
     <message>
         <location filename="../forms/overviewpage.ui" line="47"/>
@@ -2194,6 +2194,26 @@ Controleer het adres en probeer het opnieuw.</translation>
         <location filename="../overviewpage.cpp" line="409"/>
         <source>Wallet syncing...</source>
         <translation>Portemonnee synchroniseert...</translation>
+    </message>
+    <message>
+        <location filename="../overviewpage.cpp" line="0"/>
+        <source>Lock</source>
+        <translation>Vergrendelen</translation>
+    </message>
+    <message>
+        <location filename="../overviewpage.cpp" line="0"/>
+        <source>Unlock the wallet for staking</source>
+        <translation>Portemonnee ontgrendelen voor staking</translation>
+    </message>
+    <message>
+        <location filename="../overviewpage.cpp" line="0"/>
+        <source>Lock the wallet</source>
+        <translation>Portemonnee vergrendelen</translation>
+    </message>
+    <message>
+        <location filename="../overviewpage.cpp" line="0"/>
+        <source>The wallet isn't encrypted, so there's nothing to unlock. To protect it with a password: Settings &gt; Encrypt Wallet.</source>
+        <translation>De portemonnee is niet versleuteld, dus er valt niets te ontgrendelen. Om hem met een wachtwoord te beveiligen: Instellingen &gt; Portemonnee versleutelen.</translation>
     </message>
 </context>
 <context>

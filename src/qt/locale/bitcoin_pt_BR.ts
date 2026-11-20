@@ -2080,8 +2080,8 @@ Verifique o endereço e tente de novo.</translation>
     </message>
     <message>
         <location filename="../forms/overviewpage.ui" line="46"/>
-        <source>Lock/Unlock</source>
-        <translation>Bloquear/Desbloquear</translation>
+        <source>Unlock</source>
+        <translation>Desbloquear</translation>
     </message>
     <message>
         <location filename="../forms/overviewpage.ui" line="47"/>
@@ -2193,6 +2193,26 @@ Verifique o endereço e tente de novo.</translation>
         <location filename="../overviewpage.cpp" line="409"/>
         <source>Wallet syncing...</source>
         <translation>Sincronizando a carteira...</translation>
+    </message>
+    <message>
+        <location filename="../overviewpage.cpp" line="0"/>
+        <source>Lock</source>
+        <translation>Bloquear</translation>
+    </message>
+    <message>
+        <location filename="../overviewpage.cpp" line="0"/>
+        <source>Unlock the wallet for staking</source>
+        <translation>Desbloquear a carteira para staking</translation>
+    </message>
+    <message>
+        <location filename="../overviewpage.cpp" line="0"/>
+        <source>Lock the wallet</source>
+        <translation>Bloquear a carteira</translation>
+    </message>
+    <message>
+        <location filename="../overviewpage.cpp" line="0"/>
+        <source>The wallet isn't encrypted, so there's nothing to unlock. To protect it with a password: Settings &gt; Encrypt Wallet.</source>
+        <translation>A carteira não está criptografada, então não há nada para desbloquear. Para protegê-la com uma senha: Configurações &gt; Criptografar carteira.</translation>
     </message>
 </context>
 <context>

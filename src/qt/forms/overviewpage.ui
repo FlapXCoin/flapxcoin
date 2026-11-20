@@ -43,7 +43,7 @@
        </item>
        <item>
         <layout class="QHBoxLayout" name="buttonsLayout">
-         <item><widget class="QPushButton" name="unlockWalletActionNew"><property name="minimumSize"><size><width>120</width><height>32</height></size></property><property name="text"><string>Lock/Unlock</string></property></widget></item>
+         <item><widget class="QPushButton" name="unlockWalletActionNew"><property name="minimumSize"><size><width>120</width><height>32</height></size></property><property name="text"><string>Unlock</string></property></widget></item>
          <item><widget class="QPushButton" name="startButton"><property name="minimumSize"><size><width>120</width><height>32</height></size></property><property name="text"><string>Multisend</string></property></widget></item>
          <item><spacer name="buttonsSpacer"><property name="orientation"><enum>Qt::Horizontal</enum></property><property name="sizeHint" stdset="0"><size><width>40</width><height>20</height></size></property></spacer></item>
         </layout>

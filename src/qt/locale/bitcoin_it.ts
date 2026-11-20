@@ -2082,8 +2082,8 @@ Controlla l'indirizzo e riprova.</translation>
     </message>
     <message>
         <location filename="../forms/overviewpage.ui" line="46"/>
-        <source>Lock/Unlock</source>
-        <translation>Blocca/Sblocca</translation>
+        <source>Unlock</source>
+        <translation>Sblocca</translation>
     </message>
     <message>
         <location filename="../forms/overviewpage.ui" line="47"/>
@@ -2195,6 +2195,26 @@ Controlla l'indirizzo e riprova.</translation>
         <location filename="../overviewpage.cpp" line="409"/>
         <source>Wallet syncing...</source>
         <translation>Sincronizzazione del portafoglio...</translation>
+    </message>
+    <message>
+        <location filename="../overviewpage.cpp" line="0"/>
+        <source>Lock</source>
+        <translation>Blocca</translation>
+    </message>
+    <message>
+        <location filename="../overviewpage.cpp" line="0"/>
+        <source>Unlock the wallet for staking</source>
+        <translation>Sblocca il portafoglio per lo staking</translation>
+    </message>
+    <message>
+        <location filename="../overviewpage.cpp" line="0"/>
+        <source>Lock the wallet</source>
+        <translation>Blocca il portafoglio</translation>
+    </message>
+    <message>
+        <location filename="../overviewpage.cpp" line="0"/>
+        <source>The wallet isn't encrypted, so there's nothing to unlock. To protect it with a password: Settings &gt; Encrypt Wallet.</source>
+        <translation>Il portafoglio non è cifrato, quindi non c'è niente da sbloccare. Per proteggerlo con una password: Impostazioni &gt; Cifra il portafoglio.</translation>
     </message>
 </context>
 <context>

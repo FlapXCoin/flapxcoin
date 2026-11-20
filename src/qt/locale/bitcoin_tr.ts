@@ -2081,8 +2081,8 @@ Lütfen adresi kontrol edip tekrar deneyin.</translation>
     </message>
     <message>
         <location filename="../forms/overviewpage.ui" line="46"/>
-        <source>Lock/Unlock</source>
-        <translation>Kilitle/Kilidi aç</translation>
+        <source>Unlock</source>
+        <translation>Kilidi aç</translation>
     </message>
     <message>
         <location filename="../forms/overviewpage.ui" line="47"/>
@@ -2194,6 +2194,26 @@ Lütfen adresi kontrol edip tekrar deneyin.</translation>
         <location filename="../overviewpage.cpp" line="409"/>
         <source>Wallet syncing...</source>
         <translation>Cüzdan eşitleniyor...</translation>
+    </message>
+    <message>
+        <location filename="../overviewpage.cpp" line="0"/>
+        <source>Lock</source>
+        <translation>Kilitle</translation>
+    </message>
+    <message>
+        <location filename="../overviewpage.cpp" line="0"/>
+        <source>Unlock the wallet for staking</source>
+        <translation>Staking için cüzdanın kilidini aç</translation>
+    </message>
+    <message>
+        <location filename="../overviewpage.cpp" line="0"/>
+        <source>Lock the wallet</source>
+        <translation>Cüzdanı kilitle</translation>
+    </message>
+    <message>
+        <location filename="../overviewpage.cpp" line="0"/>
+        <source>The wallet isn't encrypted, so there's nothing to unlock. To protect it with a password: Settings &gt; Encrypt Wallet.</source>
+        <translation>Cüzdan şifrelenmemiş, bu yüzden açılacak bir kilit yok. Parolayla korumak için: Ayarlar &gt; Cüzdanı şifrele.</translation>
     </message>
 </context>
 <context>

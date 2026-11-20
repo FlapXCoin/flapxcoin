@@ -67,6 +67,8 @@ public slots:
     void setNumTransactions(int count);
     void setStatistics(ClientModel *modelStatistics);
     void lockWalletToggle();
+    /** The overview's Unlock/Lock button: its label, and whether it can be used */
+    void updateLockButton(int status);
     void updateStatistics();
     void showSyncing();
     void updateLiveHeight();
@@ -102,8 +104,6 @@ private slots:
     void updateAlerts(const QString &warnings);
     void updateMyWeight();
     void on_startButton_clicked();
-
-    void on_unlockWalletActionNew_clicked();
 
 signals:
     void multiSendSignal();

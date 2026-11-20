@@ -2081,8 +2081,8 @@ Vérifiez l'adresse et réessayez.</translation>
     </message>
     <message>
         <location filename="../forms/overviewpage.ui" line="46"/>
-        <source>Lock/Unlock</source>
-        <translation>Verrouiller/Déverrouiller</translation>
+        <source>Unlock</source>
+        <translation>Déverrouiller</translation>
     </message>
     <message>
         <location filename="../forms/overviewpage.ui" line="47"/>
@@ -2194,6 +2194,26 @@ Vérifiez l'adresse et réessayez.</translation>
         <location filename="../overviewpage.cpp" line="409"/>
         <source>Wallet syncing...</source>
         <translation>Synchronisation du portefeuille...</translation>
+    </message>
+    <message>
+        <location filename="../overviewpage.cpp" line="0"/>
+        <source>Lock</source>
+        <translation>Verrouiller</translation>
+    </message>
+    <message>
+        <location filename="../overviewpage.cpp" line="0"/>
+        <source>Unlock the wallet for staking</source>
+        <translation>Déverrouiller le portefeuille pour le staking</translation>
+    </message>
+    <message>
+        <location filename="../overviewpage.cpp" line="0"/>
+        <source>Lock the wallet</source>
+        <translation>Verrouiller le portefeuille</translation>
+    </message>
+    <message>
+        <location filename="../overviewpage.cpp" line="0"/>
+        <source>The wallet isn't encrypted, so there's nothing to unlock. To protect it with a password: Settings &gt; Encrypt Wallet.</source>
+        <translation>Le portefeuille n'est pas chiffré, il n'y a donc rien à déverrouiller. Pour le protéger par un mot de passe : Paramètres &gt; Chiffrer le portefeuille.</translation>
     </message>
 </context>
 <context>
