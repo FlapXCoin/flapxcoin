@@ -1,4 +1,4 @@
-FlapX 3.0.0.1
+FlapX 3.0.0.2
 =============
 
 FlapX 3.0 is the first full release of the modernised wallet: it builds and runs on
@@ -9,15 +9,23 @@ explorer, twelve themes and eleven languages.
 
 | Platform | Daemon | GUI wallet |
 |---|---|---|
-| Windows 64-bit | `flapxd-v3.0.0.1-win64.zip` | `flapx-qt-v3.0.0.1-win64.zip` |
-| Windows 32-bit | `flapxd-v3.0.0.1-win32.zip` | `flapx-qt-v3.0.0.1-win32.zip` |
-| macOS, Apple Silicon | `flapxd-v3.0.0.1-macos-arm64.zip` | `FlapX-Qt-v3.0.0.1-macos-arm64.zip` (.dmg inside) |
-| macOS, Intel | `flapxd-v3.0.0.1-macos-x86_64.zip` | `FlapX-Qt-v3.0.0.1-macos-x86_64.zip` (.dmg inside) |
-| Linux, Ubuntu 22.04+ / Debian 12+ | `flapxd-v3.0.0.1-linux-x86_64.zip` | `flapx-qt-v3.0.0.1-linux-x86_64.zip` |
-| Linux, Ubuntu 18.04+ | `flapxd-v3.0.0.1-ubuntu18.04-x86_64.zip` | `flapx-qt-v3.0.0.1-ubuntu18.04-x86_64.zip` |
+| Windows 64-bit | `flapxd-v3.0.0.2-win64.zip` | `flapx-qt-v3.0.0.2-win64.zip` |
+| Windows 32-bit | `flapxd-v3.0.0.2-win32.zip` | `flapx-qt-v3.0.0.2-win32.zip` |
+| macOS, Apple Silicon | `flapxd-v3.0.0.2-macos-arm64.zip` | `FlapX-Qt-v3.0.0.2-macos-arm64.zip` (.dmg inside) |
+| macOS, Intel | `flapxd-v3.0.0.2-macos-x86_64.zip` | `FlapX-Qt-v3.0.0.2-macos-x86_64.zip` (.dmg inside) |
+| Linux, Ubuntu 22.04+ / Debian 12+ | `flapxd-v3.0.0.2-linux-x86_64.zip` | `flapx-qt-v3.0.0.2-linux-x86_64.zip` |
+| Linux, Ubuntu 18.04+ | `flapxd-v3.0.0.2-ubuntu18.04-x86_64.zip` | `flapx-qt-v3.0.0.2-ubuntu18.04-x86_64.zip` |
 
 Every file is a .zip. The macOS daemon's zip also holds a `libs` folder it needs;
 keep it next to `flapxd`.
+
+## What's new in 3.0.0.2
+
+- **The overview's Unlock/Lock button** says what it will do (Unlock / Lock), in every
+  language, and follows the wallet when it's locked or unlocked from the menu.
+  Thanks to Serega for testing the Russian translation.
+
+Full notes: [doc/release-notes-3.0.0.2.md](doc/release-notes-3.0.0.2.md)
 
 ## What's new in 3.0.0.1
 
@@ -85,7 +93,7 @@ Full notes: [doc/release-notes-3.0.0.1.md](doc/release-notes-3.0.0.1.md)
 
 ## Upgrading
 
-- **From 3.0.0.0:** just replace the program; nothing else changes.
+- **From 3.0.x:** just replace the program; nothing else changes.
 - **From 2.x: back up `wallet.dat` first.** These builds use Berkeley DB 5.3; once a 3.0 wallet
   has written to `wallet.dat`, wallets built with Berkeley DB 4.8 can no longer open it.
 - No resync is needed: block files from older versions are moved into the `chain`
