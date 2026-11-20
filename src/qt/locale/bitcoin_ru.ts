@@ -2094,8 +2094,8 @@ Please check the address and try again.</source>
     </message>
     <message>
         <location filename="../forms/overviewpage.ui" line="46"/>
-        <source>Lock/Unlock</source>
-        <translation>Блокировка</translation>
+        <source>Unlock</source>
+        <translation>Разблокировка</translation>
     </message>
     <message>
         <location filename="../forms/overviewpage.ui" line="47"/>
@@ -2207,6 +2207,26 @@ Please check the address and try again.</source>
         <location filename="../overviewpage.cpp" line="409"/>
         <source>Wallet syncing...</source>
         <translation>Синхронизация кошелька...</translation>
+    </message>
+    <message>
+        <location filename="../overviewpage.cpp" line="0"/>
+        <source>Lock</source>
+        <translation>Блокировка</translation>
+    </message>
+    <message>
+        <location filename="../overviewpage.cpp" line="0"/>
+        <source>Unlock the wallet for staking</source>
+        <translation>Разблокировать кошелёк для стейкинга</translation>
+    </message>
+    <message>
+        <location filename="../overviewpage.cpp" line="0"/>
+        <source>Lock the wallet</source>
+        <translation>Заблокировать кошелёк</translation>
+    </message>
+    <message>
+        <location filename="../overviewpage.cpp" line="0"/>
+        <source>The wallet isn't encrypted, so there's nothing to unlock. To protect it with a password: Settings &gt; Encrypt Wallet.</source>
+        <translation>Кошелёк не зашифрован, поэтому разблокировать нечего. Чтобы защитить его паролем: Настройки &gt; Зашифровать кошелёк.</translation>
     </message>
 </context>
 <context>

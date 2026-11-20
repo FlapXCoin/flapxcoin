@@ -2081,8 +2081,8 @@ Please check the address and try again.</translation>
     </message>
     <message>
         <location filename="../forms/overviewpage.ui" line="46"/>
-        <source>Lock/Unlock</source>
-        <translation>Lock/Unlock</translation>
+        <source>Unlock</source>
+        <translation>Unlock</translation>
     </message>
     <message>
         <location filename="../forms/overviewpage.ui" line="47"/>
@@ -2194,6 +2194,26 @@ Please check the address and try again.</translation>
         <location filename="../overviewpage.cpp" line="409"/>
         <source>Wallet syncing...</source>
         <translation>Wallet syncing...</translation>
+    </message>
+    <message>
+        <location filename="../overviewpage.cpp" line="0"/>
+        <source>Lock</source>
+        <translation>Lock</translation>
+    </message>
+    <message>
+        <location filename="../overviewpage.cpp" line="0"/>
+        <source>Unlock the wallet for staking</source>
+        <translation>Unlock the wallet for staking</translation>
+    </message>
+    <message>
+        <location filename="../overviewpage.cpp" line="0"/>
+        <source>Lock the wallet</source>
+        <translation>Lock the wallet</translation>
+    </message>
+    <message>
+        <location filename="../overviewpage.cpp" line="0"/>
+        <source>The wallet isn't encrypted, so there's nothing to unlock. To protect it with a password: Settings &gt; Encrypt Wallet.</source>
+        <translation>The wallet isn't encrypted, so there's nothing to unlock. To protect it with a password: Settings &gt; Encrypt Wallet.</translation>
     </message>
 </context>
 <context>

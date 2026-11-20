@@ -1,4 +1,5 @@
 #include "overviewpage.h"
+#include <QPushButton>
 #include "ui_overviewpage.h"
 
 #include "walletmodel.h"
@@ -343,11 +344,11 @@ void OverviewPage::setWalletModel(WalletModel *model)
     connect(timerNetworkStats, SIGNAL(timeout()), this, SLOT(updateStatistics()));
     timerNetworkStats->start(30 * 1000);
 
-    // Unlock wallet button
-    WalletModel::EncryptionStatus status = model->getEncryptionStatus();
-    if(status == WalletModel::Unencrypted)
-    {
-        ui->unlockWalletActionNew->setDisabled(true);
+    // Unlock/Lock button: says what pressing it will do, and follows the
+    // wallet when it's unlocked or locked from the menu
+    if (model) {
+        updateLockButton(model->getEncryptionStatus());
+        connect(model, SIGNAL(encryptionStatusChanged(int)), this, SLOT(updateLockButton(int)));
     }
     connect(ui->unlockWalletActionNew, SIGNAL(clicked()), this, SLOT(lockWalletToggle()));
 }
@@ -383,22 +384,43 @@ void OverviewPage::showOutOfSyncWarning(bool fShow)
 
 void OverviewPage::lockWalletToggle()
 {
-    // if(model->getEncryptionStatus() == WalletModel::Locked)
-    if(walletModel->getEncryptionStatus() == WalletModel::Locked)
+    if (!walletModel)
+        return;
+    if (walletModel->getEncryptionStatus() == WalletModel::Locked)
     {
         AskPassphraseDialog dlg(AskPassphraseDialog::UnlockStaking, this);
-        // dlg.setModel(model);
         dlg.setModel(walletModel);
-        if(dlg.exec() == QDialog::Accepted)
-        {
-            ui->unlockWalletActionNew->setText("Lock FlapX");
-        }
+        dlg.exec();
     }
     else
     {
-        // model->setWalletLocked(true);
         walletModel->setWalletLocked(true);
-        ui->unlockWalletActionNew->setText("Unlock FlapX");
+    }
+    updateLockButton(walletModel->getEncryptionStatus());
+}
+
+void OverviewPage::updateLockButton(int status)
+{
+    QPushButton *button = ui->unlockWalletActionNew;
+    if (status == WalletModel::Unencrypted)
+    {
+        // Nothing to unlock: an unencrypted wallet stakes as it is
+        button->setText(tr("Unlock"));
+        button->setEnabled(false);
+        button->setToolTip(tr("The wallet isn't encrypted, so there's nothing to unlock. "
+                              "To protect it with a password: Settings > Encrypt Wallet."));
+    }
+    else if (status == WalletModel::Locked)
+    {
+        button->setText(tr("Unlock"));
+        button->setEnabled(true);
+        button->setToolTip(tr("Unlock the wallet for staking"));
+    }
+    else
+    {
+        button->setText(tr("Lock"));
+        button->setEnabled(true);
+        button->setToolTip(tr("Lock the wallet"));
     }
 }
 
@@ -582,7 +604,3 @@ OverviewPage::~OverviewPage()
 
 
 
-void OverviewPage::on_unlockWalletActionNew_clicked()
-{
-
-}
